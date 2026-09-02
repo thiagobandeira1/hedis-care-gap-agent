@@ -19,6 +19,8 @@ dependencies = [
     "pydantic-settings>=2.4",
     "structlog>=24.1",
     "typer>=0.12",
+    "clinical-agent-evals",
+    "fhir-feature-service",
 ]
 
 [dependency-groups]
@@ -28,6 +30,7 @@ dev = [
     "ruff>=0.6",
     "mypy>=1.11",
     "pre-commit>=3.8",
+    "respx>=0.23.1",
 ]
 
 [project.scripts]
@@ -61,7 +64,8 @@ warn_unreachable = true
 show_error_codes = true
 
 [[tool.mypy.overrides]]
-module = ["streamlit.*", "langgraph.*"]
+# fhir_features (P6 v0.1.0) ships no py.typed; P1 wraps it behind typed models anyway.
+module = ["streamlit.*", "langgraph.*", "fhir_features.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
@@ -74,3 +78,7 @@ markers = [
 
 [tool.coverage.run]
 source = ["src/caregap"]
+
+[tool.uv.sources]
+clinical-agent-evals = { git = "https://github.com/thiagobandeira1/clinical-agent-evals", rev = "v0.1.0" }
+fhir-feature-service = { git = "https://github.com/thiagobandeira1/fhir-feature-service", rev = "v0.1.0" }

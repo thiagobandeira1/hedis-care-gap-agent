@@ -1,0 +1,389 @@
+{
+  "sets": [
+    {
+      "code_system": "SNOMED",
+      "codes": [
+        {
+          "code": "44054006",
+          "display": "Diabetes mellitus type 2 (disorder)"
+        },
+        {
+          "code": "427089005",
+          "display": "Diabetes mellitus due to cystic fibrosis (disorder)"
+        },
+        {
+          "code": "60951000119105",
+          "display": "Blindness due to type 2 diabetes mellitus (disorder)"
+        },
+        {
+          "code": "127013003",
+          "display": "Disorder of kidney due to diabetes mellitus (disorder)"
+        },
+        {
+          "code": "97331000119101",
+          "display": "Macular edema and retinopathy due to type 2 diabetes mellitus (disorder)"
+        },
+        {
+          "code": "90781000119102",
+          "display": "Microalbuminuria due to type 2 diabetes mellitus (disorder)"
+        },
+        {
+          "code": "368581000119106",
+          "display": "Neuropathy due to type 2 diabetes mellitus (disorder)"
+        },
+        {
+          "code": "1551000119108",
+          "display": "Nonproliferative diabetic retinopathy due to type II diabetes mellitus"
+        },
+        {
+          "code": "1501000119109",
+          "display": "Proliferative diabetic retinopathy due to type II diabetes mellitus"
+        },
+        {
+          "code": "157141000119108",
+          "display": "Proteinuria due to type 2 diabetes mellitus (disorder)"
+        }
+      ],
+      "id": "diabetes_snomed",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "SNOMED",
+      "codes": [
+        {
+          "code": "59621000",
+          "display": "Essential hypertension (disorder)"
+        }
+      ],
+      "id": "hypertension_snomed",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "SNOMED",
+      "codes": [
+        {
+          "code": "414545008",
+          "display": "Ischemic heart disease (disorder)"
+        },
+        {
+          "code": "22298006",
+          "display": "Myocardial infarction (disorder)"
+        },
+        {
+          "code": "401303003",
+          "display": "Acute ST segment elevation myocardial infarction (disorder)"
+        },
+        {
+          "code": "401314000",
+          "display": "Acute non-ST segment elevation myocardial infarction (disorder)"
+        },
+        {
+          "code": "399211009",
+          "display": "History of myocardial infarction (situation)"
+        },
+        {
+          "code": "4557003",
+          "display": "Preinfarction syndrome (disorder)"
+        },
+        {
+          "code": "399261000",
+          "display": "History of coronary artery bypass grafting (situation)"
+        },
+        {
+          "code": "230690007",
+          "display": "Cerebrovascular accident (disorder)"
+        }
+      ],
+      "id": "ascvd_snomed",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "SNOMED",
+      "codes": [
+        {
+          "code": "431855005",
+          "display": "Chronic kidney disease stage 1 (disorder)"
+        },
+        {
+          "code": "431856006",
+          "display": "Chronic kidney disease stage 2 (disorder)"
+        },
+        {
+          "code": "433144002",
+          "display": "Chronic kidney disease stage 3 (disorder)"
+        },
+        {
+          "code": "431857002",
+          "display": "Chronic kidney disease stage 4 (disorder)"
+        }
+      ],
+      "id": "ckd_snomed",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "SNOMED",
+      "codes": [
+        {
+          "code": "84114007",
+          "display": "Heart failure (disorder)"
+        },
+        {
+          "code": "88805009",
+          "display": "Chronic congestive heart failure (disorder)"
+        }
+      ],
+      "id": "chf_snomed",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "SNOMED",
+      "codes": [
+        {
+          "code": "185086009",
+          "display": "Chronic obstructive bronchitis (disorder)"
+        },
+        {
+          "code": "87433001",
+          "display": "Pulmonary emphysema (disorder)"
+        }
+      ],
+      "id": "copd_snomed",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "CVX",
+      "codes": [
+        {
+          "code": "140",
+          "display": "Influenza, seasonal, injectable, preservative free"
+        }
+      ],
+      "id": "flu_vaccine_cvx",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "LOINC",
+      "codes": [
+        {
+          "code": "4548-4",
+          "display": "Hemoglobin A1c/Hemoglobin.total in Blood"
+        }
+      ],
+      "id": "hba1c_loinc",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "LOINC",
+      "codes": [
+        {
+          "code": "85354-9",
+          "display": "Blood pressure panel with all children optional"
+        },
+        {
+          "code": "8480-6",
+          "display": "Systolic Blood Pressure"
+        },
+        {
+          "code": "8462-4",
+          "display": "Diastolic Blood Pressure"
+        }
+      ],
+      "id": "bp_loinc",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "LOINC",
+      "codes": [
+        {
+          "code": "39156-5",
+          "display": "Body mass index (BMI) [Ratio]"
+        }
+      ],
+      "id": "bmi_loinc",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "LOINC",
+      "codes": [
+        {
+          "code": "72166-2",
+          "display": "Tobacco smoking status"
+        }
+      ],
+      "id": "tobacco_status_loinc",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "LOINC",
+      "codes": [
+        {
+          "code": "57905-2",
+          "display": "Hemoglobin.gastrointestinal.lower [Presence] in Stool by Immunoassay --1st specimen"
+        }
+      ],
+      "id": "fobt_fit_loinc",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "RXNORM",
+      "codes": [
+        {
+          "code": "617312",
+          "display": "atorvastatin 10 MG Oral Tablet"
+        },
+        {
+          "code": "617314",
+          "display": "atorvastatin 10 MG Oral Tablet [Lipitor]"
+        },
+        {
+          "code": "617310",
+          "display": "atorvastatin 20 MG Oral Tablet"
+        },
+        {
+          "code": "617311",
+          "display": "atorvastatin 40 MG Oral Tablet"
+        },
+        {
+          "code": "617320",
+          "display": "atorvastatin 40 MG Oral Tablet [Lipitor]"
+        },
+        {
+          "code": "259255",
+          "display": "atorvastatin 80 MG Oral Tablet"
+        },
+        {
+          "code": "476349",
+          "display": "ezetimibe 10 MG / simvastatin 20 MG Oral Tablet"
+        },
+        {
+          "code": "476350",
+          "display": "ezetimibe 10 MG / simvastatin 40 MG Oral Tablet"
+        },
+        {
+          "code": "197903",
+          "display": "lovastatin 10 MG Oral Tablet"
+        },
+        {
+          "code": "197904",
+          "display": "lovastatin 20 MG Oral Tablet"
+        },
+        {
+          "code": "197905",
+          "display": "lovastatin 40 MG Oral Tablet"
+        },
+        {
+          "code": "861650",
+          "display": "pitavastatin calcium 2 MG Oral Tablet [Livalo]"
+        },
+        {
+          "code": "904458",
+          "display": "pravastatin sodium 10 MG Oral Tablet"
+        },
+        {
+          "code": "904467",
+          "display": "pravastatin sodium 20 MG Oral Tablet"
+        },
+        {
+          "code": "904475",
+          "display": "pravastatin sodium 40 MG Oral Tablet"
+        },
+        {
+          "code": "904481",
+          "display": "pravastatin sodium 80 MG Oral Tablet"
+        },
+        {
+          "code": "859424",
+          "display": "rosuvastatin calcium 5 MG Oral Tablet"
+        },
+        {
+          "code": "859426",
+          "display": "rosuvastatin calcium 5 MG Oral Tablet [Crestor]"
+        },
+        {
+          "code": "859747",
+          "display": "rosuvastatin calcium 10 MG Oral Tablet"
+        },
+        {
+          "code": "859749",
+          "display": "rosuvastatin calcium 10 MG Oral Tablet [Crestor]"
+        },
+        {
+          "code": "859751",
+          "display": "rosuvastatin calcium 20 MG Oral Tablet"
+        },
+        {
+          "code": "859753",
+          "display": "rosuvastatin calcium 20 MG Oral Tablet [Crestor]"
+        },
+        {
+          "code": "859419",
+          "display": "rosuvastatin calcium 40 MG Oral Tablet"
+        },
+        {
+          "code": "314231",
+          "display": "simvastatin 10 MG Oral Tablet"
+        },
+        {
+          "code": "312961",
+          "display": "simvastatin 20 MG Oral Tablet"
+        },
+        {
+          "code": "198211",
+          "display": "simvastatin 40 MG Oral Tablet"
+        },
+        {
+          "code": "200345",
+          "display": "simvastatin 80 MG Oral Tablet"
+        }
+      ],
+      "id": "statin_rxnorm",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "SNOMED",
+      "codes": [
+        {
+          "code": "71651007",
+          "display": "Mammography (procedure)"
+        },
+        {
+          "code": "24623002",
+          "display": "Screening mammography (procedure)"
+        },
+        {
+          "code": "241055006",
+          "display": "Mammogram - symptomatic (procedure)"
+        }
+      ],
+      "id": "mammogram_proc",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "SNOMED",
+      "codes": [
+        {
+          "code": "73761001",
+          "display": "Colonoscopy (procedure)"
+        }
+      ],
+      "id": "colonoscopy_proc",
+      "source": "p6-valuesets-2026.08"
+    },
+    {
+      "code_system": "SNOMED",
+      "codes": [
+        {
+          "code": "722161008",
+          "display": "Diabetic retinal eye exam (procedure)"
+        },
+        {
+          "code": "700070005",
+          "display": "Optical coherence tomography of retina (procedure)"
+        }
+      ],
+      "id": "retinal_exam_proc",
+      "source": "p6-valuesets-2026.08"
+    }
+  ],
+  "version": "2026.08"
+}
