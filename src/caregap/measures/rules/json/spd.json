@@ -1,0 +1,295 @@
+{
+  "measure_id": "SPD",
+  "star_id": "D12",
+  "name": "Statin Use in Persons With Diabetes",
+  "rule_version": "spd-v1",
+  "sources": [
+    {
+      "doc_id": "cms-tn-2026",
+      "title": "Medicare 2026 Part C & D Star Ratings Technical Notes",
+      "url": "https://www.cms.gov/files/document/2026-star-ratings-technical-notes.pdf",
+      "page": 104,
+      "retrieval_date": "2026-08-31",
+      "license_posture": "us_gov_public_domain",
+      "note": null
+    },
+    {
+      "doc_id": "ncqa-spc",
+      "title": "NCQA public measure summary: Statin Therapy for Patients With Cardiovascular Disease and Diabetes (HEDIS Measure Library)",
+      "url": "https://www.ncqa.org/hedis/measures/statin-therapy-for-patients-with-cardiovascular-disease-and-diabetes/",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "public_web_cite_only",
+      "note": "Cite-only (nothing quoted). On the retrieval date the deep link resolved to NCQA's 'HEDIS Measure Library & Historical Data' page."
+    },
+    {
+      "doc_id": "acc-aha-2018",
+      "title": "2018 AHA/ACC Multisociety Guideline on the Management of Blood Cholesterol (statin intensity table; value set statin_intensity.json source 'public-acc-aha')",
+      "url": "https://doi.org/10.1161/CIR.0000000000000625",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "public_web_cite_only",
+      "note": "Cite-only (nothing quoted). The DOI resolved to ahajournals.org on the retrieval date; the article page itself refused the automated fetch (HTTP 403)."
+    },
+    {
+      "doc_id": "caregap-spec",
+      "title": "hedis-care-gap-agent SPEC section 2 (demo-grade rules table)",
+      "url": "docs/SPEC.md",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "project_spec",
+      "note": "The demo parameters themselves; cited for every demo_choice element."
+    }
+  ],
+  "elements": [
+    {
+      "id": "spd/denominator/age",
+      "kind": "denominator",
+      "text": "40-75 years old",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "40-75 years old",
+      "rationale": "Age at Dec 31 of the MY (the demo's shared age convention).",
+      "coverage": null
+    },
+    {
+      "id": "spd/denominator/diabetes_diagnosis_proxy",
+      "kind": "denominator",
+      "text": "Diabetes is identified by DIAGNOSIS exactly as for EED (diabetes_snomed condition active in the MY or the prior year; prediabetes never), instead of by diabetes medication fills.",
+      "source": "demo_choice",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "who were dispensed at least two diabetes medication fills on unique dates of service",
+      "rationale": "The public D12 denominator counts Part D fills ('at least two diabetes medication fills on unique dates of service'); P6 carries no pharmacy claims and Synthea MedicationRequests are not fills, so the diagnosis is the only evidence. This widens the denominator relative to the public measure.",
+      "coverage": null
+    },
+    {
+      "id": "spd/denominator/not_in_spc_denominator",
+      "kind": "denominator",
+      "text": "Members who fall in the SPC denominator (clinical ASCVD) are NOT in the SPD denominator.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Product choice: one statin gap per member, no double outreach. The public D12 measure has no such rule; SPC's stricter intensity rule takes precedence.",
+      "coverage": null
+    },
+    {
+      "id": "spd/denominator/ipsd_at_least_90_days_before_my_end",
+      "kind": "denominator",
+      "text": "Beneficiaries are only included in the measure calculation if the IPSD occurs at least 90 days before the end of the measurement period.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "Beneficiaries are only included in the measure calculation if the IPSD occurs at least 90 days before the end of the measurement period.",
+      "rationale": "The index prescription start date is a Part D fill concept (no fills).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spd/denominator/continuous_enrollment",
+      "kind": "denominator",
+      "text": "Continuous enrollment (CE) is defined as being continuously enrolled in a Medicare Part D cont ract during the measurement period, with one allowable gap in enrollment of up to one calendar month.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "Continuous enrollment (CE) is defined as being continuously enrolled in a Medicare Part D cont ract during the measurement period, with one allowable gap in enrollment of up to one calendar month.",
+      "rationale": "No enrollment records in Synthea / P6. (The corpus text carries the PDF extraction artefact 'cont ract'; quoted verbatim by design.)",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spd/numerator/statin_fill",
+      "kind": "numerator",
+      "text": "received a statin medication fill during the measurement period (numerator)",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "received a statin medication fill during the measurement period (numerator)",
+      "rationale": null,
+      "coverage": null
+    },
+    {
+      "id": "spd/numerator/on_therapy_status",
+      "kind": "numerator",
+      "text": "ON THERAPY in the MY = a statin_rxnorm MedicationRequest authored in [Jan 1 of the MY, as_of], OR authored before the MY with status == active. Requests with status stopped, cancelled or entered-in-error never count.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "'Dispensed' cannot be observed: P6 carries MedicationRequest rows, not pharmacy claims, and Synthea authors most statins once. ADR-0002 makes this rule (and E3) the only readers of MedicationRequest.status -- an explicit deviation from P6's date-only doctrine, with a leakage caveat.",
+      "coverage": null
+    },
+    {
+      "id": "spd/numerator/any_intensity",
+      "kind": "numerator",
+      "text": "Any statin intensity counts (low, moderate or high).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public D12 numerator is any statin fill; intensity only matters for SPC.",
+      "coverage": null
+    },
+    {
+      "id": "spd/exclusion/hospice",
+      "kind": "exclusion",
+      "text": "The following beneficiaries are excluded from the denominator if at any time during the measurement period:\n• Hospice enrollment",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "The following beneficiaries are excluded from the denominator if at any time during the measurement period:\n• Hospice enrollment",
+      "rationale": "Hospice enrollment is approximated by hospice_snomed events in [Jan 1 of the MY, as_of] (global rule).",
+      "coverage": "observable"
+    },
+    {
+      "id": "spd/exclusion/death",
+      "kind": "exclusion",
+      "text": "Death inside [Jan 1 of the MY, as_of] excludes the member (global rule applied to every measure).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public D12 text lists no death criterion (Part D denominators drop disenrolled beneficiaries instead). The engine applies its global death rule uniformly: a deceased member can never receive outreach.",
+      "coverage": "observable"
+    },
+    {
+      "id": "spd/exclusion/esrd_or_dialysis",
+      "kind": "exclusion",
+      "text": "ESRD diagnosis or dialysis coverage dates",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "ESRD diagnosis or dialysis coverage dates",
+      "rationale": "esrd_snomed condition active in the window or a dialysis_snomed procedure in it, as implemented by the SPD rule (dialysis coverage dates are enrollment data; procedures stand in).",
+      "coverage": "observable"
+    },
+    {
+      "id": "spd/exclusion/rhabdomyolysis_and_myopathy",
+      "kind": "exclusion",
+      "text": "Rhabdomyolysis and Myopathy",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "Rhabdomyolysis and Myopathy",
+      "rationale": "No myopathy-family code appears in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spd/exclusion/pregnancy_lactation_and_fertility",
+      "kind": "exclusion",
+      "text": "Pregnancy, Lactation, and Fertility",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "Pregnancy, Lactation, and Fertility",
+      "rationale": "Lactation and fertility treatment have no codes in the committed Synthea scan; pregnancy alone is observable but the SPEC does not apply it to SPD.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spd/exclusion/cirrhosis",
+      "kind": "exclusion",
+      "text": "Cirrhosis",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "Cirrhosis",
+      "rationale": "No cirrhosis code appears in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spd/exclusion/prediabetes",
+      "kind": "exclusion",
+      "text": "Handled at the denominator: prediabetes codes (prediabetes trap set) never qualify as diabetes, so no separate exclusion is computed.",
+      "source": "demo_choice",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "Pre-Diabetes",
+      "rationale": "The public criterion removes fills made for prediabetes; the diagnosis-based demo denominator never admits prediabetes in the first place.",
+      "coverage": "partial"
+    },
+    {
+      "id": "spd/exclusion/polycystic_ovary_syndrome",
+      "kind": "exclusion",
+      "text": "Polycystic Ovary Syndrome",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "Polycystic Ovary Syndrome",
+      "rationale": "No PCOS code appears in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spd/coverage/e1_prior_hospice",
+      "kind": "coverage",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public wording is 'any time during the measurement period'; 32% of living Synthea patients carry prior hospice codes, so prior hospice can only be a hint for a human, never an exclusion.",
+      "coverage": "partial"
+    },
+    {
+      "id": "spd/coverage/e4_advanced_illness_hint",
+      "kind": "coverage",
+      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public frailty-and-advanced-illness exclusion needs two frailty indications on different dates plus advanced-illness claims; Synthea carries no frailty claims, so the engine can only hint (coverage: partial).",
+      "coverage": "partial"
+    },
+    {
+      "id": "spd/coverage/e3_medication_status_conflict",
+      "kind": "coverage",
+      "text": "E3 medication_status_conflict: a statin authored inside the MY whose MedicationRequest.status is stopped or cancelled raises a review flag, even when another statin closes the numerator.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "ADR-0002: this flag and the on-therapy rule are the only readers of MedicationRequest.status; a stop inside the MY may mean the therapy ended.",
+      "coverage": "partial"
+    },
+    {
+      "id": "spd/timeline/data_time_frame",
+      "kind": "timeline",
+      "text": "01/01/2024 – 12/31/2024",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.104",
+      "quote": "01/01/2024 – 12/31/2024",
+      "rationale": "The 2026 Star Ratings score measurement year 2024; the demo evaluates the calendar year of as_of instead (see measurement_year).",
+      "coverage": null
+    },
+    {
+      "id": "spd/timeline/measurement_year",
+      "kind": "timeline",
+      "text": "Measurement year (MY) = the calendar year of as_of. Denominator and exclusion windows use the MY bounds (Jan 1 - Dec 31); every numerator window ends at as_of; age = age at Dec 31 of the MY.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Prospective gap detection: events dated after as_of never count, so a run at 2026-06-30 sees only what a care manager could see that day. Age at Dec 31 follows the Technical Notes wording 'as of December 31 of the measurement year'. Eval anchor as_of = 2025-12-31 (complete MY2025); demo anchor 2026-06-30.",
+      "coverage": null
+    },
+    {
+      "id": "spd/timeline/death_before_my",
+      "kind": "timeline",
+      "text": "death_date before Jan 1 of the MY -> not_eligible (denominator no); death inside [Jan 1 of the MY, as_of] -> excluded (global rule).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "A member who died before the MY was never enrolled for it; the public 'died during the measurement period' wording only covers deaths inside the MY. Future death dates are masked by P6 (mask_as_of) and never seen.",
+      "coverage": null
+    }
+  ],
+  "normative_quote": {
+    "metric": "This measure is defined as the percentage of Medicare Part D benef iciaries, 40-75 years old, who were dispensed at least two diabetes medication fills on unique dates of service and received a statin medication fill during the measurement period.",
+    "description": "This rating is based on the percent of plan members with diabetes who take the most effective cholesterol-lowering drugs.",
+    "citation": "cms-tn-2026 p.104",
+    "conflict": "D12 is a Part D pharmacy-fill measure (PQA SUPD); the demo evaluates a diagnosis-based proxy over MedicationRequest rows. The Metric text carries PDF extraction artefacts ('benef iciaries'), quoted verbatim by design."
+  },
+  "tn_sections": {
+    "description": {
+      "heading": "Description",
+      "text": "To lower their risk of developing heart disease, most people with diabetes should take cholesterol medication. This rating is based on the percent of plan members with diabetes who take the most effective cholesterol-lowering drugs. Plans can help make sure their members get these prescriptions filled.",
+      "page": 104
+    },
+    "metric": {
+      "heading": "Metric",
+      "text": "This measure is defined as the percentage of Medicare Part D benef iciaries, 40-75 years old, who were dispensed at least two diabetes medication fills on unique dates of service and received a statin medication fill during the measurement period. The index prescription start date (IPSD) is the earliest date of service for a diabetes medication during the measurement year. Continuous enrollment (CE) is defined as being continuously enrolled in a Medicare Part D cont ract during the measurement period, with one allowable gap in enrollment of up to one calendar month. Beneficiaries are only included in the measure calculation if the IPSD occurs at least 90 days before the end of the measurement period. The percentage is calculated as the number of continuously enrolled beneficiaries, 40-75 years old, who received a statin medication fill during the measurement period (numerator) divided by the number of continuously enrolled beneficiaries, 40-75 years old, with at least two diabetes medication fills on unique dates of service during the measurement period and an IPSD t hat occurs at least 90 days prior to the end of the measurement period (denominator). The SUPD measure is adapted from t he measure concept that was developed and endorsed by the PQA. See the medication list for this measure. The SUPD measure is calculated using the NDC lists updated by the PQA. The complete NDC lists, including diagnosis codes, are posted along with these technical notes.",
+      "page": 104
+    },
+    "exclusions": {
+      "heading": "Exclusions",
+      "text": "Contracts with 30 or fewer continuously enrolled beneficiaries (in the denominator). The following beneficiaries are excluded from the denominator if at any time during the measurement period:\n• Hospice enrollment\n• ESRD diagnosis or dialysis coverage dates\n• Rhabdomyolysis and Myopathy\n• Pregnancy, Lactation, and Fertility\n• Cirrhosis\n• Pre-Diabetes\n• Polycystic Ovary Syndrome",
+      "page": 104
+    },
+    "data_time_frame": {
+      "heading": "Data Time Frame",
+      "text": "01/01/2024 – 12/31/2024",
+      "page": 104
+    }
+  },
+  "conformance": "demo-grade; HEDIS-aligned; not NCQA-certified"
+}

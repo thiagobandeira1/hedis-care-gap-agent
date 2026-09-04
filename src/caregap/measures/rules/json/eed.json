@@ -1,0 +1,226 @@
+{
+  "measure_id": "EED",
+  "star_id": "C11",
+  "name": "Eye Exam for Patients With Diabetes",
+  "rule_version": "eed-v1",
+  "sources": [
+    {
+      "doc_id": "cms-tn-2026",
+      "title": "Medicare 2026 Part C & D Star Ratings Technical Notes",
+      "url": "https://www.cms.gov/files/document/2026-star-ratings-technical-notes.pdf",
+      "page": 51,
+      "retrieval_date": "2026-08-31",
+      "license_posture": "us_gov_public_domain",
+      "note": null
+    },
+    {
+      "doc_id": "ncqa-eed",
+      "title": "NCQA public measure summary: Eye Exam for Patients With Diabetes (HEDIS Measure Library)",
+      "url": "https://www.ncqa.org/hedis/measures/eye-exam-for-patients-with-diabetes/",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "public_web_cite_only",
+      "note": "Cite-only (nothing quoted). On the retrieval date the deep link resolved to NCQA's 'HEDIS Measure Library & Historical Data' page."
+    },
+    {
+      "doc_id": "caregap-spec",
+      "title": "hedis-care-gap-agent SPEC section 2 (demo-grade rules table)",
+      "url": "docs/SPEC.md",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "project_spec",
+      "note": "The demo parameters themselves; cited for every demo_choice element."
+    }
+  ],
+  "elements": [
+    {
+      "id": "eed/denominator/age",
+      "kind": "denominator",
+      "text": "diabetic MA enrollees age 18-75 with diabetes (type 1 and type 2) (denominator)",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.51",
+      "quote": "diabetic MA enrollees age 18-75 with diabetes (type 1 and type 2) (denominator)",
+      "rationale": null,
+      "coverage": null
+    },
+    {
+      "id": "eed/denominator/diabetes_active",
+      "kind": "denominator",
+      "text": "Diabetes = a diabetes_snomed condition active in the MY or the prior year (onset <= Dec 31 of the MY, abatement null or >= Jan 1 of MY-1). Prediabetes codes (prediabetes trap set) never qualify.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "HEDIS-style summaries identify diabetes from claims or pharmacy data in the MY or the year prior (NCQA public summary, cite-only); Synthea offers condition rows only, so the engine reads diagnosis activity over the same two years.",
+      "coverage": null
+    },
+    {
+      "id": "eed/numerator/retinal_exam_in_my",
+      "kind": "numerator",
+      "text": "who had an eye exam (retinal) performed during the measurement year (numerator)",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.51",
+      "quote": "who had an eye exam (retinal) performed during the measurement year (numerator)",
+      "rationale": "retinal_exam_proc procedure in [Jan 1 of the MY, as_of].",
+      "coverage": null
+    },
+    {
+      "id": "eed/numerator/prior_year_negative_exam",
+      "kind": "numerator",
+      "text": "A retinal_exam_proc procedure in MY-1 also closes the gap when it carries a retinopathy-negative answer (LOINC 71490-7 or 71491-5 with value LA18643-9) and no diabetic-retinopathy diagnosis has onset on or before the exam date.",
+      "source": "demo_choice",
+      "citation": "ncqa-eed",
+      "quote": null,
+      "rationale": "NCQA's public EED summary counts a negative retinal exam from the year prior (cite-only); the Technical Notes name only the MY. The retinopathy-negative LOINC answers are how Synthea records the result.",
+      "coverage": null
+    },
+    {
+      "id": "eed/exclusion/death",
+      "kind": "exclusion",
+      "text": "Members who died any time during the measurement year.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.51",
+      "quote": "Members who died any time during the measurement year.",
+      "rationale": null,
+      "coverage": "observable"
+    },
+    {
+      "id": "eed/exclusion/hospice",
+      "kind": "exclusion",
+      "text": "Members in hospice or using hospice services any time during the measurement year.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.51",
+      "quote": "Members in hospice or using hospice services any time during the measurement year.",
+      "rationale": null,
+      "coverage": "observable"
+    },
+    {
+      "id": "eed/exclusion/palliative_care",
+      "kind": "exclusion",
+      "text": "Members receiving palliative care any time during the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.51",
+      "quote": "Members receiving palliative care any time during the measurement year.",
+      "rationale": "No palliative-care codes appear in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "eed/exclusion/no_diabetes_dx_with_pcos_gestational_or_steroid",
+      "kind": "exclusion",
+      "text": "Members who did not have a diagnosis of diabetes, in any setting, during the measurement year or the year prior to the measurement year and who had a diagnosis of polycystic ovarian syndrome, gestational diabetes or steroid-induced diabetes, in any setting, during the measurement year or the year prior to the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.51",
+      "quote": "Members who did not have a diagnosis of diabetes, in any setting, during the measurement year or the year prior to the measurement year and who had a diagnosis of polycystic ovarian syndrome, gestational diabetes or steroid-induced diabetes, in any setting, during the measurement year or the year prior to the measurement year.",
+      "rationale": "Needs a claims-based diabetes signal that is absent while a PCOS / gestational / steroid-induced diagnosis is present; the demo denominator is diagnosis-based (diabetes_snomed), so this criterion is not computed.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "eed/exclusion/isnp_or_long_term_institution_66_plus",
+      "kind": "exclusion",
+      "text": "Medicare members 66 years of age and older as of December 31 of the measurement year who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year as identified by the LTI flag in the Monthly Membership Detail Data File.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.51",
+      "quote": "Medicare members 66 years of age and older as of December 31 of the measurement year who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year as identified by the LTI flag in the Monthly Membership Detail Data File.",
+      "rationale": "Institutional SNP enrollment and the long-term-institution (LTI) flag are plan enrollment data; Synthea / P6 carry no enrollment records.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "eed/exclusion/frailty_and_advanced_illness_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66 years of age and older as of December 31 of the measurement year with both frailty and advanced illness during the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.51",
+      "quote": "Members 66 years of age and older as of December 31 of the measurement year with both frailty and advanced illness during the measurement year.",
+      "rationale": "Needs two frailty indications on different dates plus advanced-illness claims / dispensed dementia medication; Synthea carries no frailty claims. The global E4 flag only hints (dementia + inpatient/ED care at 66+).",
+      "coverage": "partial"
+    },
+    {
+      "id": "eed/coverage/e1_prior_hospice",
+      "kind": "coverage",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public wording is 'any time during the measurement period'; 32% of living Synthea patients carry prior hospice codes, so prior hospice can only be a hint for a human, never an exclusion.",
+      "coverage": "partial"
+    },
+    {
+      "id": "eed/coverage/e4_advanced_illness_hint",
+      "kind": "coverage",
+      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public frailty-and-advanced-illness exclusion needs two frailty indications on different dates plus advanced-illness claims; Synthea carries no frailty claims, so the engine can only hint (coverage: partial).",
+      "coverage": "partial"
+    },
+    {
+      "id": "eed/coverage/e6_diabetes_abated_in_my",
+      "kind": "coverage",
+      "text": "E6: a diabetes condition abated inside the MY raises a review flag; the member stays in the denominator.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Synthea abatement dates are unreliable as resolution evidence; a human decides whether the diagnosis still stands.",
+      "coverage": "partial"
+    },
+    {
+      "id": "eed/timeline/data_time_frame",
+      "kind": "timeline",
+      "text": "01/01/2024 – 12/31/2024",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.51",
+      "quote": "01/01/2024 – 12/31/2024",
+      "rationale": "The 2026 Star Ratings score measurement year 2024; the demo evaluates the calendar year of as_of instead (see measurement_year).",
+      "coverage": null
+    },
+    {
+      "id": "eed/timeline/measurement_year",
+      "kind": "timeline",
+      "text": "Measurement year (MY) = the calendar year of as_of. Denominator and exclusion windows use the MY bounds (Jan 1 - Dec 31); every numerator window ends at as_of; age = age at Dec 31 of the MY.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Prospective gap detection: events dated after as_of never count, so a run at 2026-06-30 sees only what a care manager could see that day. Age at Dec 31 follows the Technical Notes wording 'as of December 31 of the measurement year'. Eval anchor as_of = 2025-12-31 (complete MY2025); demo anchor 2026-06-30.",
+      "coverage": null
+    },
+    {
+      "id": "eed/timeline/death_before_my",
+      "kind": "timeline",
+      "text": "death_date before Jan 1 of the MY -> not_eligible (denominator no); death inside [Jan 1 of the MY, as_of] -> excluded (global rule).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "A member who died before the MY was never enrolled for it; the public 'died during the measurement period' wording only covers deaths inside the MY. Future death dates are masked by P6 (mask_as_of) and never seen.",
+      "coverage": null
+    }
+  ],
+  "normative_quote": {
+    "metric": "The percentage of diabetic MA enrollees age 18-75 with diabetes (type 1 and type 2) (denominator) who had an eye exam (retinal) performed during the measurement year (numerator).",
+    "description": "Percent of plan members with diabetes who had an eye exam to check for damage from diabetes during the year.",
+    "citation": "cms-tn-2026 p.51",
+    "conflict": null
+  },
+  "tn_sections": {
+    "description": {
+      "heading": "Description",
+      "text": "Percent of plan members with diabetes who had an eye exam to check for damage from diabetes during the year. (Last Updated 09/25/202 5) Page 42",
+      "page": 51
+    },
+    "metric": {
+      "heading": "Metric",
+      "text": "The percentage of diabetic MA enrollees age 18-75 with diabetes (type 1 and type 2) (denominator) who had an eye exam (retinal) performed during the measurement year (numerator).",
+      "page": 51
+    },
+    "exclusions": {
+      "heading": "Exclusions",
+      "text": "• Medicare members 66 years of age and older as of December 31 of the measurement year who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year as identified by the LTI flag in the Monthly Membership Detail Data File.\n• Members 66 years of age and older as of December 31 of the measurement year with both frailty and advanced illness during the measurement year. Members must meet both the following frailty and advanced illness criteria to be excluded: At least two indications of frailty with different dates of service during the measurement year. Any of the following during the measurement year or the year prior to the measurement year (count services that occur over both years):\n• At least two outpatient visits, observation visits, ED visits, telephone visits, e-visits or virtual check-ins, nonacute inpatient encounters, nonacute inpatient discharges on different dates of service, with an advanced illness diagnosis.\n• At least one acute inpatient encounter with an advanced illness diagnosis.\n• At least one acute inpatient discharge with an advanced illness diagnosis on the discharge claim.\n• A dispensed dementia medication.\n• (Required) Exclude members who meet any of the following criteria:\n- Members who did not have a diagnosis of diabetes, in any setting, during the measurement year or the year prior to the measurement year and who had a diagnosis of polycystic ovarian syndrome, gestational diabetes or steroid-induced diabetes, in any setting, during the measurement year or the year prior to the measurement year.\n- Members in hospice or using hospice services any time during the measurement year.\n- Members who died any time during the measurement year.\n- Members receiving palliative care any time during the measurement year. The full set of exclusions is available in the NCQA HEDIS Measurement Year 2024 Technical Specifications Volume 2. Contracts whose enrollment was at least 500 but less than 1,000 as of the July 2024 enrollment report and having measure score reliability less than 0.7 are excluded. Contracts whose enrollment was less than 500 as of the July 2024 enrollment report are excluded from this measure.",
+      "page": 51
+    },
+    "data_time_frame": {
+      "heading": "Data Time Frame",
+      "text": "01/01/2024 – 12/31/2024",
+      "page": 51
+    }
+  },
+  "conformance": "demo-grade; HEDIS-aligned; not NCQA-certified"
+}

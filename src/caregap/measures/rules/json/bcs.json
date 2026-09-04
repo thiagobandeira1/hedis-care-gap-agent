@@ -1,0 +1,216 @@
+{
+  "measure_id": "BCS",
+  "star_id": "C01",
+  "name": "Breast Cancer Screening",
+  "rule_version": "bcs-v1",
+  "sources": [
+    {
+      "doc_id": "cms-tn-2026",
+      "title": "Medicare 2026 Part C & D Star Ratings Technical Notes",
+      "url": "https://www.cms.gov/files/document/2026-star-ratings-technical-notes.pdf",
+      "page": 38,
+      "retrieval_date": "2026-08-31",
+      "license_posture": "us_gov_public_domain",
+      "note": null
+    },
+    {
+      "doc_id": "ncqa-bcs",
+      "title": "NCQA public measure summary: Breast Cancer Screening (HEDIS Measure Library)",
+      "url": "https://www.ncqa.org/hedis/measures/breast-cancer-screening/",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "public_web_cite_only",
+      "note": "Cite-only (nothing quoted). On the retrieval date the deep link resolved to NCQA's 'HEDIS Measure Library & Historical Data' page."
+    },
+    {
+      "doc_id": "caregap-spec",
+      "title": "hedis-care-gap-agent SPEC section 2 (demo-grade rules table)",
+      "url": "docs/SPEC.md",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "project_spec",
+      "note": "The demo parameters themselves; cited for every demo_choice element."
+    }
+  ],
+  "elements": [
+    {
+      "id": "bcs/denominator/sex",
+      "kind": "denominator",
+      "text": "Percent of female plan members",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "Percent of female plan members",
+      "rationale": "P6 sex 'female' -> yes; 'male' / 'other' -> no; anything else -> unknown (needs_review), never a silent not_eligible.",
+      "coverage": null
+    },
+    {
+      "id": "bcs/denominator/age",
+      "kind": "denominator",
+      "text": "women MA enrollees 52 to 74 years of age (denominator) as of December 31 of the measurement year",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "women MA enrollees 52 to 74 years of age (denominator) as of December 31 of the measurement year",
+      "rationale": "The Description says 50-74 and the Metric says 52-74; the engine implements 52-74 (the Metric is what the rate is computed from -- see normative_quote).",
+      "coverage": null
+    },
+    {
+      "id": "bcs/numerator/mammogram",
+      "kind": "numerator",
+      "text": "who had a mammogram to screen for breast cancer in the past two years (numerator)",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "who had a mammogram to screen for breast cancer in the past two years (numerator)",
+      "rationale": "Mammogram = any procedure in P6's mammogram_proc SNOMED value set.",
+      "coverage": null
+    },
+    {
+      "id": "bcs/numerator/window_27_months",
+      "kind": "numerator",
+      "text": "Numerator window = Oct 1 of MY-2 through as_of (the 27-month look-back).",
+      "source": "demo_choice",
+      "citation": "ncqa-bcs",
+      "quote": null,
+      "rationale": "NCQA's public BCS summary states the look-back as October 1 two years prior through the end of the MY (cite-only); 'the past two years' in the Technical Notes is the same 27-month window, truncated here at as_of.",
+      "coverage": null
+    },
+    {
+      "id": "bcs/exclusion/death",
+      "kind": "exclusion",
+      "text": "Members who died any time during the measurement period.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "Members who died any time during the measurement period.",
+      "rationale": null,
+      "coverage": "observable"
+    },
+    {
+      "id": "bcs/exclusion/hospice",
+      "kind": "exclusion",
+      "text": "Members in hospice or using hospice services any time during the measurement period.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "Members in hospice or using hospice services any time during the measurement period.",
+      "rationale": null,
+      "coverage": "observable"
+    },
+    {
+      "id": "bcs/exclusion/bilateral_mastectomy",
+      "kind": "exclusion",
+      "text": "Members who had a bilateral mastectomy or both right and left unilateral mastectomies any time during the member’s history through December 31 of the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "Members who had a bilateral mastectomy or both right and left unilateral mastectomies any time during the member’s history through December 31 of the measurement year.",
+      "rationale": "No mastectomy code appears in the committed Synthea scan (SCAN.md) and there is no value set; a member with a bilateral mastectomy would show as gap_open.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "bcs/exclusion/palliative_care",
+      "kind": "exclusion",
+      "text": "Members receiving palliative care any time during the measurement period.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "Members receiving palliative care any time during the measurement period.",
+      "rationale": "No palliative-care codes appear in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "bcs/exclusion/isnp_or_long_term_institution_66_plus",
+      "kind": "exclusion",
+      "text": "Medicare members 66 years of age and older by the end of the measurement period who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "Medicare members 66 years of age and older by the end of the measurement period who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year.",
+      "rationale": "Institutional SNP enrollment and the long-term-institution (LTI) flag are plan enrollment data; Synthea / P6 carry no enrollment records.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "bcs/exclusion/frailty_and_advanced_illness_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66 years of age and older by the end of the measurement period with frailty and advanced illness.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "Members 66 years of age and older by the end of the measurement period with frailty and advanced illness.",
+      "rationale": "Needs two frailty indications on different dates plus advanced-illness claims / dispensed dementia medication; Synthea carries no frailty claims. The global E4 flag only hints (dementia + inpatient/ED care at 66+).",
+      "coverage": "partial"
+    },
+    {
+      "id": "bcs/coverage/e1_prior_hospice",
+      "kind": "coverage",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public wording is 'any time during the measurement period'; 32% of living Synthea patients carry prior hospice codes, so prior hospice can only be a hint for a human, never an exclusion.",
+      "coverage": "partial"
+    },
+    {
+      "id": "bcs/coverage/e4_advanced_illness_hint",
+      "kind": "coverage",
+      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public frailty-and-advanced-illness exclusion needs two frailty indications on different dates plus advanced-illness claims; Synthea carries no frailty claims, so the engine can only hint (coverage: partial).",
+      "coverage": "partial"
+    },
+    {
+      "id": "bcs/timeline/data_time_frame",
+      "kind": "timeline",
+      "text": "01/01/2024 – 12/31/2024",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.38",
+      "quote": "01/01/2024 – 12/31/2024",
+      "rationale": "The 2026 Star Ratings score measurement year 2024; the demo evaluates the calendar year of as_of instead (see measurement_year).",
+      "coverage": null
+    },
+    {
+      "id": "bcs/timeline/measurement_year",
+      "kind": "timeline",
+      "text": "Measurement year (MY) = the calendar year of as_of. Denominator and exclusion windows use the MY bounds (Jan 1 - Dec 31); every numerator window ends at as_of; age = age at Dec 31 of the MY.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Prospective gap detection: events dated after as_of never count, so a run at 2026-06-30 sees only what a care manager could see that day. Age at Dec 31 follows the Technical Notes wording 'as of December 31 of the measurement year'. Eval anchor as_of = 2025-12-31 (complete MY2025); demo anchor 2026-06-30.",
+      "coverage": null
+    },
+    {
+      "id": "bcs/timeline/death_before_my",
+      "kind": "timeline",
+      "text": "death_date before Jan 1 of the MY -> not_eligible (denominator no); death inside [Jan 1 of the MY, as_of] -> excluded (global rule).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "A member who died before the MY was never enrolled for it; the public 'died during the measurement period' wording only covers deaths inside the MY. Future death dates are masked by P6 (mask_as_of) and never seen.",
+      "coverage": null
+    }
+  ],
+  "normative_quote": {
+    "metric": "The percentage of women MA enrollees 52 to 74 years of age (denominator) as of December 31 of the measurement year who had a mammogram to screen for breast cancer in the past two years (numerator).",
+    "description": "Percent of female plan members aged 50-74 who had a mammogram.",
+    "citation": "cms-tn-2026 p.38",
+    "conflict": "The Description states 50-74 while the Metric states 52-74. The engine implements 52-74 (bcs/denominator/age); the UI surfaces both."
+  },
+  "tn_sections": {
+    "description": {
+      "heading": "Description",
+      "text": "Percent of female plan members aged 50-74 who had a mammogram.",
+      "page": 38
+    },
+    "metric": {
+      "heading": "Metric",
+      "text": "The percentage of women MA enrollees 52 to 74 years of age (denominator) as of December 31 of the measurement year who had a mammogram to screen for breast cancer in the past two years (numerator).",
+      "page": 38
+    },
+    "exclusions": {
+      "heading": "Exclusions",
+      "text": "• Members in hospice or using hospice services any time during the measurement period.\n• Members who died any time during the measurement period.\n• Members who had a bilateral mastectomy or both right and left unilateral mastectomies any time during the member’s history through December 31 of the measurement year. Any of the following meet the criteria for bilateral mastectomy:\n- Bilateral mastectomy.\n- Unilateral mastectomy with a bilateral modifier (same procedure).\n- Unilateral mastectomy found in clinical data with a bilateral qualifier value (same procedure).\n- History of bilateral mastectomy.\n• Any combination of the following that indicate a mastectomy on both the left and right side on the same or on different dates of service:\n- Unilateral mastectomy with a right-side modifier (same procedure).\n- Unilateral mastectomy with a left-side modifier (same procedure).\n- Unilateral mastectomy found in clinical data with a right-side qualifier value (same procedure).\n– Unilateral mastectomy found in clinical data with a left-side qualifier value procedure (same procedure).\n– Absence of the left breast.\n– Absence of the right breast.\n– Left unilateral mastectomy.\n– Right unilateral mastectomy.\n• Medicare members 66 years of age and older by the end of the measurement period who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year.\n• Members 66 years of age and older by the end of the measurement period with frailty and advanced illness. Members must meet BOTH of the following frailty and advanced illness criteria to be excluded: (Last Updated 09/25/202 5) Page 29\n- Frailty. At least two indications of frailty with different dates of service during the measurement period. Do not include laboratory claims.\n- Advanced Illness. Either of the following during the measurement period or the year prior to the measurement period:\n• Advanced illness on at least two different dates of service. Do not include laboratory claims.\n• Dispensed dementia medication.\n• Members receiving palliative care any time during the measurement period.\n• Members who had an encounter for palliative care any time during the measurement period. Do not include laboratory claims. The full set of exclusions is available in the NCQA HEDIS Measurement Year 2024 Technical Specifications Volume 2. Contracts whose enrollment was at least 500 but less than 1,000 as of the July 2024 enrollment report and having measure score reliability less than 0.7 are excluded. Contracts whose enrollment was less than 500 as of the July 2024 enrollment report are excluded from this measure.",
+      "page": 38
+    },
+    "data_time_frame": {
+      "heading": "Data Time Frame",
+      "text": "01/01/2024 – 12/31/2024",
+      "page": 38
+    }
+  },
+  "conformance": "demo-grade; HEDIS-aligned; not NCQA-certified"
+}

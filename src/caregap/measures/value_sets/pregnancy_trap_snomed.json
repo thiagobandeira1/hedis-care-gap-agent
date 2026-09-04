@@ -1,0 +1,12 @@
+{
+  "id": "pregnancy_trap_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "Negative control: matches the 'pregnan' keyword (86 Condition rows in SCAN.md) but is a history situation, never a pregnancy exclusion. Used by tests / personas to prove the engine does not exclude on it.",
+  "codes": [
+    {
+      "code": "161744009",
+      "display": "Past pregnancy history of miscarriage (situation)"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "palliative",
+  "code_system": "SNOMED",
+  "source": "public-cms",
+  "note": "'Palliative care during the measurement period' exclusion (public CMS/NCQA text; BCS / COL / SPC / screening). No palliative code appears in the scan; 103735009 is carried untested and the criterion stays not_representable.",
+  "codes": [
+    {
+      "code": "103735009",
+      "display": "Palliative care (regime/therapy)",
+      "untested_by_data": true
+    }
+  ]
+}

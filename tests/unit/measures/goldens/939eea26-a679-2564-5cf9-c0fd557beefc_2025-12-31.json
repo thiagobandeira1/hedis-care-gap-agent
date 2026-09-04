@@ -1,0 +1,560 @@
+[
+  {
+    "coverage": {
+      "dialysis": "observable",
+      "died_during_measurement_period": "observable",
+      "esrd": "observable",
+      "frailty_81_plus": "not_representable",
+      "frailty_and_advanced_illness_66_to_80": "partial",
+      "hospice_during_measurement_period": "observable",
+      "institutional_snp_or_long_term_institution_66_plus": "not_representable",
+      "kidney_transplant": "observable",
+      "palliative_care": "not_representable",
+      "pregnancy_during_measurement_period": "observable"
+    },
+    "denominator": {
+      "evidence": [
+        {
+          "code": null,
+          "code_system": null,
+          "display": null,
+          "event_date": "1950-08-03",
+          "event_id": "patient",
+          "role": "eligibility",
+          "section": "patient"
+        },
+        {
+          "code": "59621000",
+          "code_system": "SNOMED",
+          "display": "Essential hypertension (disorder)",
+          "event_date": "2000-08-03",
+          "event_id": "939eea26-a679-2564-9d4c-9d874e410599",
+          "role": "eligibility",
+          "section": "conditions"
+        }
+      ],
+      "reasons": [
+        "age 75 at Dec 31 of the MY within 18-85",
+        "hypertension condition with onset on/before MY end, not abated by MY start"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "escalations": [],
+    "exclusions": [],
+    "measure_id": "CBP",
+    "numerator": {
+      "evidence": [
+        {
+          "code": "85354-9",
+          "code_system": "LOINC",
+          "display": "Blood pressure panel with all children optional",
+          "event_date": "2025-12-25",
+          "event_id": "939eea26-a679-2564-3a8c-fc3bf057ac08",
+          "role": "numerator",
+          "section": "observations"
+        },
+        {
+          "code": "8480-6",
+          "code_system": "LOINC",
+          "display": "Systolic Blood Pressure",
+          "event_date": "2025-12-25",
+          "event_id": "939eea26-a679-2564-3a8c-fc3bf057ac08#8480-6",
+          "role": "numerator",
+          "section": "observations"
+        },
+        {
+          "code": "8462-4",
+          "code_system": "LOINC",
+          "display": "Diastolic Blood Pressure",
+          "event_date": "2025-12-25",
+          "event_id": "939eea26-a679-2564-3a8c-fc3bf057ac08#8462-4",
+          "role": "numerator",
+          "section": "observations"
+        }
+      ],
+      "reasons": [
+        "representative BP 123/83 mm[Hg] on 2025-12-25 (lowest SBP and lowest DBP among 1 same-date panel(s)) is below 140/90"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "priority_score": 0.0,
+    "rule_version": "cbp-v1",
+    "verdict": "closed"
+  },
+  {
+    "coverage": {
+      "died_during_measurement_period": "observable",
+      "frailty_and_advanced_illness_66_plus": "partial",
+      "gestational_or_steroid_induced_diabetes_without_diabetes_dx": "not_representable",
+      "hospice_during_measurement_period": "observable",
+      "institutional_snp_or_long_term_institution_66_plus": "not_representable",
+      "palliative_care_during_measurement_period": "not_representable"
+    },
+    "denominator": {
+      "evidence": [
+        {
+          "code": null,
+          "code_system": null,
+          "display": null,
+          "event_date": "1950-08-03",
+          "event_id": "patient",
+          "role": "eligibility",
+          "section": "patient"
+        },
+        {
+          "code": "44054006",
+          "code_system": "SNOMED",
+          "display": "Diabetes mellitus type 2 (disorder)",
+          "event_date": "2025-12-25",
+          "event_id": "939eea26-a679-2564-e41c-7595ef384b6e",
+          "role": "eligibility",
+          "section": "conditions"
+        }
+      ],
+      "reasons": [
+        "age 75 at Dec 31 of the MY within 18-75",
+        "diabetes condition active in MY or prior year [2024-01-01 .. 2025-12-31]",
+        "1 prediabetes code(s) ignored (never count toward the denominator)"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2024-01-01"
+    },
+    "escalations": [],
+    "exclusions": [],
+    "measure_id": "EED",
+    "numerator": {
+      "evidence": [],
+      "reasons": [
+        "no retinal exam in measurement year to as_of [2025-01-01 .. 2025-12-31]",
+        "no retinal exam in prior year [2024-01-01 .. 2024-12-31]"
+      ],
+      "subtype": null,
+      "value": "no",
+      "window_end": "2025-12-31",
+      "window_start": "2024-01-01"
+    },
+    "priority_score": 2.0,
+    "rule_version": "eed-v1",
+    "verdict": "gap_open"
+  },
+  {
+    "coverage": {
+      "advanced_illness_and_frailty": "partial",
+      "bilateral_mastectomy": "not_representable",
+      "died_during_measurement_period": "observable",
+      "hospice_during_measurement_period": "observable",
+      "palliative_care": "not_representable"
+    },
+    "denominator": {
+      "evidence": [
+        {
+          "code": null,
+          "code_system": null,
+          "display": null,
+          "event_date": "1950-08-03",
+          "event_id": "patient",
+          "role": "eligibility",
+          "section": "patient"
+        }
+      ],
+      "reasons": [
+        "sex male (BCS denominator is female only)",
+        "age 75 at Dec 31 of the MY outside 52-74"
+      ],
+      "subtype": null,
+      "value": "no",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "escalations": [],
+    "exclusions": [],
+    "measure_id": "BCS",
+    "numerator": {
+      "evidence": [],
+      "reasons": [
+        "no mammogram in Oct 1 MY-2 to as_of"
+      ],
+      "subtype": null,
+      "value": "no",
+      "window_end": "2025-12-31",
+      "window_start": "2023-10-01"
+    },
+    "priority_score": 0.0,
+    "rule_version": "bcs-v1",
+    "verdict": "not_eligible"
+  },
+  {
+    "coverage": {
+      "exclusion_colorectal_cancer_any_time": "observable",
+      "exclusion_death_during_measurement_period": "observable",
+      "exclusion_frailty_and_advanced_illness_66_plus": "partial",
+      "exclusion_hospice_during_measurement_period": "observable",
+      "exclusion_isnp_or_long_term_institution_66_plus": "not_representable",
+      "exclusion_palliative_care_during_measurement_period": "not_representable",
+      "exclusion_total_colectomy_any_time": "not_representable",
+      "numerator_colonoscopy_my_plus_9_prior_years": "observable",
+      "numerator_ct_colonography_my_plus_4_prior_years": "not_representable",
+      "numerator_flexible_sigmoidoscopy_my_plus_4_prior_years": "not_representable",
+      "numerator_fobt_fit_in_my": "observable",
+      "numerator_sdna_fit_my_plus_2_prior_years": "not_representable"
+    },
+    "denominator": {
+      "evidence": [
+        {
+          "code": null,
+          "code_system": null,
+          "display": null,
+          "event_date": "1950-08-03",
+          "event_id": "patient",
+          "role": "eligibility",
+          "section": "patient"
+        }
+      ],
+      "reasons": [
+        "age 75 at Dec 31 of the MY is within 50-75"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "escalations": [],
+    "exclusions": [],
+    "measure_id": "COL",
+    "numerator": {
+      "evidence": [],
+      "reasons": [
+        "no colonoscopy in MY and nine prior years [2016-01-01 .. 2025-12-31]",
+        "no FOBT/FIT observation or procedure in measurement year to as_of [2025-01-01 .. 2025-12-31]"
+      ],
+      "subtype": null,
+      "value": "no",
+      "window_end": "2025-12-31",
+      "window_start": "2016-01-01"
+    },
+    "priority_score": 2.0,
+    "rule_version": "col-v1",
+    "verdict": "gap_open"
+  },
+  {
+    "coverage": {
+      "cirrhosis": "not_representable",
+      "clomiphene_dispensed": "not_representable",
+      "dialysis": "observable",
+      "died_during_measurement_period": "observable",
+      "esrd": "observable",
+      "frailty_and_advanced_illness_66_plus": "partial",
+      "hospice_during_measurement_period": "observable",
+      "in_vitro_fertilization": "not_representable",
+      "institutional_snp_or_long_term_institution_66_plus": "not_representable",
+      "myalgia_myositis_myopathy_rhabdomyolysis": "not_representable",
+      "palliative_care": "not_representable",
+      "pregnancy": "observable"
+    },
+    "denominator": {
+      "evidence": [
+        {
+          "code": null,
+          "code_system": null,
+          "display": null,
+          "event_date": "1950-08-03",
+          "event_id": "patient",
+          "role": "eligibility",
+          "section": "patient"
+        }
+      ],
+      "reasons": [
+        "male aged 75 at MY end: within 21-75",
+        "no ASCVD condition with onset on/before MY end"
+      ],
+      "subtype": null,
+      "value": "no",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "escalations": [],
+    "exclusions": [],
+    "measure_id": "SPC",
+    "numerator": {
+      "evidence": [
+        {
+          "code": "314231",
+          "code_system": "RXNORM",
+          "display": "Simvastatin 10 MG Oral Tablet",
+          "event_date": "2025-01-03",
+          "event_id": "939eea26-a679-2564-391c-bc54254bb95a",
+          "role": "numerator",
+          "section": "medications"
+        }
+      ],
+      "reasons": [
+        "only low-intensity statin therapy in the measurement year"
+      ],
+      "subtype": "low_intensity_only",
+      "value": "no",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "priority_score": 0.0,
+    "rule_version": "spc-v1",
+    "verdict": "not_eligible"
+  },
+  {
+    "coverage": {
+      "cirrhosis": "not_representable",
+      "clomiphene_dispensed": "not_representable",
+      "diabetes_medication_only_with_pcos_gestational_or_steroid_induced": "not_representable",
+      "dialysis": "observable",
+      "died_during_measurement_period": "observable",
+      "esrd": "observable",
+      "frailty_and_advanced_illness_66_plus": "partial",
+      "hospice_during_measurement_period": "observable",
+      "in_vitro_fertilization": "not_representable",
+      "institutional_snp_or_long_term_institution_66_plus": "not_representable",
+      "myalgia_myositis_myopathy_rhabdomyolysis": "not_representable",
+      "palliative_care": "not_representable",
+      "pregnancy": "not_representable"
+    },
+    "denominator": {
+      "evidence": [
+        {
+          "code": null,
+          "code_system": null,
+          "display": null,
+          "event_date": "1950-08-03",
+          "event_id": "patient",
+          "role": "eligibility",
+          "section": "patient"
+        },
+        {
+          "code": "44054006",
+          "code_system": "SNOMED",
+          "display": "Diabetes mellitus type 2 (disorder)",
+          "event_date": "2025-12-25",
+          "event_id": "939eea26-a679-2564-e41c-7595ef384b6e",
+          "role": "eligibility",
+          "section": "conditions"
+        }
+      ],
+      "reasons": [
+        "aged 75 at MY end: within 40-75",
+        "diabetes condition active in MY or prior year",
+        "no ASCVD condition with onset on/before MY end (not in SPC denominator)"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2024-01-01"
+    },
+    "escalations": [],
+    "exclusions": [],
+    "measure_id": "SPD",
+    "numerator": {
+      "evidence": [
+        {
+          "code": "314231",
+          "code_system": "RXNORM",
+          "display": "Simvastatin 10 MG Oral Tablet",
+          "event_date": "2025-01-03",
+          "event_id": "939eea26-a679-2564-391c-bc54254bb95a",
+          "role": "numerator",
+          "section": "medications"
+        }
+      ],
+      "reasons": [
+        "statin of any intensity on therapy in the measurement year"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "priority_score": 0.0,
+    "rule_version": "spd-v1",
+    "verdict": "closed"
+  },
+  {
+    "coverage": {
+      "exclusion_death_during_measurement_period": "observable",
+      "exclusion_frailty_and_advanced_illness_66_plus": "partial",
+      "exclusion_hospice_during_measurement_period": "observable",
+      "exclusion_isnp_or_long_term_institution_66_plus": "not_representable",
+      "exclusion_palliative_care_during_measurement_period": "not_representable",
+      "numerator_domain_specific_sdoh_instruments": "not_representable",
+      "numerator_prapare_item_positivity_semantics": "not_representable",
+      "numerator_screening_in_my": "observable",
+      "numerator_sdoh_intervention_food_housing_transportation_utility": "not_representable",
+      "numerator_tobacco_cessation_intervention": "not_representable"
+    },
+    "denominator": {
+      "evidence": [
+        {
+          "code": null,
+          "code_system": null,
+          "display": null,
+          "event_date": "1950-08-03",
+          "event_id": "patient",
+          "role": "eligibility",
+          "section": "patient"
+        },
+        {
+          "code": "390906007",
+          "code_system": null,
+          "display": "Follow-up encounter (procedure)",
+          "event_date": "2025-01-03",
+          "event_id": "939eea26-a679-2564-ba54-4534d03f5b61",
+          "role": "eligibility",
+          "section": "encounters"
+        },
+        {
+          "code": "390906007",
+          "code_system": null,
+          "display": "Follow-up encounter (procedure)",
+          "event_date": "2025-01-18",
+          "event_id": "939eea26-a679-2564-6f57-4e84c57fc408",
+          "role": "eligibility",
+          "section": "encounters"
+        },
+        {
+          "code": "162673000",
+          "code_system": null,
+          "display": "General examination of patient (procedure)",
+          "event_date": "2025-12-25",
+          "event_id": "939eea26-a679-2564-553a-e62faf01f235",
+          "role": "eligibility",
+          "section": "encounters"
+        }
+      ],
+      "reasons": [
+        "age 75 at Dec 31 of the MY is 18+",
+        "3 encounter(s) in measurement year to as_of [2025-01-01 .. 2025-12-31]"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "escalations": [],
+    "exclusions": [],
+    "measure_id": "TSC",
+    "numerator": {
+      "evidence": [
+        {
+          "code": "72166-2",
+          "code_system": "LOINC",
+          "display": "Tobacco smoking status",
+          "event_date": "2025-12-25",
+          "event_id": "939eea26-a679-2564-1976-524a2d28e31f",
+          "role": "numerator",
+          "section": "observations"
+        }
+      ],
+      "reasons": [
+        "tobacco use screening (72166-2 with a coded status) on 2025-12-25 in measurement year to as_of [2025-01-01 .. 2025-12-31]"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "priority_score": 0.0,
+    "rule_version": "tsc-v1",
+    "verdict": "closed"
+  },
+  {
+    "coverage": {
+      "exclusion_death_during_measurement_period": "observable",
+      "exclusion_frailty_and_advanced_illness_66_plus": "partial",
+      "exclusion_hospice_during_measurement_period": "observable",
+      "exclusion_isnp_or_long_term_institution_66_plus": "not_representable",
+      "exclusion_palliative_care_during_measurement_period": "not_representable",
+      "numerator_domain_specific_sdoh_instruments": "not_representable",
+      "numerator_prapare_item_positivity_semantics": "not_representable",
+      "numerator_screening_in_my": "observable",
+      "numerator_sdoh_intervention_food_housing_transportation_utility": "not_representable",
+      "numerator_tobacco_cessation_intervention": "not_representable"
+    },
+    "denominator": {
+      "evidence": [
+        {
+          "code": null,
+          "code_system": null,
+          "display": null,
+          "event_date": "1950-08-03",
+          "event_id": "patient",
+          "role": "eligibility",
+          "section": "patient"
+        },
+        {
+          "code": "390906007",
+          "code_system": null,
+          "display": "Follow-up encounter (procedure)",
+          "event_date": "2025-01-03",
+          "event_id": "939eea26-a679-2564-ba54-4534d03f5b61",
+          "role": "eligibility",
+          "section": "encounters"
+        },
+        {
+          "code": "390906007",
+          "code_system": null,
+          "display": "Follow-up encounter (procedure)",
+          "event_date": "2025-01-18",
+          "event_id": "939eea26-a679-2564-6f57-4e84c57fc408",
+          "role": "eligibility",
+          "section": "encounters"
+        },
+        {
+          "code": "162673000",
+          "code_system": null,
+          "display": "General examination of patient (procedure)",
+          "event_date": "2025-12-25",
+          "event_id": "939eea26-a679-2564-553a-e62faf01f235",
+          "role": "eligibility",
+          "section": "encounters"
+        }
+      ],
+      "reasons": [
+        "age 75 at Dec 31 of the MY is 18+",
+        "3 encounter(s) in measurement year to as_of [2025-01-01 .. 2025-12-31]"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "escalations": [],
+    "exclusions": [],
+    "measure_id": "SNS",
+    "numerator": {
+      "evidence": [
+        {
+          "code": "93025-5",
+          "code_system": "LOINC",
+          "display": "Protocol for Responding to and Assessing Patients' Assets, Risks, and Experiences [PRAPARE]",
+          "event_date": "2025-12-25",
+          "event_id": "939eea26-a679-2564-c0fa-f728e0be5752",
+          "role": "numerator",
+          "section": "observations"
+        }
+      ],
+      "reasons": [
+        "social need screening (PRAPARE 93025-5) on 2025-12-25 in measurement year to as_of [2025-01-01 .. 2025-12-31]"
+      ],
+      "subtype": null,
+      "value": "yes",
+      "window_end": "2025-12-31",
+      "window_start": "2025-01-01"
+    },
+    "priority_score": 0.0,
+    "rule_version": "sns-v1",
+    "verdict": "closed"
+  }
+]

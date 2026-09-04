@@ -1,0 +1,17 @@
+{
+  "id": "dialysis_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "Dialysis as a Procedure. 265764009 is in SCAN.md (3729 rows, paired 1:1 with LOINC 74006-8 pre/post-dialysis weight observations, which are observations and therefore not members); 302497006 never appears in the panel and is carried untested.",
+  "codes": [
+    {
+      "code": "265764009",
+      "display": "Renal dialysis (procedure)"
+    },
+    {
+      "code": "302497006",
+      "display": "Hemodialysis (procedure)",
+      "untested_by_data": true
+    }
+  ]
+}

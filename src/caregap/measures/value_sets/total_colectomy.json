@@ -1,0 +1,13 @@
+{
+  "id": "total_colectomy",
+  "code_system": "SNOMED",
+  "source": "public-cms",
+  "note": "COL exclusion 'total colectomy any time' (public CMS/NCQA text). No colectomy code appears in the scan (only 43075005 partial resection, handled by colon_ambiguous_snomed as E7); 26390003 is carried untested and the criterion stays not_representable.",
+  "codes": [
+    {
+      "code": "26390003",
+      "display": "Total colectomy (procedure)",
+      "untested_by_data": true
+    }
+  ]
+}

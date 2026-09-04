@@ -1,0 +1,305 @@
+{
+  "measure_id": "SPC",
+  "star_id": "C19",
+  "name": "Statin Therapy for Patients With Cardiovascular Disease",
+  "rule_version": "spc-v1",
+  "sources": [
+    {
+      "doc_id": "cms-tn-2026",
+      "title": "Medicare 2026 Part C & D Star Ratings Technical Notes",
+      "url": "https://www.cms.gov/files/document/2026-star-ratings-technical-notes.pdf",
+      "page": 63,
+      "retrieval_date": "2026-08-31",
+      "license_posture": "us_gov_public_domain",
+      "note": null
+    },
+    {
+      "doc_id": "ncqa-spc",
+      "title": "NCQA public measure summary: Statin Therapy for Patients With Cardiovascular Disease and Diabetes (HEDIS Measure Library)",
+      "url": "https://www.ncqa.org/hedis/measures/statin-therapy-for-patients-with-cardiovascular-disease-and-diabetes/",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "public_web_cite_only",
+      "note": "Cite-only (nothing quoted). On the retrieval date the deep link resolved to NCQA's 'HEDIS Measure Library & Historical Data' page."
+    },
+    {
+      "doc_id": "acc-aha-2018",
+      "title": "2018 AHA/ACC Multisociety Guideline on the Management of Blood Cholesterol (statin intensity table; value set statin_intensity.json source 'public-acc-aha')",
+      "url": "https://doi.org/10.1161/CIR.0000000000000625",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "public_web_cite_only",
+      "note": "Cite-only (nothing quoted). The DOI resolved to ahajournals.org on the retrieval date; the article page itself refused the automated fetch (HTTP 403)."
+    },
+    {
+      "doc_id": "caregap-spec",
+      "title": "hedis-care-gap-agent SPEC section 2 (demo-grade rules table)",
+      "url": "docs/SPEC.md",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "project_spec",
+      "note": "The demo parameters themselves; cited for every demo_choice element."
+    }
+  ],
+  "elements": [
+    {
+      "id": "spc/denominator/age_sex",
+      "kind": "denominator",
+      "text": "males 21–75 years of age and females 40–75 years of age during the measurement year",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "males 21–75 years of age and females 40–75 years of age during the measurement year",
+      "rationale": "Age at Dec 31 of the MY. Unknown sex: yes when the age is inside both bands, no when outside both, otherwise unknown (needs_review).",
+      "coverage": null
+    },
+    {
+      "id": "spc/denominator/ascvd",
+      "kind": "denominator",
+      "text": "who were identified as having clinical atherosclerotic cardiovascular disease (ASCVD) (denominator)",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "who were identified as having clinical atherosclerotic cardiovascular disease (ASCVD) (denominator)",
+      "rationale": null,
+      "coverage": null
+    },
+    {
+      "id": "spc/denominator/ascvd_onset",
+      "kind": "denominator",
+      "text": "ASCVD = any ascvd_snomed condition with onset <= Dec 31 of the MY; abatement is ignored.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public event / diagnosis look-back (an MI, CABG or PCI event in the prior year, or an IVD diagnosis in both years) needs claims; Synthea carries one condition row per diagnosis, so onset is the only usable signal.",
+      "coverage": null
+    },
+    {
+      "id": "spc/numerator/statin_moderate_or_high",
+      "kind": "numerator",
+      "text": "were dispensed at least one high or moderate-intensity statin medication during the measurement year (numerator)",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "were dispensed at least one high or moderate-intensity statin medication during the measurement year (numerator)",
+      "rationale": null,
+      "coverage": null
+    },
+    {
+      "id": "spc/numerator/on_therapy_status",
+      "kind": "numerator",
+      "text": "ON THERAPY in the MY = a statin_rxnorm MedicationRequest authored in [Jan 1 of the MY, as_of], OR authored before the MY with status == active. Requests with status stopped, cancelled or entered-in-error never count.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "'Dispensed' cannot be observed: P6 carries MedicationRequest rows, not pharmacy claims, and Synthea authors most statins once. ADR-0002 makes this rule (and E3) the only readers of MedicationRequest.status -- an explicit deviation from P6's date-only doctrine, with a leakage caveat.",
+      "coverage": null
+    },
+    {
+      "id": "spc/numerator/intensity",
+      "kind": "numerator",
+      "text": "Intensity comes from statin_intensity.json (public ACC/AHA table). Only low-intensity statins on therapy -> numerator no with subtype low_intensity_only; a statin with no intensity entry -> numerator unknown (needs_review).",
+      "source": "demo_choice",
+      "citation": "acc-aha-2018",
+      "quote": null,
+      "rationale": "The Technical Notes reference the HEDIS intensity tables, which are not public-domain; the ACC/AHA guideline table is the public equivalent. low_intensity_only is a distinct outreach message (intensify, not start) and earns a +1 clinical-weight priority bonus.",
+      "coverage": null
+    },
+    {
+      "id": "spc/exclusion/death",
+      "kind": "exclusion",
+      "text": "Members who died any time during the measurement year.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "Members who died any time during the measurement year.",
+      "rationale": null,
+      "coverage": "observable"
+    },
+    {
+      "id": "spc/exclusion/hospice",
+      "kind": "exclusion",
+      "text": "Members in hospice or using hospice services any time during the measurement year.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "Members in hospice or using hospice services any time during the measurement year.",
+      "rationale": null,
+      "coverage": "observable"
+    },
+    {
+      "id": "spc/exclusion/esrd_or_dialysis",
+      "kind": "exclusion",
+      "text": "ESRD or dialysis during the measurement year or the year prior to the measurement year.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "ESRD or dialysis during the measurement year or the year prior to the measurement year.",
+      "rationale": "esrd_snomed condition active in [Jan 1 of MY-1, Dec 31 of the MY] or a dialysis_snomed procedure in that window (two exclusion categories: esrd, dialysis).",
+      "coverage": "observable"
+    },
+    {
+      "id": "spc/exclusion/pregnancy",
+      "kind": "exclusion",
+      "text": "Pregnancy during the measurement year or year prior to the measurement year.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "Pregnancy during the measurement year or year prior to the measurement year.",
+      "rationale": "pregnancy_snomed condition active in [Jan 1 of MY-1, Dec 31 of the MY].",
+      "coverage": "observable"
+    },
+    {
+      "id": "spc/exclusion/cirrhosis",
+      "kind": "exclusion",
+      "text": "Cirrhosis during the measurement year or the year prior to the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "Cirrhosis during the measurement year or the year prior to the measurement year.",
+      "rationale": "No cirrhosis code appears in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spc/exclusion/myalgia_myositis_myopathy_rhabdomyolysis",
+      "kind": "exclusion",
+      "text": "Myalgia, myositis, myopathy, or rhabdomyolysis during the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "Myalgia, myositis, myopathy, or rhabdomyolysis during the measurement year.",
+      "rationale": "No myopathy-family code appears in the committed Synthea scan (SCAN.md). Fibromyalgia is NOT a public SPC criterion and is deliberately not coded.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spc/exclusion/in_vitro_fertilization",
+      "kind": "exclusion",
+      "text": "In vitro fertilization in the measurement year or year prior to the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "In vitro fertilization in the measurement year or year prior to the measurement year.",
+      "rationale": "No IVF code appears in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spc/exclusion/clomiphene",
+      "kind": "exclusion",
+      "text": "Dispensed at least one prescription for clomiphene (Table SPC-A) during the measurement year or the year prior to the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "Dispensed at least one prescription for clomiphene (Table SPC-A) during the measurement year or the year prior to the measurement year.",
+      "rationale": "No clomiphene RxNorm code appears in the committed Synthea scan.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spc/exclusion/palliative_care",
+      "kind": "exclusion",
+      "text": "Members receiving palliative care any time during the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "Members receiving palliative care any time during the measurement year.",
+      "rationale": "No palliative-care codes appear in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spc/exclusion/isnp_or_long_term_institution_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66 years of age and older as of December 31 of the measurement year who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year as identified by the LTI flag in the Monthly Membership Detail Data File.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "Members 66 years of age and older as of December 31 of the measurement year who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year as identified by the LTI flag in the Monthly Membership Detail Data File.",
+      "rationale": "Institutional SNP enrollment and the long-term-institution (LTI) flag are plan enrollment data; Synthea / P6 carry no enrollment records.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spc/exclusion/frailty_and_advanced_illness_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66 years of age and older as of December 31 of the measurement year with frailty and advanced illness during the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "Members 66 years of age and older as of December 31 of the measurement year with frailty and advanced illness during the measurement year.",
+      "rationale": "Needs two frailty indications on different dates plus advanced-illness claims / dispensed dementia medication; Synthea carries no frailty claims. The global E4 flag only hints (dementia + inpatient/ED care at 66+).",
+      "coverage": "partial"
+    },
+    {
+      "id": "spc/coverage/e1_prior_hospice",
+      "kind": "coverage",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public wording is 'any time during the measurement period'; 32% of living Synthea patients carry prior hospice codes, so prior hospice can only be a hint for a human, never an exclusion.",
+      "coverage": "partial"
+    },
+    {
+      "id": "spc/coverage/e4_advanced_illness_hint",
+      "kind": "coverage",
+      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public frailty-and-advanced-illness exclusion needs two frailty indications on different dates plus advanced-illness claims; Synthea carries no frailty claims, so the engine can only hint (coverage: partial).",
+      "coverage": "partial"
+    },
+    {
+      "id": "spc/coverage/e3_medication_status_conflict",
+      "kind": "coverage",
+      "text": "E3 medication_status_conflict: a statin authored inside the MY whose MedicationRequest.status is stopped or cancelled raises a review flag, even when another statin closes the numerator.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "ADR-0002: this flag and the on-therapy rule are the only readers of MedicationRequest.status; a stop inside the MY may mean the therapy ended.",
+      "coverage": "partial"
+    },
+    {
+      "id": "spc/timeline/data_time_frame",
+      "kind": "timeline",
+      "text": "01/01/2024 – 12/31/2024",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.63",
+      "quote": "01/01/2024 – 12/31/2024",
+      "rationale": "The 2026 Star Ratings score measurement year 2024; the demo evaluates the calendar year of as_of instead (see measurement_year).",
+      "coverage": null
+    },
+    {
+      "id": "spc/timeline/measurement_year",
+      "kind": "timeline",
+      "text": "Measurement year (MY) = the calendar year of as_of. Denominator and exclusion windows use the MY bounds (Jan 1 - Dec 31); every numerator window ends at as_of; age = age at Dec 31 of the MY.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Prospective gap detection: events dated after as_of never count, so a run at 2026-06-30 sees only what a care manager could see that day. Age at Dec 31 follows the Technical Notes wording 'as of December 31 of the measurement year'. Eval anchor as_of = 2025-12-31 (complete MY2025); demo anchor 2026-06-30.",
+      "coverage": null
+    },
+    {
+      "id": "spc/timeline/death_before_my",
+      "kind": "timeline",
+      "text": "death_date before Jan 1 of the MY -> not_eligible (denominator no); death inside [Jan 1 of the MY, as_of] -> excluded (global rule).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "A member who died before the MY was never enrolled for it; the public 'died during the measurement period' wording only covers deaths inside the MY. Future death dates are masked by P6 (mask_as_of) and never seen.",
+      "coverage": null
+    }
+  ],
+  "normative_quote": {
+    "metric": "The percentage of males 21–75 years of age and females 40–75 years of age during the measurement year, who were identified as having clinical atherosclerotic cardiovascular disease (ASCVD) (denominator) and were dispensed at least one high or moderate-intensity statin medication during the measurement year (numerator).",
+    "description": "This rating is based on the percent of plan members with heart disease who get the right type of cholesterol-lowering drugs.",
+    "citation": "cms-tn-2026 p.63",
+    "conflict": null
+  },
+  "tn_sections": {
+    "description": {
+      "heading": "Description",
+      "text": "This rating is based on the percent of plan members with heart disease who get the right type of cholesterol-lowering drugs. Health plans can help make sure their members are prescribed medications that are more effective for them.",
+      "page": 63
+    },
+    "metric": {
+      "heading": "Metric",
+      "text": "The percentage of males 21–75 years of age and females 40–75 years of age during the measurement year, who were identified as having clinical atherosclerotic cardiovascular disease (ASCVD) (denominator) and were dispensed at least one high or moderate-intensity statin medication during the measurement year (numerator).",
+      "page": 63
+    },
+    "exclusions": {
+      "heading": "Exclusions",
+      "text": "• Exclude members who meet any of the following criteria:\n• Pregnancy during the measurement year or year prior to the measurement year.\n• In vitro fertilization in the measurement year or year prior to the measurement year.\n• Dispensed at least one prescription for clomiphene (Table SPC-A) during the measurement year or the year prior to the measurement year.\n• ESRD or dialysis during the measurement year or the year prior to the measurement year.\n• Cirrhosis during the measurement year or the year prior to the measurement year. (Last Updated 09/25/202 5) Page 54\n• Myalgia, myositis, myopathy, or rhabdomyolysis during the measurement year.\n• Members in hospice or using hospice services any time during the measurement year.\n• Members who died any time during the measurement year.\n• Members receiving palliative care any time during the measurement year.\n• Members 66 years of age and older as of December 31 of the measurement year who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year as identified by the LTI flag in the Monthly Membership Detail Data File. Use the run date of the file to determine if a member had an LTI flag during the measurement year.\n• Members 66 years of age and older as of December 31 of the measurement year with frailty and advanced illness during the measurement year. Members must meet both of the following frailty and advanced illness criteria to be excluded:\n- At least two indications of frailty with different dates of service during the measurement year.\n- Any of the following during the measurement year or the year prior to the measurement year (count services that occur over both years): 1. At least two outpatient visits, observation visits, ED visits, telephone visits, e-visits, virtual check-ins, nonacute inpatient encounters, or nonacute inpatien t discharges on different dates of service, with an advanced illness diagnosis. Visit type need not be the same for the two visits. 2. At least one acute inpatient encounter with an advanced illness diagnosis. 3. At least one acute inpatient discharge with an advanced illness diagnosis on the discharge claim. 4. A dispensed dementia medication. The full set of exclusions is available in the NCQA HEDIS Measurement Year 2024 Technical Specifications Volume 2. Contracts whose enrollment was at least 500 but less than 1,000 as of the July 2024 enrollment report and having measure score reliability less than 0.7 are excluded. Contracts whose enrollment was less than 500 as of the July 2024 enrollment report are excluded from t his measure.",
+      "page": 63
+    },
+    "data_time_frame": {
+      "heading": "Data Time Frame",
+      "text": "01/01/2024 – 12/31/2024",
+      "page": 63
+    }
+  },
+  "conformance": "demo-grade; HEDIS-aligned; not NCQA-certified"
+}

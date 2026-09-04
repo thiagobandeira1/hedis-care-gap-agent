@@ -1,0 +1,12 @@
+{
+  "id": "esrd_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "Quoted CBP exclusion (ESRD). Synthea emits it as a Condition (7 rows in SCAN.md).",
+  "codes": [
+    {
+      "code": "46177005",
+      "display": "End-stage renal disease (disorder)"
+    }
+  ]
+}

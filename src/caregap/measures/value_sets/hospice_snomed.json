@@ -1,0 +1,20 @@
+{
+  "id": "hospice_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "Hospice evidence across the three places Synthea records it. Procedure 385763009 (2316 rows) and Encounter.type 305336008 (94 rows) are in SCAN.md; Condition 876882001 never appears in the 237-bundle panel and is carried untested for real-world bundles. Global rule: hospice within [my_start, as_of] excludes; hospice before the MY does not (only a hospice event within 90 days before my_start raises E1).",
+  "codes": [
+    {
+      "code": "385763009",
+      "display": "Hospice care (regime/therapy)"
+    },
+    {
+      "code": "305336008",
+      "display": "Admission to hospice (procedure)"
+    },
+    {
+      "code": "876882001",
+      "untested_by_data": true
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "id": "statin_intensity",
+  "code_system": "RXNORM",
+  "source": "public-acc-aha",
+  "note": "Intensity per the public ACC/AHA table: simvastatin 10 low / 20-40 moderate / 80 high; atorvastatin 10-20 moderate / 40-80 high; rosuvastatin 5-10 moderate / 20-40 high; pravastatin 10-20 low / 40-80 moderate; lovastatin 10-20 low / 40 moderate; pitavastatin moderate; fluvastatin 20-40 low / 80 moderate; ezetimibe/simvastatin combos moderate. Dose is read from the RxNorm display. Covers every code of P6's vendored statin_rxnorm; the 11 codes flagged untested_by_data never appear in the 237-bundle panel (SCAN.md). No fluvastatin product exists in P6's set or in the panel.",
+  "codes": [
+    {
+      "code": "617312",
+      "display": "atorvastatin 10 MG Oral Tablet",
+      "intensity": "moderate"
+    },
+    {
+      "code": "617314",
+      "display": "atorvastatin 10 MG Oral Tablet [Lipitor]",
+      "intensity": "moderate",
+      "untested_by_data": true
+    },
+    {
+      "code": "617310",
+      "display": "atorvastatin 20 MG Oral Tablet",
+      "intensity": "moderate"
+    },
+    {
+      "code": "617311",
+      "display": "atorvastatin 40 MG Oral Tablet",
+      "intensity": "high"
+    },
+    {
+      "code": "617320",
+      "display": "atorvastatin 40 MG Oral Tablet [Lipitor]",
+      "intensity": "high",
+      "untested_by_data": true
+    },
+    {
+      "code": "259255",
+      "display": "atorvastatin 80 MG Oral Tablet",
+      "intensity": "high"
+    },
+    {
+      "code": "476349",
+      "display": "ezetimibe 10 MG / simvastatin 20 MG Oral Tablet",
+      "intensity": "moderate",
+      "untested_by_data": true
+    },
+    {
+      "code": "476350",
+      "display": "ezetimibe 10 MG / simvastatin 40 MG Oral Tablet",
+      "intensity": "moderate"
+    },
+    {
+      "code": "197903",
+      "display": "lovastatin 10 MG Oral Tablet",
+      "intensity": "low",
+      "untested_by_data": true
+    },
+    {
+      "code": "197904",
+      "display": "lovastatin 20 MG Oral Tablet",
+      "intensity": "low"
+    },
+    {
+      "code": "197905",
+      "display": "lovastatin 40 MG Oral Tablet",
+      "intensity": "moderate"
+    },
+    {
+      "code": "861650",
+      "display": "pitavastatin calcium 2 MG Oral Tablet [Livalo]",
+      "intensity": "moderate",
+      "untested_by_data": true
+    },
+    {
+      "code": "904458",
+      "display": "pravastatin sodium 10 MG Oral Tablet",
+      "intensity": "low",
+      "untested_by_data": true
+    },
+    {
+      "code": "904467",
+      "display": "pravastatin sodium 20 MG Oral Tablet",
+      "intensity": "low"
+    },
+    {
+      "code": "904475",
+      "display": "pravastatin sodium 40 MG Oral Tablet",
+      "intensity": "moderate"
+    },
+    {
+      "code": "904481",
+      "display": "pravastatin sodium 80 MG Oral Tablet",
+      "intensity": "moderate",
+      "untested_by_data": true
+    },
+    {
+      "code": "859424",
+      "display": "rosuvastatin calcium 5 MG Oral Tablet",
+      "intensity": "moderate"
+    },
+    {
+      "code": "859426",
+      "display": "rosuvastatin calcium 5 MG Oral Tablet [Crestor]",
+      "intensity": "moderate",
+      "untested_by_data": true
+    },
+    {
+      "code": "859747",
+      "display": "rosuvastatin calcium 10 MG Oral Tablet",
+      "intensity": "moderate"
+    },
+    {
+      "code": "859749",
+      "display": "rosuvastatin calcium 10 MG Oral Tablet [Crestor]",
+      "intensity": "moderate",
+      "untested_by_data": true
+    },
+    {
+      "code": "859751",
+      "display": "rosuvastatin calcium 20 MG Oral Tablet",
+      "intensity": "high"
+    },
+    {
+      "code": "859753",
+      "display": "rosuvastatin calcium 20 MG Oral Tablet [Crestor]",
+      "intensity": "high",
+      "untested_by_data": true
+    },
+    {
+      "code": "859419",
+      "display": "rosuvastatin calcium 40 MG Oral Tablet",
+      "intensity": "high"
+    },
+    {
+      "code": "314231",
+      "display": "simvastatin 10 MG Oral Tablet",
+      "intensity": "low"
+    },
+    {
+      "code": "312961",
+      "display": "simvastatin 20 MG Oral Tablet",
+      "intensity": "moderate"
+    },
+    {
+      "code": "198211",
+      "display": "simvastatin 40 MG Oral Tablet",
+      "intensity": "moderate"
+    },
+    {
+      "code": "200345",
+      "display": "simvastatin 80 MG Oral Tablet",
+      "intensity": "high",
+      "untested_by_data": true
+    }
+  ]
+}

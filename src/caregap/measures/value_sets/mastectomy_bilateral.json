@@ -1,0 +1,7 @@
+{
+  "id": "mastectomy_bilateral",
+  "code_system": "SNOMED",
+  "source": "public-cms",
+  "note": "BCS exclusion 'bilateral mastectomy' (public CMS/NCQA text). No mastectomy code of any kind appears in the 237-bundle scan and no code is carried, so the criterion stays not_representable rather than pretending coverage.",
+  "codes": []
+}

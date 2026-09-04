@@ -1,0 +1,23 @@
+{
+  "id": "myopathy",
+  "code_system": "SNOMED",
+  "source": "public-cms",
+  "note": "SPC exclusion 'myalgia / myositis / myopathy / rhabdomyolysis' (public CMS/NCQA text). No matching code appears in the scan; the codes are carried untested and the criterion stays not_representable.",
+  "codes": [
+    {
+      "code": "68962001",
+      "display": "Myalgia (finding)",
+      "untested_by_data": true
+    },
+    {
+      "code": "26889001",
+      "display": "Myositis (disorder)",
+      "untested_by_data": true
+    },
+    {
+      "code": "240131006",
+      "display": "Rhabdomyolysis (disorder)",
+      "untested_by_data": true
+    }
+  ]
+}

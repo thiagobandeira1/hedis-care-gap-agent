@@ -1,0 +1,16 @@
+{
+  "id": "retinopathy_negative_loinc",
+  "code_system": "LOINC",
+  "source": "synthea-scan",
+  "note": "Per-eye retinopathy severity observations (1172 rows each in SCAN.md). The NEGATIVE answer is LA18643-9 'No apparent retinopathy' (772 Observation.value rows); LA18644-7 / LA18645-4 / LA18646-2 / LA18648-8 are positive severities. Both eyes must answer LA18643-9 for the EED prior-year exam to count.",
+  "codes": [
+    {
+      "code": "71490-7",
+      "display": "Left eye Diabetic retinopathy severity level by Ophthalmoscopy"
+    },
+    {
+      "code": "71491-5",
+      "display": "Right eye Diabetic retinopathy severity level by Ophthalmoscopy"
+    }
+  ]
+}

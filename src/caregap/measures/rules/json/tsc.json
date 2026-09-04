@@ -1,0 +1,141 @@
+{
+  "measure_id": "TSC",
+  "star_id": null,
+  "name": "Tobacco Use Screening",
+  "rule_version": "tsc-v1",
+  "sources": [
+    {
+      "doc_id": "cms138v13",
+      "title": "CMS138v13 Preventive Care and Screening: Tobacco Use: Screening and Cessation Intervention (eCQI Resource Center)",
+      "url": "https://ecqi.healthit.gov/ecqm/ep/2025/cms138v13",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "public_web_cite_only",
+      "note": "Cite-only (nothing quoted). URL as assigned; it returned HTTP 404 on the retrieval date -- verify before publishing."
+    },
+    {
+      "doc_id": "caregap-spec",
+      "title": "hedis-care-gap-agent SPEC section 2 (demo-grade rules table)",
+      "url": "docs/SPEC.md",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "project_spec",
+      "note": "The demo parameters themselves; cited for every demo_choice element."
+    }
+  ],
+  "elements": [
+    {
+      "id": "tsc/denominator/age_18_plus",
+      "kind": "denominator",
+      "text": "Age 18 or older at Dec 31 of the MY.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Adult screening band shared by TSC and SNS (one rule); the public measure's own age bands are not quoted (cite-only source).",
+      "coverage": null
+    },
+    {
+      "id": "tsc/denominator/encounter_in_my",
+      "kind": "denominator",
+      "text": "At least one encounter (any class) in [Jan 1 of the MY, as_of].",
+      "source": "demo_choice",
+      "citation": "cms138v13",
+      "quote": null,
+      "rationale": "The public measures require qualifying visits; any Synthea encounter stands in so that members never seen in the MY are not chased for a screening.",
+      "coverage": null
+    },
+    {
+      "id": "tsc/numerator/tobacco_status_answer",
+      "kind": "numerator",
+      "text": "A LOINC 72166-2 'Tobacco smoking status' observation with a non-null value_code in [Jan 1 of the MY, as_of].",
+      "source": "demo_choice",
+      "citation": "cms138v13",
+      "quote": null,
+      "rationale": "Any coded tobacco-status answer evidences that screening happened; the answer itself (user / non-user) is not judged. Synthea records the status at most visits.",
+      "coverage": null
+    },
+    {
+      "id": "tsc/numerator/cessation_intervention",
+      "kind": "numerator",
+      "text": "Cessation counselling or pharmacotherapy for identified tobacco users (the public measure's intervention component).",
+      "source": "not_representable",
+      "citation": "cms138v13",
+      "quote": null,
+      "rationale": "Synthea carries no cessation-counselling procedure or nicotine-replacement request in the committed scan; the demo measures screening only.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "tsc/exclusion/death",
+      "kind": "exclusion",
+      "text": "Death inside [Jan 1 of the MY, as_of] excludes the member (global rule).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Global rule applied to every measure; a deceased member gets no outreach.",
+      "coverage": "observable"
+    },
+    {
+      "id": "tsc/exclusion/hospice",
+      "kind": "exclusion",
+      "text": "A hospice_snomed event inside [Jan 1 of the MY, as_of] excludes the member (global rule).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Global rule applied to every measure; prior hospice is E1 only.",
+      "coverage": "observable"
+    },
+    {
+      "id": "tsc/coverage/no_measure_escalations",
+      "kind": "coverage",
+      "text": "No measure-scoped escalations; only the global E1 / E4 hints apply.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Screening gaps are low-priority (clinical weight 1) and counts-only in evals.",
+      "coverage": "partial"
+    },
+    {
+      "id": "tsc/coverage/e1_prior_hospice",
+      "kind": "coverage",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public wording is 'any time during the measurement period'; 32% of living Synthea patients carry prior hospice codes, so prior hospice can only be a hint for a human, never an exclusion.",
+      "coverage": "partial"
+    },
+    {
+      "id": "tsc/coverage/e4_advanced_illness_hint",
+      "kind": "coverage",
+      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public frailty-and-advanced-illness exclusion needs two frailty indications on different dates plus advanced-illness claims; Synthea carries no frailty claims, so the engine can only hint (coverage: partial).",
+      "coverage": "partial"
+    },
+    {
+      "id": "tsc/timeline/measurement_year",
+      "kind": "timeline",
+      "text": "Measurement year (MY) = the calendar year of as_of. Denominator and exclusion windows use the MY bounds (Jan 1 - Dec 31); every numerator window ends at as_of; age = age at Dec 31 of the MY.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Prospective gap detection: events dated after as_of never count, so a run at 2026-06-30 sees only what a care manager could see that day. Age at Dec 31 follows the Technical Notes wording 'as of December 31 of the measurement year'. Eval anchor as_of = 2025-12-31 (complete MY2025); demo anchor 2026-06-30.",
+      "coverage": null
+    },
+    {
+      "id": "tsc/timeline/death_before_my",
+      "kind": "timeline",
+      "text": "death_date before Jan 1 of the MY -> not_eligible (denominator no); death inside [Jan 1 of the MY, as_of] -> excluded (global rule).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "A member who died before the MY was never enrolled for it; the public 'died during the measurement period' wording only covers deaths inside the MY. Future death dates are masked by P6 (mask_as_of) and never seen.",
+      "coverage": null
+    }
+  ],
+  "normative_quote": null,
+  "tn_sections": null,
+  "conformance": "demo-grade; HEDIS-aligned; not NCQA-certified"
+}

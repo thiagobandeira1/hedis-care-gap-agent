@@ -1,0 +1,12 @@
+{
+  "id": "prediabetes_trap_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "Negative control: prediabetes (162 Condition rows in SCAN.md) is never a diabetes denominator for EED / SPD. Used by tests / personas to prove the engine ignores it.",
+  "codes": [
+    {
+      "code": "714628002",
+      "display": "Prediabetes (finding)"
+    }
+  ]
+}

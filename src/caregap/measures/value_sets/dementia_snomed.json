@@ -1,0 +1,17 @@
+{
+  "id": "dementia_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "Dementia diagnosis for the global E4 hint (never an exclusion). 26929004 is in SCAN.md (35 Condition rows); 230265002 never appears and is carried untested. No generic 'Dementia' code appears in the panel.",
+  "codes": [
+    {
+      "code": "26929004",
+      "display": "Alzheimer's disease (disorder)"
+    },
+    {
+      "code": "230265002",
+      "display": "Familial Alzheimer's disease of early onset (disorder)",
+      "untested_by_data": true
+    }
+  ]
+}

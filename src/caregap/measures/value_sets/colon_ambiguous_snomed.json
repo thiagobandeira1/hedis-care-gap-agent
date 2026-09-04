@@ -1,0 +1,17 @@
+{
+  "id": "colon_ambiguous_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "E7 trigger: codes that could be a total-colectomy or colorectal-cancer signal but are not decisive. 43075005 is a Procedure in SCAN.md (5 rows); 94260004 never appears and is carried untested. Scan neighbours deliberately NOT included: 68496003 polyp of colon, 76164006 biopsy of colon, 410006001 digital examination of rectum (ordinary screening findings, not scope signals).",
+  "codes": [
+    {
+      "code": "43075005",
+      "display": "Partial resection of colon (procedure)"
+    },
+    {
+      "code": "94260004",
+      "display": "Secondary malignant neoplasm of colon (disorder)",
+      "untested_by_data": true
+    }
+  ]
+}

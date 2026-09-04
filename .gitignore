@@ -56,3 +56,8 @@ Thumbs.db
 
 # ---- Allow committed eval fixtures & results (curated, public-source-derived, reviewed) ----
 !evals/**/*.json
+
+# ---- Allow committed SYNTHETIC fixtures only (Synthea personas + P6 snapshots of them; never real data) ----
+!synthetic/samples/**
+!synthetic/p6_snapshots/**
+!synthetic/**/*.json.gz

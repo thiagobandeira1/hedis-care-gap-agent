@@ -1,0 +1,20 @@
+{
+  "id": "dementia_meds_rxnorm",
+  "code_system": "RXNORM",
+  "source": "synthea-scan",
+  "note": "Dementia medications for the global E4 hint: every donepezil / memantine / galantamine / rivastigmine product in SCAN.md (34 / 22 / 1 MedicationRequest rows). No plain donepezil or any rivastigmine product appears in the panel.",
+  "codes": [
+    {
+      "code": "310436",
+      "display": "Galantamine 4 MG Oral Tablet"
+    },
+    {
+      "code": "1599803",
+      "display": "24 HR Donepezil hydrochloride 10 MG / Memantine hydrochloride 28 MG Extended Release Oral Capsule"
+    },
+    {
+      "code": "996740",
+      "display": "Memantine hydrochloride 2 MG/ML Oral Solution"
+    }
+  ]
+}

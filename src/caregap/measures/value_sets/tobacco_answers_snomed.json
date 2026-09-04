@@ -1,0 +1,21 @@
+{
+  "id": "tobacco_answers_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "Coded answers of the 72166-2 tobacco status observation. 266919005 (4647) and 8517006 (2550) are Observation.value rows in SCAN.md. 449868002 appears in the panel ONLY as a Condition (4 rows), never as a 72166-2 answer, so it is flagged untested as an answer value.",
+  "codes": [
+    {
+      "code": "266919005",
+      "display": "Never smoked tobacco (finding)"
+    },
+    {
+      "code": "8517006",
+      "display": "Ex-smoker (finding)"
+    },
+    {
+      "code": "449868002",
+      "display": "Smokes tobacco daily (finding)",
+      "untested_by_data": true
+    }
+  ]
+}

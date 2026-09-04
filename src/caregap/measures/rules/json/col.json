@@ -1,0 +1,266 @@
+{
+  "measure_id": "COL",
+  "star_id": "C02",
+  "name": "Colorectal Cancer Screening",
+  "rule_version": "col-v1",
+  "sources": [
+    {
+      "doc_id": "cms-tn-2026",
+      "title": "Medicare 2026 Part C & D Star Ratings Technical Notes",
+      "url": "https://www.cms.gov/files/document/2026-star-ratings-technical-notes.pdf",
+      "page": 39,
+      "retrieval_date": "2026-08-31",
+      "license_posture": "us_gov_public_domain",
+      "note": null
+    },
+    {
+      "doc_id": "ncqa-col",
+      "title": "NCQA public measure summary: Colorectal Cancer Screening (HEDIS Measure Library)",
+      "url": "https://www.ncqa.org/hedis/measures/colorectal-cancer-screening/",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "public_web_cite_only",
+      "note": "Cite-only (nothing quoted). On the retrieval date the deep link resolved to NCQA's 'HEDIS Measure Library & Historical Data' page."
+    },
+    {
+      "doc_id": "caregap-spec",
+      "title": "hedis-care-gap-agent SPEC section 2 (demo-grade rules table)",
+      "url": "docs/SPEC.md",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "project_spec",
+      "note": "The demo parameters themselves; cited for every demo_choice element."
+    }
+  ],
+  "elements": [
+    {
+      "id": "col/denominator/age",
+      "kind": "denominator",
+      "text": "MA enrollees aged 50 to 75 (denominator) as of December 31 of the measurement year",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "MA enrollees aged 50 to 75 (denominator) as of December 31 of the measurement year",
+      "rationale": null,
+      "coverage": null
+    },
+    {
+      "id": "col/numerator/appropriate_screening",
+      "kind": "numerator",
+      "text": "who had appropriate screenings for colorectal cancer (numerator)",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "who had appropriate screenings for colorectal cancer (numerator)",
+      "rationale": "The Technical Notes name no modality; the demo evidences two of the public modalities (colonoscopy, FOBT/FIT) and lists the rest as not_representable.",
+      "coverage": null
+    },
+    {
+      "id": "col/numerator/colonoscopy_my_plus_9_prior_years",
+      "kind": "numerator",
+      "text": "Colonoscopy (SNOMED 73761001, colonoscopy_proc) in [Jan 1 of MY-9, as_of].",
+      "source": "demo_choice",
+      "citation": "ncqa-col",
+      "quote": null,
+      "rationale": "NCQA's public COL summary: colonoscopy during the MY or the nine years prior (cite-only). Anchoring 'nine years prior' to calendar years is the demo's simplification.",
+      "coverage": null
+    },
+    {
+      "id": "col/numerator/fobt_fit_in_my",
+      "kind": "numerator",
+      "text": "FOBT / FIT in [Jan 1 of the MY, as_of]: a LOINC 57905-2 observation (fobt_fit_loinc) OR a SNOMED 104435004 'Screening for occult blood in feces' procedure.",
+      "source": "demo_choice",
+      "citation": "ncqa-col",
+      "quote": null,
+      "rationale": "NCQA's public COL summary: FOBT during the MY (cite-only). Synthea records FIT both as the LOINC result and as the literal SNOMED procedure, so both count.",
+      "coverage": null
+    },
+    {
+      "id": "col/numerator/flexible_sigmoidoscopy_my_plus_4_prior_years",
+      "kind": "numerator",
+      "text": "Flexible sigmoidoscopy during the MY or the four years prior.",
+      "source": "not_representable",
+      "citation": "ncqa-col",
+      "quote": null,
+      "rationale": "NCQA's public COL summary lists this modality (cite-only); the Technical Notes say only 'appropriate screenings'. No such code appears in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "col/numerator/ct_colonography_my_plus_4_prior_years",
+      "kind": "numerator",
+      "text": "CT colonography during the MY or the four years prior.",
+      "source": "not_representable",
+      "citation": "ncqa-col",
+      "quote": null,
+      "rationale": "NCQA's public COL summary lists this modality (cite-only); the Technical Notes say only 'appropriate screenings'. No such code appears in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "col/numerator/sdna_fit_my_plus_2_prior_years",
+      "kind": "numerator",
+      "text": "Stool DNA (sDNA) with FIT test during the MY or the two years prior.",
+      "source": "not_representable",
+      "citation": "ncqa-col",
+      "quote": null,
+      "rationale": "NCQA's public COL summary lists this modality (cite-only); the Technical Notes say only 'appropriate screenings'. No such code appears in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "col/exclusion/death",
+      "kind": "exclusion",
+      "text": "Members who died any time during the measurement period.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "Members who died any time during the measurement period.",
+      "rationale": null,
+      "coverage": "observable"
+    },
+    {
+      "id": "col/exclusion/hospice",
+      "kind": "exclusion",
+      "text": "Members who use hospice services or elect to use a hospice benefit any time during the measurement period.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "Members who use hospice services or elect to use a hospice benefit any time during the measurement period.",
+      "rationale": null,
+      "coverage": "observable"
+    },
+    {
+      "id": "col/exclusion/colorectal_cancer",
+      "kind": "exclusion",
+      "text": "Members who had colorectal cancer any time during the member’s history through December 31 of the measurement year. Do not include laboratory claims.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "Members who had colorectal cancer any time during the member’s history through December 31 of the measurement year. Do not include laboratory claims.",
+      "rationale": "colorectal_cancer_snomed condition with onset any time through as_of.",
+      "coverage": "observable"
+    },
+    {
+      "id": "col/exclusion/total_colectomy",
+      "kind": "exclusion",
+      "text": "Members who had a total colectomy any time during the member’s history through December 31 of the measurement period.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "Members who had a total colectomy any time during the member’s history through December 31 of the measurement period.",
+      "rationale": "No total-colectomy code appears in the committed Synthea scan; ambiguous colon codes raise E7 instead (see coverage).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "col/exclusion/palliative_care",
+      "kind": "exclusion",
+      "text": "Members receiving palliative care any time during the measurement period.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "Members receiving palliative care any time during the measurement period.",
+      "rationale": "No palliative-care codes appear in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "col/exclusion/isnp_or_long_term_institution_66_plus",
+      "kind": "exclusion",
+      "text": "Medicare members 66 years of age and older by the end of the measurement period who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement period.\n- Living long-term in an institution any time during the measurement period.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "Medicare members 66 years of age and older by the end of the measurement period who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement period.\n- Living long-term in an institution any time during the measurement period.",
+      "rationale": "Institutional SNP enrollment and the long-term-institution (LTI) flag are plan enrollment data; Synthea / P6 carry no enrollment records.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "col/exclusion/frailty_and_advanced_illness_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66 years of age and older by the end of the measurement period with frailty and advanced illness.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "Members 66 years of age and older by the end of the measurement period with frailty and advanced illness.",
+      "rationale": "Needs two frailty indications on different dates plus advanced-illness claims / dispensed dementia medication; Synthea carries no frailty claims. The global E4 flag only hints (dementia + inpatient/ED care at 66+).",
+      "coverage": "partial"
+    },
+    {
+      "id": "col/coverage/e1_prior_hospice",
+      "kind": "coverage",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public wording is 'any time during the measurement period'; 32% of living Synthea patients carry prior hospice codes, so prior hospice can only be a hint for a human, never an exclusion.",
+      "coverage": "partial"
+    },
+    {
+      "id": "col/coverage/e4_advanced_illness_hint",
+      "kind": "coverage",
+      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public frailty-and-advanced-illness exclusion needs two frailty indications on different dates plus advanced-illness claims; Synthea carries no frailty claims, so the engine can only hint (coverage: partial).",
+      "coverage": "partial"
+    },
+    {
+      "id": "col/coverage/e7_ambiguous_colon_code",
+      "kind": "coverage",
+      "text": "E7: any colon_ambiguous_snomed condition or procedure through as_of (a possible total-colectomy or colorectal-cancer signal) promotes the verdict to needs_review.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Synthea's colon codes do not separate partial from total colectomy or history-of from active cancer; a human resolves the exclusion.",
+      "coverage": "partial"
+    },
+    {
+      "id": "col/timeline/data_time_frame",
+      "kind": "timeline",
+      "text": "01/01/2024 – 12/31/2024",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.39",
+      "quote": "01/01/2024 – 12/31/2024",
+      "rationale": "The 2026 Star Ratings score measurement year 2024; the demo evaluates the calendar year of as_of instead (see measurement_year).",
+      "coverage": null
+    },
+    {
+      "id": "col/timeline/measurement_year",
+      "kind": "timeline",
+      "text": "Measurement year (MY) = the calendar year of as_of. Denominator and exclusion windows use the MY bounds (Jan 1 - Dec 31); every numerator window ends at as_of; age = age at Dec 31 of the MY.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Prospective gap detection: events dated after as_of never count, so a run at 2026-06-30 sees only what a care manager could see that day. Age at Dec 31 follows the Technical Notes wording 'as of December 31 of the measurement year'. Eval anchor as_of = 2025-12-31 (complete MY2025); demo anchor 2026-06-30.",
+      "coverage": null
+    },
+    {
+      "id": "col/timeline/death_before_my",
+      "kind": "timeline",
+      "text": "death_date before Jan 1 of the MY -> not_eligible (denominator no); death inside [Jan 1 of the MY, as_of] -> excluded (global rule).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "A member who died before the MY was never enrolled for it; the public 'died during the measurement period' wording only covers deaths inside the MY. Future death dates are masked by P6 (mask_as_of) and never seen.",
+      "coverage": null
+    }
+  ],
+  "normative_quote": {
+    "metric": "The percentage of MA enrollees aged 50 to 75 (denominator) as of December 31 of the measurement year who had appropriate screenings for colorectal cancer (numerator).",
+    "description": "Percent of plan members aged 50-75 who had appropriate screening for colorectal cancer.",
+    "citation": "cms-tn-2026 p.39",
+    "conflict": null
+  },
+  "tn_sections": {
+    "description": {
+      "heading": "Description",
+      "text": "Percent of plan members aged 50-75 who had appropriate screening for colorectal cancer. (Last Updated 09/25/202 5) Page 30",
+      "page": 39
+    },
+    "metric": {
+      "heading": "Metric",
+      "text": "The percentage of MA enrollees aged 50 to 75 (denominator) as of December 31 of the measurement year who had appropriate screenings for colorectal cancer (numerator).",
+      "page": 39
+    },
+    "exclusions": {
+      "heading": "Exclusions",
+      "text": "• Members who use hospice services or elect to use a hospice benefit any time during the measurement period.\n• Members who died any time during the measurement period.\n• Members who had colorectal cancer any time during the member’s history through December 31 of the measurement year. Do not include laboratory claims.\n• Members who had a total colectomy any time during the member’s history through December 31 of the measurement period.\n• Medicare members 66 years of age and older by the end of the measurement period who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement period.\n- Living long-term in an institution any time during the measurement period.\n• Members 66 years of age and older by the end of the measurement period with frailty and advanced illness. Members must meet BOTH of the following frailty and advanced illness criteria to be excluded:\n- Frailty. At least two indications of frailty with different dates of service during the measurement period. Do not include laboratory claims.\n- Advanced Illness. Either of the following during the measurement period or the year prior to the measurement period:\n• Advanced illness on at least two different dates of service. Do not include laboratory claims.\n• Dispensed dementia medication.\n• Members receiving palliative care any time during the measurement period.\n• Members who had an encounter for palliative care any time during the measurement period. Do not include laboratory claims. The full set of exclusions is available in the NCQA HEDIS Measurement Year 2024 Technical Specifications Volume 2. Contracts whose enrollment was at least 500 but less than 1,000 as of the enrollment report and having measure score reliability less than 0.7 are excluded. Contracts whose enrollment was less than 500 as of the July 2024 enrollment report are excluded from t his measure.",
+      "page": 39
+    },
+    "data_time_frame": {
+      "heading": "Data Time Frame",
+      "text": "01/01/2024 – 12/31/2024",
+      "page": 39
+    }
+  },
+  "conformance": "demo-grade; HEDIS-aligned; not NCQA-certified"
+}

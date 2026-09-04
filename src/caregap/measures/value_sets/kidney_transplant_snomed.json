@@ -1,0 +1,21 @@
+{
+  "id": "kidney_transplant_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "Kidney transplant (demo CBP exclusion). Synthea records transplants as conditions / situations in this panel: 161665007 (24 rows) and 213150003 (2 rows) are Condition codes in SCAN.md; the Procedure code 70536003 never appears and is carried untested. A rule reading only procedures will see nothing in the panel.",
+  "codes": [
+    {
+      "code": "161665007",
+      "display": "History of renal transplant (situation)"
+    },
+    {
+      "code": "213150003",
+      "display": "Kidney transplant failure and rejection (disorder)"
+    },
+    {
+      "code": "70536003",
+      "display": "Transplant of kidney (procedure)",
+      "untested_by_data": true
+    }
+  ]
+}

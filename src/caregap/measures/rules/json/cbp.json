@@ -1,0 +1,286 @@
+{
+  "measure_id": "CBP",
+  "star_id": "C14",
+  "name": "Controlling High Blood Pressure",
+  "rule_version": "cbp-v1",
+  "sources": [
+    {
+      "doc_id": "cms-tn-2026",
+      "title": "Medicare 2026 Part C & D Star Ratings Technical Notes",
+      "url": "https://www.cms.gov/files/document/2026-star-ratings-technical-notes.pdf",
+      "page": 56,
+      "retrieval_date": "2026-08-31",
+      "license_posture": "us_gov_public_domain",
+      "note": null
+    },
+    {
+      "doc_id": "ncqa-cbp",
+      "title": "NCQA public measure summary: Controlling High Blood Pressure (HEDIS Measure Library)",
+      "url": "https://www.ncqa.org/hedis/measures/controlling-high-blood-pressure/",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "public_web_cite_only",
+      "note": "Cite-only (nothing quoted). On the retrieval date the deep link resolved to NCQA's 'HEDIS Measure Library & Historical Data' page."
+    },
+    {
+      "doc_id": "caregap-spec",
+      "title": "hedis-care-gap-agent SPEC section 2 (demo-grade rules table)",
+      "url": "docs/SPEC.md",
+      "page": null,
+      "retrieval_date": "2026-09-03",
+      "license_posture": "project_spec",
+      "note": "The demo parameters themselves; cited for every demo_choice element."
+    }
+  ],
+  "elements": [
+    {
+      "id": "cbp/denominator/age",
+      "kind": "denominator",
+      "text": "MA members 18–85 years of age who had a diagnosis of hypertension (HTN) (denominator)",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "MA members 18–85 years of age who had a diagnosis of hypertension (HTN) (denominator)",
+      "rationale": null,
+      "coverage": null
+    },
+    {
+      "id": "cbp/denominator/hypertension_active",
+      "kind": "denominator",
+      "text": "Hypertension = a hypertension_snomed condition with onset <= Dec 31 of the MY and abatement null or > Jan 1 of the MY.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The Technical Notes give no diagnosis window; Synthea records one condition row per diagnosis (no visit-level claims), so 'active during the MY' is the closest evidence. clinical_status / verification_status are never read.",
+      "coverage": null
+    },
+    {
+      "id": "cbp/numerator/controlled",
+      "kind": "numerator",
+      "text": "whose blood pressure (BP) was adequately controlled (less than 140/90 mm Hg) (numerator)",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "whose blood pressure (BP) was adequately controlled (less than 140/90 mm Hg) (numerator)",
+      "rationale": null,
+      "coverage": null
+    },
+    {
+      "id": "cbp/numerator/bp_panel",
+      "kind": "numerator",
+      "text": "A BP reading = LOINC 85354-9 panel with BOTH 8480-6 (systolic) and 8462-4 (diastolic) children sharing its parent_observation_id, unit mm[Hg], taken in an encounter whose class is not IMP or EMER.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Synthea / P6 record blood pressure as a LOINC panel with component children; the unit check keeps unit-less values out; HEDIS-style summaries exclude BPs taken in acute inpatient / ED settings (NCQA public summary, cite-only).",
+      "coverage": null
+    },
+    {
+      "id": "cbp/numerator/representative_bp",
+      "kind": "numerator",
+      "text": "Representative BP = the most-recent-date panel(s) in [Jan 1 of the MY, as_of]; among same-date panels take the lowest systolic and the lowest diastolic. Met iff systolic < 140 AND diastolic < 90. No panel in the MY -> gap_open with subtype no_bp_in_my.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Mirrors the public 'most recent BP; lowest systolic and lowest diastolic on the same date' convention (NCQA public summary, cite-only). '< 140/90' is the quoted threshold. no_bp_in_my is a distinct outreach message (get a reading) and earns a +1 clinical-weight priority bonus.",
+      "coverage": null
+    },
+    {
+      "id": "cbp/exclusion/death",
+      "kind": "exclusion",
+      "text": "Members who die any time during the measurement period.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "Members who die any time during the measurement period.",
+      "rationale": null,
+      "coverage": "observable"
+    },
+    {
+      "id": "cbp/exclusion/hospice",
+      "kind": "exclusion",
+      "text": "Members in hospice or using hospice services any time during the measurement period.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "Members in hospice or using hospice services any time during the measurement period.",
+      "rationale": "hospice_snomed procedures / conditions / encounter types in [Jan 1 of the MY, as_of]; prior hospice is E1 only.",
+      "coverage": "observable"
+    },
+    {
+      "id": "cbp/exclusion/esrd",
+      "kind": "exclusion",
+      "text": "Members with a diagnosis that indicates end-stage renal disease (ESRD) any time during the member’s history on or prior to December 31 of the measurement year. Do not include laboratory claims.",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "Members with a diagnosis that indicates end-stage renal disease (ESRD) any time during the member’s history on or prior to December 31 of the measurement year. Do not include laboratory claims.",
+      "rationale": "esrd_snomed condition with onset on or before Dec 31 of the MY.",
+      "coverage": "observable"
+    },
+    {
+      "id": "cbp/exclusion/dialysis",
+      "kind": "exclusion",
+      "text": "Dialysis: a dialysis_snomed procedure any time through Dec 31 of the MY excludes the member (treated as ESRD-equivalent).",
+      "source": "demo_choice",
+      "citation": "ncqa-cbp",
+      "quote": null,
+      "rationale": "The Technical Notes name only the ESRD diagnosis; NCQA's public CBP summary lists ESRD, dialysis, nephrectomy or kidney transplant (cite-only). Synthea codes dialysis as procedures, so the engine reads them as ESRD evidence.",
+      "coverage": "observable"
+    },
+    {
+      "id": "cbp/exclusion/kidney_transplant",
+      "kind": "exclusion",
+      "text": "Kidney transplant: a kidney_transplant_snomed procedure or condition any time through Dec 31 of the MY excludes the member (treated as ESRD-equivalent).",
+      "source": "demo_choice",
+      "citation": "ncqa-cbp",
+      "quote": null,
+      "rationale": "Same basis as dialysis: NCQA's public CBP summary lists kidney transplant with ESRD (cite-only); the Technical Notes name only the ESRD diagnosis.",
+      "coverage": "observable"
+    },
+    {
+      "id": "cbp/exclusion/pregnancy",
+      "kind": "exclusion",
+      "text": "Members with a diagnosis of pregnancy any time during the measurement year. Do not include laboratory claims",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "Members with a diagnosis of pregnancy any time during the measurement year. Do not include laboratory claims",
+      "rationale": "pregnancy_snomed condition active in the MY (a trap set keeps non-pregnancy obstetric codes out). The corpus sentence has no closing period.",
+      "coverage": "observable"
+    },
+    {
+      "id": "cbp/exclusion/palliative_care",
+      "kind": "exclusion",
+      "text": "Members receiving palliative care any time during the measurement period.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "Members receiving palliative care any time during the measurement period.",
+      "rationale": "No palliative-care codes appear in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "cbp/exclusion/isnp_or_long_term_institution_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66 years of age and older by the end of the measurement period who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "Members 66 years of age and older by the end of the measurement period who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year.",
+      "rationale": "Institutional SNP enrollment and the long-term-institution (LTI) flag are plan enrollment data; Synthea / P6 carry no enrollment records.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "cbp/exclusion/frailty_and_advanced_illness_66_80",
+      "kind": "exclusion",
+      "text": "Members 66-80 years of age and older as of December 31 of the measurement year with frailty and advanced illness.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "Members 66-80 years of age and older as of December 31 of the measurement year with frailty and advanced illness.",
+      "rationale": "Needs two frailty indications on different dates plus advanced-illness claims / dispensed dementia medication; Synthea carries no frailty claims. The global E4 flag only hints (dementia + inpatient/ED care at 66+).",
+      "coverage": "partial"
+    },
+    {
+      "id": "cbp/exclusion/frailty_81_plus",
+      "kind": "exclusion",
+      "text": "Members 81 years of age and older as of December 31 of the measurement year with at least two indications of frailty with different dates of service during the measurement year. Do not include laboratory claims.",
+      "source": "not_representable",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "Members 81 years of age and older as of December 31 of the measurement year with at least two indications of frailty with different dates of service during the measurement year. Do not include laboratory claims.",
+      "rationale": "Synthea carries no frailty claims.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "cbp/coverage/e1_prior_hospice",
+      "kind": "coverage",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public wording is 'any time during the measurement period'; 32% of living Synthea patients carry prior hospice codes, so prior hospice can only be a hint for a human, never an exclusion.",
+      "coverage": "partial"
+    },
+    {
+      "id": "cbp/coverage/e4_advanced_illness_hint",
+      "kind": "coverage",
+      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "The public frailty-and-advanced-illness exclusion needs two frailty indications on different dates plus advanced-illness claims; Synthea carries no frailty claims, so the engine can only hint (coverage: partial).",
+      "coverage": "partial"
+    },
+    {
+      "id": "cbp/coverage/e5_incomplete_panel_or_unit",
+      "kind": "coverage",
+      "text": "E5: a BP panel in the MY missing its systolic or diastolic child, or carrying a unit other than mm[Hg], raises a review flag; such a panel never counts toward the numerator.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "An incomplete or mis-united panel may still be a real reading a human can confirm; the engine refuses to guess.",
+      "coverage": "partial"
+    },
+    {
+      "id": "cbp/coverage/e6_hypertension_abated_in_my",
+      "kind": "coverage",
+      "text": "E6: a hypertension condition abated inside the MY raises a review flag; the member stays in the denominator.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Synthea abatement dates are unreliable as resolution evidence; a human decides whether the diagnosis still stands.",
+      "coverage": "partial"
+    },
+    {
+      "id": "cbp/timeline/data_time_frame",
+      "kind": "timeline",
+      "text": "01/01/2024 – 12/31/2024",
+      "source": "quoted",
+      "citation": "cms-tn-2026 p.56",
+      "quote": "01/01/2024 – 12/31/2024",
+      "rationale": "The 2026 Star Ratings score measurement year 2024; the demo evaluates the calendar year of as_of instead (see measurement_year).",
+      "coverage": null
+    },
+    {
+      "id": "cbp/timeline/measurement_year",
+      "kind": "timeline",
+      "text": "Measurement year (MY) = the calendar year of as_of. Denominator and exclusion windows use the MY bounds (Jan 1 - Dec 31); every numerator window ends at as_of; age = age at Dec 31 of the MY.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Prospective gap detection: events dated after as_of never count, so a run at 2026-06-30 sees only what a care manager could see that day. Age at Dec 31 follows the Technical Notes wording 'as of December 31 of the measurement year'. Eval anchor as_of = 2025-12-31 (complete MY2025); demo anchor 2026-06-30.",
+      "coverage": null
+    },
+    {
+      "id": "cbp/timeline/death_before_my",
+      "kind": "timeline",
+      "text": "death_date before Jan 1 of the MY -> not_eligible (denominator no); death inside [Jan 1 of the MY, as_of] -> excluded (global rule).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "A member who died before the MY was never enrolled for it; the public 'died during the measurement period' wording only covers deaths inside the MY. Future death dates are masked by P6 (mask_as_of) and never seen.",
+      "coverage": null
+    }
+  ],
+  "normative_quote": {
+    "metric": "The percentage of MA members 18–85 years of age who had a diagnosis of hypertension (HTN) (denominator) and whose blood pressure (BP) was adequately controlled (less than 140/90 mm Hg) (numerator).",
+    "description": "Percent of plan members with high blood pressure who got treatment and were able to maintain a healthy pressure.",
+    "citation": "cms-tn-2026 p.56",
+    "conflict": null
+  },
+  "tn_sections": {
+    "description": {
+      "heading": "Description",
+      "text": "Percent of plan members with high blood pressure who got treatment and were able to maintain a healthy pressure.",
+      "page": 56
+    },
+    "metric": {
+      "heading": "Metric",
+      "text": "The percentage of MA members 18–85 years of age who had a diagnosis of hypertension (HTN) (denominator) and whose blood pressure (BP) was adequately controlled (less than 140/90 mm Hg) (numerator).",
+      "page": 56
+    },
+    "exclusions": {
+      "heading": "Exclusions",
+      "text": "(Required) Exclude members who meet any of the following criteria:\n• Members in hospice or using hospice services any time during the measurement period.\n• Members who die any time during the measurement period.\n• Members receiving palliative care any time during the measurement period.\n• Members who had an encounter for palliative care any time during the measurement period. Do not include laboratory claims.\n• Members with a diagnosis that indicates end-stage renal disease (ESRD) any time during the member’s history on or prior to December 31 of the measurement year. Do not include laboratory claims.\n• Members with a diagnosis of pregnancy any time during the measurement year. Do not include laboratory claims\n• Members 66 years of age and older by the end of the measurement period who meet either of the following:\n- Enrolled in an Institutional SNP (I-SNP) any time during the measurement year.\n- Living long-term in an institution any time during the measurement year.\n• Members 66-80 years of age and older as of December 31 of the measurement year with frailty and advanced illness. Members must meet BOTH of the following frailty and advanced illness criteria to be excluded:\n- Frailty. At least two indications of frailty with different dates of service during the measurement period. Do not include laboratory claims.\n- Advanced Illness. Either of the following during the measurement period or the year prior to the measurement period:\n• Advanced illness on at least two different dates of service. Do not include laboratory claims.\n• Dispensed dementia medication.\n• Members 81 years of age and older as of December 31 of the measurement year with at least two indications of frailty with different dates of service during the measurement year. Do not include laboratory claims. The full set of exclusions is available in the NCQA HEDIS Measurement Year 2024 Technical Specifications Volume 2. Contracts whose enrollment was at least 500 but less than 1,000 as of the July 2024 enrollment report and having measure score reliability less than 0.7 are excluded. Contracts whose enrollment was less than 500 as of the July 2024 enrollment report are excluded from t his measure.",
+      "page": 56
+    },
+    "data_time_frame": {
+      "heading": "Data Time Frame",
+      "text": "01/01/2024 – 12/31/2024",
+      "page": 56
+    }
+  },
+  "conformance": "demo-grade; HEDIS-aligned; not NCQA-certified"
+}

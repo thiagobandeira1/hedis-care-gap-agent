@@ -1,0 +1,13 @@
+{
+  "id": "cirrhosis",
+  "code_system": "SNOMED",
+  "source": "public-cms",
+  "note": "SPC exclusion 'cirrhosis' (public CMS/NCQA text). No cirrhosis code appears in the scan; 19943007 is carried untested and the criterion stays not_representable.",
+  "codes": [
+    {
+      "code": "19943007",
+      "display": "Cirrhosis of liver (disorder)",
+      "untested_by_data": true
+    }
+  ]
+}

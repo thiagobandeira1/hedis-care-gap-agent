@@ -1,0 +1,18 @@
+{
+  "id": "pregnancy_snomed",
+  "code_system": "SNOMED",
+  "source": "public-cms",
+  "note": "Pregnancy exclusion (CBP / SPC public text). NO pregnancy condition appears in the 237-bundle panel: the 'pregnan' keyword matched only the 161744009 miscarriage-history trap and the procedures 440546007 (Discussion about pregnancy) and 252160004 (Standard pregnancy test). LOINC 82810-3 (Pregnancy status) is also absent from the scan. Both codes are therefore untested by data.",
+  "codes": [
+    {
+      "code": "72892002",
+      "display": "Normal pregnancy",
+      "untested_by_data": true
+    },
+    {
+      "code": "77386006",
+      "display": "Patient currently pregnant (finding)",
+      "untested_by_data": true
+    }
+  ]
+}

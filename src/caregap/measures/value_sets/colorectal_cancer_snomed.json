@@ -1,0 +1,25 @@
+{
+  "id": "colorectal_cancer_snomed",
+  "code_system": "SNOMED",
+  "source": "synthea-scan",
+  "note": "Quoted COL exclusion (colorectal cancer any time). The three colon neoplasm codes are in SCAN.md (3 / 2 / 1 rows); no rectal cancer code appears in the panel, so 363351006 is carried untested.",
+  "codes": [
+    {
+      "code": "363406005",
+      "display": "Malignant neoplasm of colon (disorder)"
+    },
+    {
+      "code": "109838007",
+      "display": "Overlapping malignant neoplasm of colon (disorder)"
+    },
+    {
+      "code": "93761005",
+      "display": "Primary malignant neoplasm of colon (disorder)"
+    },
+    {
+      "code": "363351006",
+      "display": "Malignant tumor of rectum (disorder)",
+      "untested_by_data": true
+    }
+  ]
+}
