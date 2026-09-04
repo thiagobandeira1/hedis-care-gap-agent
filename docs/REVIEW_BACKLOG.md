@@ -30,3 +30,25 @@ gate (stage G). None blocks tests; all are documented in the modules that carry 
    `statin_intensity` codes, `449868002` as a tobacco answer. Keep the flags; mention in README.
 10. Demo storyboard: the "SPC low-intensity gap" case is not Tony at 2025-12-31 (no ASCVD dx;
     SPD closes on any intensity). Pick a panel patient for that scene or drop it.
+
+## From the agents + graph wave (2026-09-03)
+
+11. `llm.DRAFTER_FALLBACK == "{}"` is a VALID empty plan, so replay-fallback drafting goes
+    call -> lint fail -> regen -> lint fail -> template, consuming two replay fallbacks per patient
+    (the llm.py comment says "parse failure"). Decide: keep (publication still blocked when
+    fallback_count > 0) and fix the comment, or use a non-JSON sentinel.
+12. Two helpers named `allowed_numbers_for` exist (`agents/drafter.py` and `graph/hitl.py`) with
+    different signatures. Keep one.
+13. `verify_verdict` is stricter than SPEC section 4: `numerator_met` also requires the engine
+    numerator to be `yes`, and `confirm_open` requires denominator `yes` + numerator `no`
+    (prevents validator_unsafe_close on uncontrolled BP / low-intensity statin). Document in SPEC.
+14. `after_evaluate` routes every `needs_review` candidate (not only escalated ones) to
+    `validate_gaps`; non-escalated `unknown` verdicts become `engine_needs_review` items with no
+    model call. Update the SPEC diagram caption.
+15. `PatientRunRecord.pending` persists after completion (COALESCE); "is pending" must come from
+    `list_approvals` / `hitl.pending_request`. Consider clearing it on completion instead.
+16. `RunOutcome.final_statuses` uses engine vocabulary (`gap_open`, never `open`); SPEC section 6
+    says OPEN. Align the wording (evals map `gap_open`/`needs_review` -> predicted gap).
+17. The committed personas carry no escalations (goldens `esc=[]` for all five); validator paths
+    are exercised only through synthetic factory snapshots. The gold panel must include real
+    escalation carriers (E1/E3/E5/E6) or the pipeline column is untested on real records.
