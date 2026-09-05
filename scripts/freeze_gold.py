@@ -152,13 +152,28 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, default=Path("evals/gold"))
     ap.add_argument("--labeler", default="llm-blind-claude-v1")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument(
+        "--append-slice",
+        default=None,
+        metavar="NAME",
+        help=(
+            "add a named slice of NEW patients to an existing frozen set: rows are appended to "
+            "gap_cases.jsonl, the previous freeze is kept in FREEZE.json['slices'], and the "
+            "agreement / code-audit reports are written per slice"
+        ),
+    )
     args = ap.parse_args(argv)
 
     out: Path = args.out
     out.mkdir(parents=True, exist_ok=True)
     freeze_path = out / "FREEZE.json"
-    if freeze_path.exists() and not args.force:
+    gap_path = out / "gap_cases.jsonl"
+    slice_name: str | None = args.append_slice
+    if slice_name is None and freeze_path.exists() and not args.force:
         print(f"refusing to overwrite {freeze_path} (use --force)", file=sys.stderr)
+        return 2
+    if slice_name is not None and not (freeze_path.exists() and gap_path.exists()):
+        print("--append-slice needs an existing FREEZE.json and gap_cases.jsonl", file=sys.stderr)
         return 2
 
     payload = json.loads(args.labels.read_text(encoding="utf-8"))
@@ -169,11 +184,35 @@ def main(argv: list[str] | None = None) -> int:
     a_rows = [r for res in a_sorted for r in rows_for(res, args.as_of, args.labeler + "-A")]
     b_rows = [r for res in b_sorted for r in rows_for(res, args.as_of, args.labeler + "-B")]
 
-    gap_path = out / "gap_cases.jsonl"
+    previous: dict[str, Any] | None = None
+    suffix = ""
+    if slice_name is not None:
+        previous = json.loads(freeze_path.read_text(encoding="utf-8"))
+        if sha256_file(gap_path) != previous["gap_cases_sha256"]:
+            print("gap_cases.jsonl does not match FREEZE.json; refusing to append", file=sys.stderr)
+            return 2
+        existing = [json.loads(line) for line in gap_path.read_text(encoding="utf-8").splitlines()]
+        existing_ids = {r["patient_id"] for r in existing}
+        overlap = sorted({r["patient_id"] for r in a_rows} & existing_ids)
+        if overlap:
+            print(f"slice patients already in the frozen set: {overlap}", file=sys.stderr)
+            return 2
+        # Rows keep the loader's exact schema; slice membership lives in FREEZE.json only.
+        slice_ids = sorted({r["patient_id"] for r in a_rows})
+        a_rows = existing + a_rows
+        suffix = f"_{slice_name}"
+    else:
+        slice_ids = sorted({r["patient_id"] for r in a_rows})
+
     write_jsonl(gap_path, a_rows)
-    write_jsonl(out / "second_labeler.jsonl", b_rows)
-    (out / "AGREEMENT.md").write_text(agreement_md(a_rows, b_rows), encoding="utf-8", newline="\n")
-    (out / "CODE_AUDIT.md").write_text(code_audit_md(a_results), encoding="utf-8", newline="\n")
+    slice_rows = [r for r in a_rows if r["patient_id"] in set(slice_ids)]
+    write_jsonl(out / f"second_labeler{suffix}.jsonl", b_rows)
+    (out / f"AGREEMENT{suffix}.md").write_text(
+        agreement_md(slice_rows, b_rows), encoding="utf-8", newline="\n"
+    )
+    (out / f"CODE_AUDIT{suffix}.md").write_text(
+        code_audit_md(a_results), encoding="utf-8", newline="\n"
+    )
 
     counts: dict[str, Counter[str]] = defaultdict(Counter)
     for r in a_rows:
@@ -196,6 +235,28 @@ def main(argv: list[str] | None = None) -> int:
             "worksheets"
         ),
     }
+    if previous is not None and slice_name is not None:
+        # Keep the audit trail: the earlier freeze(s) and the fact that this slice was added
+        # after engine contact with the earlier patients but before any contact with its own.
+        history = list(previous.get("slices", []))
+        history.append(
+            {
+                "name": previous.get("slice_name", "base"),
+                "gap_cases_sha256": previous["gap_cases_sha256"],
+                "frozen_at": previous["frozen_at"],
+                "n_patients": previous["n_patients"],
+                "n_rows": previous["n_rows"],
+            }
+        )
+        freeze["slices"] = history
+        freeze["slice_name"] = slice_name
+        freeze["slice_n_patients"] = len(slice_ids)
+        freeze["slice_patient_ids"] = slice_ids
+        freeze["slice_note"] = (
+            f"slice '{slice_name}' selected on descriptive trigger facts (never engine verdicts) "
+            "after the base slice had been scored; its patients were frozen before any engine "
+            "contact with them"
+        )
     freeze_path.write_text(
         json.dumps(freeze, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
     )
