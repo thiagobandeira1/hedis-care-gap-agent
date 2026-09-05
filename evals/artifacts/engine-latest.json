@@ -1,0 +1,4198 @@
+{
+  "approval_mode": "auto",
+  "config_hash": "66da144d516d2df64719492bb3793848449f97361a96b0a639c20b9218f6ea5a",
+  "counts": {
+    "per_category": {
+      "BCS": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 16
+      },
+      "CBP": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 2
+      },
+      "COL": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 10
+      },
+      "EED": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 6
+      },
+      "SPC": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "SPD": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 3
+      }
+    },
+    "per_split": {
+      "dev": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 10
+      },
+      "test": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 28
+      }
+    }
+  },
+  "dataset_hash": "241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef",
+  "date": "2026-09-05",
+  "drafter_model": "fake",
+  "engine_outcomes_sha256": "d5b788978c44c1e849ad5afe51027fac57583df22ecb20f8810d68039855418a",
+  "error_patients": [],
+  "fallback_count": 0,
+  "freeze": {
+    "gap_cases_sha256": "241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef",
+    "pinned_sha256": "241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef",
+    "status": "frozen"
+  },
+  "git_sha": "3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f",
+  "gold_counts": {
+    "all": {
+      "closed": 67,
+      "escalate": 0,
+      "excluded": 2,
+      "not_eligible": 253,
+      "open": 38,
+      "total": 360
+    },
+    "dev": {
+      "closed": 16,
+      "escalate": 0,
+      "excluded": 0,
+      "not_eligible": 76,
+      "open": 10,
+      "total": 102
+    },
+    "test": {
+      "closed": 51,
+      "escalate": 0,
+      "excluded": 2,
+      "not_eligible": 177,
+      "open": 28,
+      "total": 258
+    }
+  },
+  "item_count": 360,
+  "measures": [
+    {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "measure": "CBP",
+      "min_test_open": 5,
+      "n_test": 43,
+      "n_test_open": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "status": "insufficient",
+      "tp": 2
+    },
+    {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "measure": "EED",
+      "min_test_open": 5,
+      "n_test": 43,
+      "n_test_open": 5,
+      "precision": 1.0,
+      "recall": 1.0,
+      "status": "ok",
+      "tp": 5
+    },
+    {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "measure": "BCS",
+      "min_test_open": 3,
+      "n_test": 43,
+      "n_test_open": 12,
+      "precision": 1.0,
+      "recall": 1.0,
+      "status": "ok",
+      "tp": 12
+    },
+    {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "measure": "COL",
+      "min_test_open": 5,
+      "n_test": 43,
+      "n_test_open": 7,
+      "precision": 1.0,
+      "recall": 1.0,
+      "status": "ok",
+      "tp": 7
+    },
+    {
+      "f1": null,
+      "fn": 0,
+      "fp": 0,
+      "measure": "SPC",
+      "min_test_open": 5,
+      "n_test": 43,
+      "n_test_open": 0,
+      "precision": null,
+      "recall": null,
+      "status": "insufficient",
+      "tp": 0
+    },
+    {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "measure": "SPD",
+      "min_test_open": 5,
+      "n_test": 43,
+      "n_test_open": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "status": "insufficient",
+      "tp": 2
+    }
+  ],
+  "metrics": {
+    "overall": {
+      "micro_f1": 1.0,
+      "micro_precision": 1.0,
+      "micro_recall": 1.0
+    },
+    "overall_dev": {},
+    "per_category": {
+      "BCS": {},
+      "CBP": {},
+      "COL": {},
+      "EED": {},
+      "SPC": {},
+      "SPD": {}
+    },
+    "per_split": {
+      "dev": {},
+      "test": {}
+    },
+    "strict_overall": {
+      "micro_f1": 1.0,
+      "micro_precision": 1.0,
+      "micro_recall": 1.0
+    }
+  },
+  "note": "metrics.overall is the test split; tuning uses dev only",
+  "per_item": [
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "09832b2e-96ea-78c7-6b8b-0e0bc05d9941:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "09832b2e-96ea-78c7-6b8b-0e0bc05d9941:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "09832b2e-96ea-78c7-6b8b-0e0bc05d9941:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "09832b2e-96ea-78c7-6b8b-0e0bc05d9941:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "09832b2e-96ea-78c7-6b8b-0e0bc05d9941:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "09832b2e-96ea-78c7-6b8b-0e0bc05d9941:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "0cba162f-b2ab-4a67-7c9f-a4fdb8505192:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "0cba162f-b2ab-4a67-7c9f-a4fdb8505192:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "0cba162f-b2ab-4a67-7c9f-a4fdb8505192:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "0cba162f-b2ab-4a67-7c9f-a4fdb8505192:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "0cba162f-b2ab-4a67-7c9f-a4fdb8505192:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "0cba162f-b2ab-4a67-7c9f-a4fdb8505192:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "15424f61-6bd2-6f7e-01e6-cb6190972e62:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "15424f61-6bd2-6f7e-01e6-cb6190972e62:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "15424f61-6bd2-6f7e-01e6-cb6190972e62:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "15424f61-6bd2-6f7e-01e6-cb6190972e62:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "15424f61-6bd2-6f7e-01e6-cb6190972e62:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "15424f61-6bd2-6f7e-01e6-cb6190972e62:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "26fbf7e3-1281-e585-70b0-ecea6828d8ad:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "26fbf7e3-1281-e585-70b0-ecea6828d8ad:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "26fbf7e3-1281-e585-70b0-ecea6828d8ad:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "26fbf7e3-1281-e585-70b0-ecea6828d8ad:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "26fbf7e3-1281-e585-70b0-ecea6828d8ad:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "26fbf7e3-1281-e585-70b0-ecea6828d8ad:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "2b373d8f-57f3-505b-4e9d-5437697138d0:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2b373d8f-57f3-505b-4e9d-5437697138d0:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "2b373d8f-57f3-505b-4e9d-5437697138d0:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2b373d8f-57f3-505b-4e9d-5437697138d0:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2b373d8f-57f3-505b-4e9d-5437697138d0:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2b373d8f-57f3-505b-4e9d-5437697138d0:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2c35e085-7ebd-b1ec-f88e-055a183bacc5:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2c35e085-7ebd-b1ec-f88e-055a183bacc5:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2c35e085-7ebd-b1ec-f88e-055a183bacc5:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2c35e085-7ebd-b1ec-f88e-055a183bacc5:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2c35e085-7ebd-b1ec-f88e-055a183bacc5:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "2c35e085-7ebd-b1ec-f88e-055a183bacc5:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "327361f1-1a29-5535-21b5-228ba0a450b1:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "327361f1-1a29-5535-21b5-228ba0a450b1:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "327361f1-1a29-5535-21b5-228ba0a450b1:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "327361f1-1a29-5535-21b5-228ba0a450b1:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "327361f1-1a29-5535-21b5-228ba0a450b1:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "327361f1-1a29-5535-21b5-228ba0a450b1:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3640879f-85b2-24a2-ff86-03dcd813ea96:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3640879f-85b2-24a2-ff86-03dcd813ea96:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3640879f-85b2-24a2-ff86-03dcd813ea96:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3640879f-85b2-24a2-ff86-03dcd813ea96:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3640879f-85b2-24a2-ff86-03dcd813ea96:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3640879f-85b2-24a2-ff86-03dcd813ea96:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "37fdbafd-b2eb-143a-7202-488d00e6b756:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "37fdbafd-b2eb-143a-7202-488d00e6b756:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "37fdbafd-b2eb-143a-7202-488d00e6b756:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "37fdbafd-b2eb-143a-7202-488d00e6b756:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "37fdbafd-b2eb-143a-7202-488d00e6b756:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "37fdbafd-b2eb-143a-7202-488d00e6b756:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "387a078e-5782-a47d-a1ed-6925a680612a:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "387a078e-5782-a47d-a1ed-6925a680612a:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "387a078e-5782-a47d-a1ed-6925a680612a:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "387a078e-5782-a47d-a1ed-6925a680612a:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "387a078e-5782-a47d-a1ed-6925a680612a:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "387a078e-5782-a47d-a1ed-6925a680612a:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "3c23abbc-0d9c-1ac2-34a9-b3acb8ce5e19:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3c23abbc-0d9c-1ac2-34a9-b3acb8ce5e19:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3c23abbc-0d9c-1ac2-34a9-b3acb8ce5e19:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3c23abbc-0d9c-1ac2-34a9-b3acb8ce5e19:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3c23abbc-0d9c-1ac2-34a9-b3acb8ce5e19:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "3c23abbc-0d9c-1ac2-34a9-b3acb8ce5e19:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "41641e8b-fd13-2490-324d-ca84850a3b9c:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "41641e8b-fd13-2490-324d-ca84850a3b9c:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "41641e8b-fd13-2490-324d-ca84850a3b9c:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "41641e8b-fd13-2490-324d-ca84850a3b9c:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "41641e8b-fd13-2490-324d-ca84850a3b9c:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "41641e8b-fd13-2490-324d-ca84850a3b9c:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "442ba058-36df-70c9-5ae9-d675b79fba07:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "442ba058-36df-70c9-5ae9-d675b79fba07:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "442ba058-36df-70c9-5ae9-d675b79fba07:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "442ba058-36df-70c9-5ae9-d675b79fba07:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "442ba058-36df-70c9-5ae9-d675b79fba07:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "442ba058-36df-70c9-5ae9-d675b79fba07:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "454fffbd-b67f-7918-2cb7-aa625f8bf94b:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "454fffbd-b67f-7918-2cb7-aa625f8bf94b:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "454fffbd-b67f-7918-2cb7-aa625f8bf94b:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "454fffbd-b67f-7918-2cb7-aa625f8bf94b:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "454fffbd-b67f-7918-2cb7-aa625f8bf94b:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "454fffbd-b67f-7918-2cb7-aa625f8bf94b:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "46175fb2-8cf2-44c5-633e-0bac4a477aa8:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "46175fb2-8cf2-44c5-633e-0bac4a477aa8:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "46175fb2-8cf2-44c5-633e-0bac4a477aa8:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "46175fb2-8cf2-44c5-633e-0bac4a477aa8:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "46175fb2-8cf2-44c5-633e-0bac4a477aa8:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "46175fb2-8cf2-44c5-633e-0bac4a477aa8:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "473e789e-e003-fd0d-91f9-b6822e73d8e5:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "473e789e-e003-fd0d-91f9-b6822e73d8e5:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "473e789e-e003-fd0d-91f9-b6822e73d8e5:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "473e789e-e003-fd0d-91f9-b6822e73d8e5:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "473e789e-e003-fd0d-91f9-b6822e73d8e5:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "473e789e-e003-fd0d-91f9-b6822e73d8e5:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "4a07de18-2583-5923-8157-611358aa5ec5:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4a07de18-2583-5923-8157-611358aa5ec5:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4a07de18-2583-5923-8157-611358aa5ec5:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "4a07de18-2583-5923-8157-611358aa5ec5:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4a07de18-2583-5923-8157-611358aa5ec5:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4a07de18-2583-5923-8157-611358aa5ec5:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4ba0c216-f7a8-4342-a3e1-8346d6cca084:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4ba0c216-f7a8-4342-a3e1-8346d6cca084:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4ba0c216-f7a8-4342-a3e1-8346d6cca084:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4ba0c216-f7a8-4342-a3e1-8346d6cca084:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4ba0c216-f7a8-4342-a3e1-8346d6cca084:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4ba0c216-f7a8-4342-a3e1-8346d6cca084:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5504668d-e9a8-d5ec-8ae5-1a251f950401:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5504668d-e9a8-d5ec-8ae5-1a251f950401:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5504668d-e9a8-d5ec-8ae5-1a251f950401:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5504668d-e9a8-d5ec-8ae5-1a251f950401:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5504668d-e9a8-d5ec-8ae5-1a251f950401:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5504668d-e9a8-d5ec-8ae5-1a251f950401:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "56633e5f-cac7-bb64-78ed-cec56cc2f3be:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "56633e5f-cac7-bb64-78ed-cec56cc2f3be:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "56633e5f-cac7-bb64-78ed-cec56cc2f3be:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "56633e5f-cac7-bb64-78ed-cec56cc2f3be:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "56633e5f-cac7-bb64-78ed-cec56cc2f3be:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "56633e5f-cac7-bb64-78ed-cec56cc2f3be:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "58ff6708-e968-ee61-82fd-bea26566d352:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "58ff6708-e968-ee61-82fd-bea26566d352:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "58ff6708-e968-ee61-82fd-bea26566d352:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "58ff6708-e968-ee61-82fd-bea26566d352:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "58ff6708-e968-ee61-82fd-bea26566d352:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "58ff6708-e968-ee61-82fd-bea26566d352:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5fd55c9b-79bf-11f2-2058-889fdb8ebcee:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5fd55c9b-79bf-11f2-2058-889fdb8ebcee:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5fd55c9b-79bf-11f2-2058-889fdb8ebcee:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "5fd55c9b-79bf-11f2-2058-889fdb8ebcee:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5fd55c9b-79bf-11f2-2058-889fdb8ebcee:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "5fd55c9b-79bf-11f2-2058-889fdb8ebcee:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "68dd7fce-90de-47d7-df98-c887600eb5aa:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "68dd7fce-90de-47d7-df98-c887600eb5aa:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "68dd7fce-90de-47d7-df98-c887600eb5aa:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "68dd7fce-90de-47d7-df98-c887600eb5aa:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "68dd7fce-90de-47d7-df98-c887600eb5aa:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "68dd7fce-90de-47d7-df98-c887600eb5aa:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6957867a-d1a8-5a15-7948-8ec8c0ecc96c:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6957867a-d1a8-5a15-7948-8ec8c0ecc96c:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6957867a-d1a8-5a15-7948-8ec8c0ecc96c:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6957867a-d1a8-5a15-7948-8ec8c0ecc96c:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6957867a-d1a8-5a15-7948-8ec8c0ecc96c:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6957867a-d1a8-5a15-7948-8ec8c0ecc96c:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6a39c39a-17fb-f102-5689-3684429932a0:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6a39c39a-17fb-f102-5689-3684429932a0:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6a39c39a-17fb-f102-5689-3684429932a0:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6a39c39a-17fb-f102-5689-3684429932a0:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6a39c39a-17fb-f102-5689-3684429932a0:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6a39c39a-17fb-f102-5689-3684429932a0:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "72550061-64d4-edf7-2303-0f36da08f1ba:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "72550061-64d4-edf7-2303-0f36da08f1ba:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "72550061-64d4-edf7-2303-0f36da08f1ba:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "72550061-64d4-edf7-2303-0f36da08f1ba:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "72550061-64d4-edf7-2303-0f36da08f1ba:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "72550061-64d4-edf7-2303-0f36da08f1ba:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7801c065-d68b-a92b-8e45-6adf429dbd61:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7801c065-d68b-a92b-8e45-6adf429dbd61:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7801c065-d68b-a92b-8e45-6adf429dbd61:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7801c065-d68b-a92b-8e45-6adf429dbd61:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7801c065-d68b-a92b-8e45-6adf429dbd61:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7801c065-d68b-a92b-8e45-6adf429dbd61:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "78d1568b-4890-d6ef-3fed-c521975e4b81:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "78d1568b-4890-d6ef-3fed-c521975e4b81:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "78d1568b-4890-d6ef-3fed-c521975e4b81:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "78d1568b-4890-d6ef-3fed-c521975e4b81:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "78d1568b-4890-d6ef-3fed-c521975e4b81:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "78d1568b-4890-d6ef-3fed-c521975e4b81:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7e305567-5f7c-a9a3-82a0-75a5de7e1c69:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7e305567-5f7c-a9a3-82a0-75a5de7e1c69:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7e305567-5f7c-a9a3-82a0-75a5de7e1c69:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7e305567-5f7c-a9a3-82a0-75a5de7e1c69:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7e305567-5f7c-a9a3-82a0-75a5de7e1c69:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7e305567-5f7c-a9a3-82a0-75a5de7e1c69:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "806b81ef-8ff6-7dda-963f-23bf66f4c687:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "806b81ef-8ff6-7dda-963f-23bf66f4c687:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "806b81ef-8ff6-7dda-963f-23bf66f4c687:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "806b81ef-8ff6-7dda-963f-23bf66f4c687:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "806b81ef-8ff6-7dda-963f-23bf66f4c687:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "806b81ef-8ff6-7dda-963f-23bf66f4c687:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8356c108-01d1-c739-62a8-bc64c5b29a0a:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8356c108-01d1-c739-62a8-bc64c5b29a0a:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8356c108-01d1-c739-62a8-bc64c5b29a0a:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8356c108-01d1-c739-62a8-bc64c5b29a0a:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8356c108-01d1-c739-62a8-bc64c5b29a0a:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8356c108-01d1-c739-62a8-bc64c5b29a0a:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8889a2bf-7192-6548-40da-58fa410ab3bf:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8889a2bf-7192-6548-40da-58fa410ab3bf:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8889a2bf-7192-6548-40da-58fa410ab3bf:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8889a2bf-7192-6548-40da-58fa410ab3bf:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8889a2bf-7192-6548-40da-58fa410ab3bf:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8889a2bf-7192-6548-40da-58fa410ab3bf:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "8b6e913f-8e31-9d5a-d95c-ec4f9a97f46c:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8b6e913f-8e31-9d5a-d95c-ec4f9a97f46c:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8b6e913f-8e31-9d5a-d95c-ec4f9a97f46c:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8b6e913f-8e31-9d5a-d95c-ec4f9a97f46c:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8b6e913f-8e31-9d5a-d95c-ec4f9a97f46c:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8b6e913f-8e31-9d5a-d95c-ec4f9a97f46c:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8fe596bb-b56c-9a06-d442-a0be4a2121f9:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8fe596bb-b56c-9a06-d442-a0be4a2121f9:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8fe596bb-b56c-9a06-d442-a0be4a2121f9:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8fe596bb-b56c-9a06-d442-a0be4a2121f9:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8fe596bb-b56c-9a06-d442-a0be4a2121f9:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "8fe596bb-b56c-9a06-d442-a0be4a2121f9:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "91cc7f8a-64f8-6d17-048d-975421dc0bd4:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "91cc7f8a-64f8-6d17-048d-975421dc0bd4:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "91cc7f8a-64f8-6d17-048d-975421dc0bd4:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "91cc7f8a-64f8-6d17-048d-975421dc0bd4:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "91cc7f8a-64f8-6d17-048d-975421dc0bd4:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "91cc7f8a-64f8-6d17-048d-975421dc0bd4:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a1fa053a-0ec1-711c-f34c-c76d84214660:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a1fa053a-0ec1-711c-f34c-c76d84214660:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "a1fa053a-0ec1-711c-f34c-c76d84214660:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a1fa053a-0ec1-711c-f34c-c76d84214660:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a1fa053a-0ec1-711c-f34c-c76d84214660:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "a1fa053a-0ec1-711c-f34c-c76d84214660:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a391ffa4-1191-0632-8d99-d28f28e0640f:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a391ffa4-1191-0632-8d99-d28f28e0640f:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "a391ffa4-1191-0632-8d99-d28f28e0640f:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "a391ffa4-1191-0632-8d99-d28f28e0640f:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "a391ffa4-1191-0632-8d99-d28f28e0640f:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a391ffa4-1191-0632-8d99-d28f28e0640f:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "a4826e1d-ee79-80c2-5fda-fabf87b2f831:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a4826e1d-ee79-80c2-5fda-fabf87b2f831:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a4826e1d-ee79-80c2-5fda-fabf87b2f831:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a4826e1d-ee79-80c2-5fda-fabf87b2f831:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a4826e1d-ee79-80c2-5fda-fabf87b2f831:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a4826e1d-ee79-80c2-5fda-fabf87b2f831:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "a4fb28d8-aa00-4356-212b-6eb861103e56:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a4fb28d8-aa00-4356-212b-6eb861103e56:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "a4fb28d8-aa00-4356-212b-6eb861103e56:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a4fb28d8-aa00-4356-212b-6eb861103e56:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a4fb28d8-aa00-4356-212b-6eb861103e56:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a4fb28d8-aa00-4356-212b-6eb861103e56:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "aa38914f-54e6-c5e2-f798-d998405f41ff:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "aa38914f-54e6-c5e2-f798-d998405f41ff:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "aa38914f-54e6-c5e2-f798-d998405f41ff:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "aa38914f-54e6-c5e2-f798-d998405f41ff:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "aa38914f-54e6-c5e2-f798-d998405f41ff:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "aa38914f-54e6-c5e2-f798-d998405f41ff:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b0a54fa5-382d-0f0d-760d-8ad54a114f9e:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b0a54fa5-382d-0f0d-760d-8ad54a114f9e:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b0a54fa5-382d-0f0d-760d-8ad54a114f9e:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b0a54fa5-382d-0f0d-760d-8ad54a114f9e:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b0a54fa5-382d-0f0d-760d-8ad54a114f9e:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b0a54fa5-382d-0f0d-760d-8ad54a114f9e:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b2b4250d-b051-a2bb-5d73-50d73e4462da:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b2b4250d-b051-a2bb-5d73-50d73e4462da:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b2b4250d-b051-a2bb-5d73-50d73e4462da:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b2b4250d-b051-a2bb-5d73-50d73e4462da:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b2b4250d-b051-a2bb-5d73-50d73e4462da:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b2b4250d-b051-a2bb-5d73-50d73e4462da:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "bf2939a8-f7de-a22a-70ee-47791c9fbb83:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "bf2939a8-f7de-a22a-70ee-47791c9fbb83:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "bf2939a8-f7de-a22a-70ee-47791c9fbb83:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "bf2939a8-f7de-a22a-70ee-47791c9fbb83:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "bf2939a8-f7de-a22a-70ee-47791c9fbb83:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "bf2939a8-f7de-a22a-70ee-47791c9fbb83:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c1943780-bc56-b4b0-6d54-72be441d4b38:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c1943780-bc56-b4b0-6d54-72be441d4b38:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c1943780-bc56-b4b0-6d54-72be441d4b38:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c1943780-bc56-b4b0-6d54-72be441d4b38:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c1943780-bc56-b4b0-6d54-72be441d4b38:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c1943780-bc56-b4b0-6d54-72be441d4b38:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c644e98b-52a7-72da-9d70-a39812aa5d36:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "c644e98b-52a7-72da-9d70-a39812aa5d36:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c644e98b-52a7-72da-9d70-a39812aa5d36:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c644e98b-52a7-72da-9d70-a39812aa5d36:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c644e98b-52a7-72da-9d70-a39812aa5d36:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c644e98b-52a7-72da-9d70-a39812aa5d36:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c6dba733-f0dc-42fd-499c-c1dff2196667:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c6dba733-f0dc-42fd-499c-c1dff2196667:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c6dba733-f0dc-42fd-499c-c1dff2196667:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c6dba733-f0dc-42fd-499c-c1dff2196667:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c6dba733-f0dc-42fd-499c-c1dff2196667:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c6dba733-f0dc-42fd-499c-c1dff2196667:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "c7d16647-4cbc-62a7-8100-2791c2303360:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c7d16647-4cbc-62a7-8100-2791c2303360:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c7d16647-4cbc-62a7-8100-2791c2303360:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c7d16647-4cbc-62a7-8100-2791c2303360:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c7d16647-4cbc-62a7-8100-2791c2303360:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "c7d16647-4cbc-62a7-8100-2791c2303360:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "cca167ac-254f-2751-1ce2-d0e54375265b:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "cca167ac-254f-2751-1ce2-d0e54375265b:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "cca167ac-254f-2751-1ce2-d0e54375265b:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "cca167ac-254f-2751-1ce2-d0e54375265b:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "cca167ac-254f-2751-1ce2-d0e54375265b:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "cca167ac-254f-2751-1ce2-d0e54375265b:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d332296c-cc64-4163-1928-21963df2b8d6:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d332296c-cc64-4163-1928-21963df2b8d6:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "d332296c-cc64-4163-1928-21963df2b8d6:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d332296c-cc64-4163-1928-21963df2b8d6:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d332296c-cc64-4163-1928-21963df2b8d6:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d332296c-cc64-4163-1928-21963df2b8d6:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "d4b5ea79-1c04-879f-c0fd-cbcadec804e2:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d4b5ea79-1c04-879f-c0fd-cbcadec804e2:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d4b5ea79-1c04-879f-c0fd-cbcadec804e2:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d4b5ea79-1c04-879f-c0fd-cbcadec804e2:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d4b5ea79-1c04-879f-c0fd-cbcadec804e2:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d4b5ea79-1c04-879f-c0fd-cbcadec804e2:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "d671b0c6-112a-da67-eb69-116323b2b1cc:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d671b0c6-112a-da67-eb69-116323b2b1cc:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d671b0c6-112a-da67-eb69-116323b2b1cc:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d671b0c6-112a-da67-eb69-116323b2b1cc:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d671b0c6-112a-da67-eb69-116323b2b1cc:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d671b0c6-112a-da67-eb69-116323b2b1cc:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "de683e42-8865-bcfb-61ee-026c8a0b5497:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "de683e42-8865-bcfb-61ee-026c8a0b5497:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "de683e42-8865-bcfb-61ee-026c8a0b5497:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "de683e42-8865-bcfb-61ee-026c8a0b5497:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "de683e42-8865-bcfb-61ee-026c8a0b5497:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "de683e42-8865-bcfb-61ee-026c8a0b5497:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e059d610-1b64-ed6c-4b25-3358453f8215:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e059d610-1b64-ed6c-4b25-3358453f8215:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e059d610-1b64-ed6c-4b25-3358453f8215:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e059d610-1b64-ed6c-4b25-3358453f8215:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e059d610-1b64-ed6c-4b25-3358453f8215:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e059d610-1b64-ed6c-4b25-3358453f8215:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e46c69ba-b7d4-b875-c2ac-66af9f7a4f60:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e46c69ba-b7d4-b875-c2ac-66af9f7a4f60:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e46c69ba-b7d4-b875-c2ac-66af9f7a4f60:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e46c69ba-b7d4-b875-c2ac-66af9f7a4f60:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e46c69ba-b7d4-b875-c2ac-66af9f7a4f60:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e46c69ba-b7d4-b875-c2ac-66af9f7a4f60:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e48827f5-80d5-c13d-81ae-83d3a83a1c44:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e48827f5-80d5-c13d-81ae-83d3a83a1c44:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e48827f5-80d5-c13d-81ae-83d3a83a1c44:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e48827f5-80d5-c13d-81ae-83d3a83a1c44:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e48827f5-80d5-c13d-81ae-83d3a83a1c44:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e48827f5-80d5-c13d-81ae-83d3a83a1c44:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e8646279-833c-4ffe-077d-a509962848c2:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e8646279-833c-4ffe-077d-a509962848c2:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e8646279-833c-4ffe-077d-a509962848c2:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e8646279-833c-4ffe-077d-a509962848c2:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e8646279-833c-4ffe-077d-a509962848c2:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e8646279-833c-4ffe-077d-a509962848c2:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e9ad08e7-ff69-b9d6-7446-69ad5e662b1a:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e9ad08e7-ff69-b9d6-7446-69ad5e662b1a:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e9ad08e7-ff69-b9d6-7446-69ad5e662b1a:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e9ad08e7-ff69-b9d6-7446-69ad5e662b1a:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e9ad08e7-ff69-b9d6-7446-69ad5e662b1a:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "e9ad08e7-ff69-b9d6-7446-69ad5e662b1a:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ead6778d-812d-4450-de66-ca8fa3bc071c:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ead6778d-812d-4450-de66-ca8fa3bc071c:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "ead6778d-812d-4450-de66-ca8fa3bc071c:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ead6778d-812d-4450-de66-ca8fa3bc071c:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ead6778d-812d-4450-de66-ca8fa3bc071c:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ead6778d-812d-4450-de66-ca8fa3bc071c:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f3c2ee41-c0f8-c199-494d-0be9f21fc994:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f3c2ee41-c0f8-c199-494d-0be9f21fc994:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f3c2ee41-c0f8-c199-494d-0be9f21fc994:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f3c2ee41-c0f8-c199-494d-0be9f21fc994:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f3c2ee41-c0f8-c199-494d-0be9f21fc994:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f3c2ee41-c0f8-c199-494d-0be9f21fc994:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 1
+      },
+      "item_id": "f4c8fc6f-853c-203e-3cfc-fb5046664824:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f4c8fc6f-853c-203e-3cfc-fb5046664824:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f4c8fc6f-853c-203e-3cfc-fb5046664824:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f4c8fc6f-853c-203e-3cfc-fb5046664824:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f4c8fc6f-853c-203e-3cfc-fb5046664824:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "f4c8fc6f-853c-203e-3cfc-fb5046664824:SPD",
+      "metrics": {},
+      "split": "dev"
+    }
+  ],
+  "publication": {
+    "insufficient_measures": [
+      "CBP",
+      "SPC",
+      "SPD"
+    ],
+    "min_test_open": {
+      "BCS": 3,
+      "CBP": 5,
+      "COL": 5,
+      "EED": 5,
+      "SPC": 5,
+      "SPD": 5
+    },
+    "note": "insufficient test gold-open units for CBP, SPC, SPD (guard: n >= 5 per measure, BCS >= 3); the headline is provisional"
+  },
+  "publication_status": "publishable",
+  "publishable": true,
+  "screening_counts": {
+    "SNS": {
+      "closed": 59,
+      "gap_open": 1
+    },
+    "TSC": {
+      "closed": 59,
+      "gap_open": 1
+    }
+  },
+  "sha_drift_count": 0,
+  "snapshot": {
+    "feature_version": "v1",
+    "generated_from_sha": "c373039e09e1c53bae491f11db0789645212c23f",
+    "patient_count": "60",
+    "service_version": "0.1.0",
+    "valuesets_version": "2026.08"
+  },
+  "tier": "engine",
+  "unresolved_evidence": 0,
+  "validation_mode": "off",
+  "validator_model": "none",
+  "validator_unsafe_close": 0
+}

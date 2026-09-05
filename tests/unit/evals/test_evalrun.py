@@ -345,9 +345,17 @@ def test_report_placeholders_when_nothing_is_measured(
     assert "README markers" in capsys.readouterr().err
 
 
-def test_committed_readme_carries_the_placeholders() -> None:
-    text = (Path(__file__).resolve().parents[3] / "README.md").read_text(encoding="utf-8")
-    assert EVAL_PLACEHOLDER in text and MEASURES_PLACEHOLDER in text
+def test_committed_readme_regions_are_in_sync_with_committed_artifacts() -> None:
+    """The README carries both regions and matches evals/artifacts (or the placeholders)."""
+    root = Path(__file__).resolve().parents[3]
+    text = (root / "README.md").read_text(encoding="utf-8")
+    assert "<!-- EVAL:BEGIN -->" in text and "<!-- EVAL-MEASURES:BEGIN -->" in text
+    assert (
+        sync_readme_cmd(
+            check=True, readme=root / "README.md", artifacts_dir=root / "evals" / "artifacts"
+        )
+        == EXIT_OK
+    )
 
 
 def test_report_syncs_and_checks_the_engine_artifact(

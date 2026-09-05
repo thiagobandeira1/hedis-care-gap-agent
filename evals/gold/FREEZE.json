@@ -1,0 +1,90 @@
+{
+  "as_of": "2025-12-31",
+  "engine_contact_before_freeze": false,
+  "frozen_at": "2026-09-05T01:23:52+00:00",
+  "gap_cases_sha256": "241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef",
+  "git_sha": "3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f",
+  "gold_counts": {
+    "dev/BCS": {
+      "closed": 1,
+      "not_eligible": 12,
+      "open": 4
+    },
+    "dev/CBP": {
+      "closed": 6,
+      "not_eligible": 11
+    },
+    "dev/COL": {
+      "closed": 6,
+      "not_eligible": 8,
+      "open": 3
+    },
+    "dev/EED": {
+      "closed": 2,
+      "not_eligible": 14,
+      "open": 1
+    },
+    "dev/SNS": {
+      "closed": 17
+    },
+    "dev/SPC": {
+      "closed": 1,
+      "not_eligible": 15,
+      "open": 1
+    },
+    "dev/SPD": {
+      "not_eligible": 16,
+      "open": 1
+    },
+    "dev/TSC": {
+      "closed": 17
+    },
+    "test/BCS": {
+      "closed": 1,
+      "not_eligible": 30,
+      "open": 12
+    },
+    "test/CBP": {
+      "closed": 17,
+      "excluded": 1,
+      "not_eligible": 23,
+      "open": 2
+    },
+    "test/COL": {
+      "closed": 13,
+      "excluded": 1,
+      "not_eligible": 22,
+      "open": 7
+    },
+    "test/EED": {
+      "closed": 6,
+      "not_eligible": 32,
+      "open": 5
+    },
+    "test/SNS": {
+      "closed": 42,
+      "open": 1
+    },
+    "test/SPC": {
+      "closed": 14,
+      "not_eligible": 29
+    },
+    "test/SPD": {
+      "not_eligible": 41,
+      "open": 2
+    },
+    "test/TSC": {
+      "closed": 42,
+      "open": 1
+    }
+  },
+  "labeler": "llm-blind-claude-v1",
+  "n_patients": 60,
+  "n_rows": 480,
+  "protocol": "docs/SPEC.md section 6; labels by a blind LLM labeler over value-set-agnostic worksheets",
+  "split_patients": {
+    "dev": 17,
+    "test": 43
+  },
+  "uncertain_rows": 0
+}

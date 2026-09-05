@@ -63,3 +63,14 @@ gate (stage G). None blocks tests; all are documented in the modules that carry 
 20. SPEC section 8/10 mention 13 personas, `scripts/slim_bundle.py`, `curate_personas.py`, and a
     MemorySaver CLI path; the code has 5 personas, no slimming scripts, and SqliteSaver in the CLI.
     Align the SPEC with the code (the docs describe the code).
+
+## From the first eval run (2026-09-04)
+
+21. `evals/artifacts/engine-latest.json`: `metrics.overall_dev` only carries `review_flag_rate`
+    (empty when gold has no `escalate` rows, as now) and `metrics.per_split` / `per_category`
+    are empty dicts. Fill them (dev P/R/F1, per-measure P/R) or drop the empty keys.
+22. Engine tier scored 1.000/1.000/1.000 on 258 test items (28 gold-open) and the 12-patient
+    second labeler agreed on 96/96 items. Both labelers are the same model family and applied a
+    guide derived from the same rule JSON + code lists the engine uses, so agreement is expected;
+    the review must confirm no leakage (labelers never saw engine output; engine ran only after
+    FREEZE.json) and that CODE_AUDIT.md's 124 flagged events are adjudicated.

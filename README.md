@@ -164,11 +164,30 @@ reject), and Outbox & audit. A persistent demo-grade banner is shown; the UI nev
 > The headline precision/recall measures the deterministic engine (plus code-verified validator decisions) against demo-grade rules applied by a blind labeler (an LLM working from worksheets, independent of the engine; human spot-check pending); it is independent of the drafting agent. Agents are measured separately.
 
 <!-- EVAL:BEGIN -->
-_Gap-detection precision / recall: not yet measured (no eval artifact yet; run `caregap eval --tier engine` once `evals/gold/gap_cases.jsonl` exists)._
+| Metric | Engine-only |
+|---|---|
+| micro_f1 | 1.000 |
+| micro_precision | 1.000 |
+| micro_recall | 1.000 |
+
+_Stamps: git_sha=3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f · config_hash=66da144d516d2df64719492bb3793848449f97361a96b0a639c20b9218f6ea5a · dataset_hash=241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef_
 <!-- EVAL:END -->
 
 <!-- EVAL-MEASURES:BEGIN -->
-_Per-measure counts: not yet measured._
+| measure | n_test | tp | fp | fn | precision | recall | f1 |
+|---|---|---|---|---|---|---|---|
+| CBP | 43 | 2 | 0 | 0 | insufficient | insufficient | insufficient |
+| EED | 43 | 5 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| BCS | 43 | 12 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| COL | 43 | 7 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| SPC | 43 | 0 | 0 | 0 | insufficient | insufficient | insufficient |
+| SPD | 43 | 2 | 0 | 0 | insufficient | insufficient | insufficient |
+
+_Source: engine-latest.json (Engine-only, test split) · git_sha=3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f · gold_sha256=241ae473bf57_
+_Publication guard: insufficient test gold-open units for CBP, SPC, SPD (guard: n >= 5 per measure, BCS >= 3); the headline is provisional._
+_Strict variant (needs_review counts as no gap): micro_f1=1.000 · micro_precision=1.000 · micro_recall=1.000_
+_Pipeline tier (Engine+validator): unpublishable — 52 model call(s) had no recording (fallback sentinels); engine-only numbers are shown._
+_Outreach faithfulness (LLM judge): not yet measured._
 <!-- EVAL-MEASURES:END -->
 
 Both regions above are rewritten by `caregap report` from the latest artifacts and checked in
@@ -188,6 +207,13 @@ CI; no number in this file is typed by hand. The design, in short (full protocol
   locally, re-parsed keylessly in CI).
 - Six ratchet-gated metrics with a 0.02 tolerance; per-measure rows publish only with at least
   five test gold-open units (three for BCS); TSC and SNS are counts, never ratios.
+- How to read a perfect score: the labeler applied a guide written from the same rule JSON and
+  public code lists the engine implements, so the test-split numbers measure whether the code
+  does what the written rules say over 60 synthetic patients (258 test units, 28 gold-open) —
+  not clinical validity, and not robustness to data the rules never anticipated. Both labelers
+  are the same model family, which inflates their agreement. The interesting evidence is in
+  `evals/gold/CODE_AUDIT.md` (events the labeler flagged as matching a concept outside the listed
+  codes) and `evals/gold/ADJUDICATION.md`.
 
 ## Repository layout
 

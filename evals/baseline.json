@@ -1,0 +1,11 @@
+{
+  "metrics": {
+    "engine.micro_f1": 1.0,
+    "engine.micro_precision": 1.0,
+    "engine.micro_recall": 1.0
+  },
+  "note": "Measured ratchet baseline on the TEST split (never aspirational). Written only by `caregap eval --tier <tier> --update-baseline`; CI fails when a gated metric moves more than 0.02 in the wrong direction. engine.* comes from the engine tier, the rest from the pipeline tier.",
+  "sources": {
+    "engine": "engine-latest.json@3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f"
+  }
+}
