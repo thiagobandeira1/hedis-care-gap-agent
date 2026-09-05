@@ -64,3 +64,5 @@ Thumbs.db
 # ---- Gold-set fixtures are SYNTHETIC P6 snapshots of Synthea panel patients (committed for keyless evals) ----
 !evals/gold/snapshots/**
 !evals/**/*.json.gz
+# Blind worksheets are regenerated from the committed snapshots: python scripts/worksheet.py --snapshots evals/gold/snapshots --out evals/gold/worksheets
+evals/gold/worksheets/
