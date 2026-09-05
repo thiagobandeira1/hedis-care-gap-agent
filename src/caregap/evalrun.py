@@ -711,10 +711,13 @@ def render_measures_region(
         )
     label = PRIMARY_LABEL if primary.get("tier") == "pipeline" else ENGINE_LABEL
     dataset = str(primary.get("dataset_hash", ""))[:12]
+    outcomes = str(primary.get("engine_outcomes_sha256", ""))[:12]
     lines.append("")
+    # Content hashes only: the git sha changes on every commit and would make `report --check`
+    # fail in CI right after `eval` rewrites the artifact (the artifact file keeps the sha).
     lines.append(
         f"_Source: {primary.get('tier')}-latest.json ({label}, test split) · "
-        f"git_sha={primary.get('git_sha')} · gold_sha256={dataset}_"
+        f"outcomes_sha256={outcomes} · gold_sha256={dataset}_"
     )
     publication = primary.get("publication")
     note = publication.get("note") if isinstance(publication, Mapping) else None
@@ -790,6 +793,13 @@ def _sync_placeholders(readme: Path, artifacts: Path, *, check: bool) -> int:
     return EXIT_OK
 
 
+def _readme_view(artifact: Mapping[str, object]) -> dict[str, object]:
+    """The artifact as the README sees it: without ``git_sha``, which changes on every commit
+    and would make ``report --check`` fail in CI right after ``eval`` rewrites the artifact.
+    The stamp line then carries content hashes only (config, gold); the artifact keeps the sha."""
+    return {key: value for key, value in artifact.items() if key != "git_sha"}
+
+
 def sync_readme_cmd(
     *, check: bool = False, readme: Path = README_PATH, artifacts_dir: Path | None = None
 ) -> int:
@@ -807,6 +817,7 @@ def sync_readme_cmd(
             return _sync_placeholders(readme, artifacts, check=check)
         comparison, label = _readme_labels(primary)
         measures_block = render_measures_region(primary, pipeline=pipeline, outreach=outreach)
+        primary = _readme_view(primary)
         text = readme.read_text(encoding="utf-8")
         if check:
             eval_ok = readme_in_sync(readme, primary, comparison=comparison, primary_label=label)

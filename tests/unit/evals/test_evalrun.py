@@ -424,3 +424,22 @@ def test_measures_region_reports_unpublishable_pipeline_and_untrusted_judge() ->
     assert "unpublishable — 3 model call(s) had no recording" in block
     assert "**UNTRUSTED** (judge-human agreement 0.500 < 0.80)" in block
     assert "faithfulness=0.900" in block and "judged=4" in block
+
+
+def test_report_check_is_stable_across_git_shas(
+    tmp_path: Path, evals_dir: Path, settings: Settings, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """CI runs `eval` (which restamps the artifact with the current sha) before `report
+    --check`; the README regions must therefore carry content hashes only."""
+    paths = with_snapshots(with_gold(evals_dir))
+    assert run("engine", evals_dir, settings, regen=True) == EXIT_OK
+    capsys.readouterr()
+    readme = tmp_path / "README.md"
+    readme.write_text(README_STUB, encoding="utf-8")
+    assert sync_readme_cmd(readme=readme, artifacts_dir=paths.artifacts) == EXIT_OK
+    assert "git_sha" not in readme.read_text(encoding="utf-8")
+    artifact_path = paths.artifact("engine")
+    payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    payload["git_sha"] = "0" * 40
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+    assert sync_readme_cmd(check=True, readme=readme, artifacts_dir=paths.artifacts) == EXIT_OK

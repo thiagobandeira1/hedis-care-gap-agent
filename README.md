@@ -170,7 +170,7 @@ reject), and Outbox & audit. A persistent demo-grade banner is shown; the UI nev
 | micro_precision | 1.000 |
 | micro_recall | 1.000 |
 
-_Stamps: git_sha=3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f · config_hash=66da144d516d2df64719492bb3793848449f97361a96b0a639c20b9218f6ea5a · dataset_hash=241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef_
+_Stamps: config_hash=66da144d516d2df64719492bb3793848449f97361a96b0a639c20b9218f6ea5a · dataset_hash=241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef_
 <!-- EVAL:END -->
 
 <!-- EVAL-MEASURES:BEGIN -->
@@ -183,7 +183,7 @@ _Stamps: git_sha=3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f · config_hash=66da144
 | SPC | 43 | 0 | 0 | 0 | insufficient | insufficient | insufficient |
 | SPD | 43 | 2 | 0 | 0 | insufficient | insufficient | insufficient |
 
-_Source: engine-latest.json (Engine-only, test split) · git_sha=3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f · gold_sha256=241ae473bf57_
+_Source: engine-latest.json (Engine-only, test split) · outcomes_sha256=d5b788978c44 · gold_sha256=241ae473bf57_
 _Publication guard: insufficient test gold-open units for CBP, SPC, SPD (guard: n >= 5 per measure, BCS >= 3); the headline is provisional._
 _Strict variant (needs_review counts as no gap): micro_f1=1.000 · micro_precision=1.000 · micro_recall=1.000_
 _Pipeline tier (Engine+validator): unpublishable — 52 model call(s) had no recording (fallback sentinels); engine-only numbers are shown._
