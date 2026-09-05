@@ -25,12 +25,10 @@ jobs:
         run: uv run mypy
       - name: Tests (keyless — every graph path under a fake model)
         run: uv run pytest
-      - name: Gap-detection eval ratchet gate (keyless, recorded outputs)
-        run: uv run caregap eval --gate
-      - name: README eval table matches committed artifact
-        run: |
-          uv run caregap report
-          git diff --exit-code README.md
+      - name: Gap-detection eval ratchet gate (keyless; exit 2 until gold labels + baseline exist)
+        run: uv run caregap eval --tier engine --gate
+      - name: README eval regions match the committed artifacts
+        run: uv run caregap report --check
       - name: Guard — no data files or secrets tracked
         run: |
           if git ls-files | grep -E '\.(csv|tsv|parquet|db|duckdb|sqlite|sqlite3)$|^\.env$'; then

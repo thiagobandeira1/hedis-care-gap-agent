@@ -74,6 +74,7 @@ addopts = "-q --cov=caregap --cov-report=term-missing"
 markers = [
     "llm: needs a real ANTHROPIC key (auto-skipped in CI)",
     "p6: needs a running fhir-feature-service (auto-skipped when unavailable)",
+    "slow: in-process DuckDB ingest of synthetic/samples through the embedded P6 (seconds)",
 ]
 
 [tool.coverage.run]
