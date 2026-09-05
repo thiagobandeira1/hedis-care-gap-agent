@@ -180,8 +180,7 @@ Gates: `micro_precision`, `micro_recall`, `engine.micro_precision`, `engine.micr
 tests. Judge–human agreement < 0.80 → untrusted banner.
 
 Headline honesty statement (README, verbatim): *"The headline precision/recall measures the
-deterministic engine (plus code-verified validator decisions) against hand-applied demo-grade
-rules; it is independent of the drafting agent. Agents are measured separately."*
+deterministic engine (plus code-verified validator decisions) against demo-grade rules applied by a blind labeler (an LLM working from worksheets, independent of the engine; human spot-check pending); it is independent of the drafting agent. Agents are measured separately."*
 
 ## 7. API, UI, CLI
 

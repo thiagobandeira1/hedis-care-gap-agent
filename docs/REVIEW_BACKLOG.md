@@ -52,3 +52,14 @@ gate (stage G). None blocks tests; all are documented in the modules that carry 
 17. The committed personas carry no escalations (goldens `esc=[]` for all five); validator paths
     are exercised only through synthetic factory snapshots. The gold panel must include real
     escalation carriers (E1/E3/E5/E6) or the pipeline column is untested on real records.
+
+## From the docs pass (2026-09-04)
+
+18. CI is a single ubuntu `quality` job: no Windows job, no coverage floor (SPEC says >= 85%), no
+    `contract` job (live embedded P6 personas == snapshots), and no hygiene tests (tracked files,
+    CPT URIs, MIMIC tokens, `sk-ant-`). Add before shipping.
+19. `E2` is declared in `EscalationKind` but no shipped rule emits it; either implement or drop it
+    from the SPEC table and README.
+20. SPEC section 8/10 mention 13 personas, `scripts/slim_bundle.py`, `curate_personas.py`, and a
+    MemorySaver CLI path; the code has 5 personas, no slimming scripts, and SqliteSaver in the CLI.
+    Align the SPEC with the code (the docs describe the code).

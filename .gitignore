@@ -61,3 +61,6 @@ Thumbs.db
 !synthetic/samples/**
 !synthetic/p6_snapshots/**
 !synthetic/**/*.json.gz
+# ---- Gold-set fixtures are SYNTHETIC P6 snapshots of Synthea panel patients (committed for keyless evals) ----
+!evals/gold/snapshots/**
+!evals/**/*.json.gz
