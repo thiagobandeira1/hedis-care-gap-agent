@@ -173,6 +173,151 @@ class RuleText(BaseModel):
         return {e.id: e.coverage for e in self.elements_of("exclusion") if e.coverage is not None}
 
 
+#: Rule-module ``COVERAGE`` keys -> the rule JSON element id they cite. The rule modules
+#: keep their own (public-criterion) vocabulary; this table is the join the UI / packet use.
+#: ``tests/unit/measures/test_rule_json.py`` checks every key of every rule is mapped and
+#: every target element exists.
+COVERAGE_ELEMENTS: dict[MeasureId, dict[str, str]] = {
+    "CBP": {
+        "died_during_measurement_period": "cbp/exclusion/death",
+        "hospice_during_measurement_period": "cbp/exclusion/hospice",
+        "esrd": "cbp/exclusion/esrd",
+        "dialysis": "cbp/exclusion/dialysis",
+        "kidney_transplant": "cbp/exclusion/kidney_transplant",
+        "pregnancy_during_measurement_period": "cbp/exclusion/pregnancy",
+        "palliative_care": "cbp/exclusion/palliative_care",
+        "frailty_and_advanced_illness_66_to_80": "cbp/exclusion/frailty_and_advanced_illness_66_80",
+        "frailty_81_plus": "cbp/exclusion/frailty_81_plus",
+        "institutional_snp_or_long_term_institution_66_plus": (
+            "cbp/exclusion/isnp_or_long_term_institution_66_plus"
+        ),
+    },
+    "EED": {
+        "died_during_measurement_period": "eed/exclusion/death",
+        "hospice_during_measurement_period": "eed/exclusion/hospice",
+        "frailty_and_advanced_illness_66_plus": (
+            "eed/exclusion/frailty_and_advanced_illness_66_plus"
+        ),
+        "palliative_care_during_measurement_period": "eed/exclusion/palliative_care",
+        "institutional_snp_or_long_term_institution_66_plus": (
+            "eed/exclusion/isnp_or_long_term_institution_66_plus"
+        ),
+        "gestational_or_steroid_induced_diabetes_without_diabetes_dx": (
+            "eed/exclusion/no_diabetes_dx_with_pcos_gestational_or_steroid"
+        ),
+    },
+    "BCS": {
+        "died_during_measurement_period": "bcs/exclusion/death",
+        "hospice_during_measurement_period": "bcs/exclusion/hospice",
+        "bilateral_mastectomy": "bcs/exclusion/bilateral_mastectomy",
+        "advanced_illness_and_frailty": "bcs/exclusion/frailty_and_advanced_illness_66_plus",
+        "palliative_care": "bcs/exclusion/palliative_care",
+    },
+    "COL": {
+        "numerator_colonoscopy_my_plus_9_prior_years": (
+            "col/numerator/colonoscopy_my_plus_9_prior_years"
+        ),
+        "numerator_fobt_fit_in_my": "col/numerator/fobt_fit_in_my",
+        "numerator_flexible_sigmoidoscopy_my_plus_4_prior_years": (
+            "col/numerator/flexible_sigmoidoscopy_my_plus_4_prior_years"
+        ),
+        "numerator_ct_colonography_my_plus_4_prior_years": (
+            "col/numerator/ct_colonography_my_plus_4_prior_years"
+        ),
+        "numerator_sdna_fit_my_plus_2_prior_years": "col/numerator/sdna_fit_my_plus_2_prior_years",
+        "exclusion_death_during_measurement_period": "col/exclusion/death",
+        "exclusion_hospice_during_measurement_period": "col/exclusion/hospice",
+        "exclusion_colorectal_cancer_any_time": "col/exclusion/colorectal_cancer",
+        "exclusion_total_colectomy_any_time": "col/exclusion/total_colectomy",
+        "exclusion_palliative_care_during_measurement_period": "col/exclusion/palliative_care",
+        "exclusion_isnp_or_long_term_institution_66_plus": (
+            "col/exclusion/isnp_or_long_term_institution_66_plus"
+        ),
+        "exclusion_frailty_and_advanced_illness_66_plus": (
+            "col/exclusion/frailty_and_advanced_illness_66_plus"
+        ),
+    },
+    "SPC": {
+        "died_during_measurement_period": "spc/exclusion/death",
+        "hospice_during_measurement_period": "spc/exclusion/hospice",
+        "esrd": "spc/exclusion/esrd_or_dialysis",
+        "dialysis": "spc/exclusion/esrd_or_dialysis",
+        "pregnancy": "spc/exclusion/pregnancy",
+        "cirrhosis": "spc/exclusion/cirrhosis",
+        "myalgia_myositis_myopathy_rhabdomyolysis": (
+            "spc/exclusion/myalgia_myositis_myopathy_rhabdomyolysis"
+        ),
+        "in_vitro_fertilization": "spc/exclusion/in_vitro_fertilization",
+        "clomiphene_dispensed": "spc/exclusion/clomiphene",
+        "palliative_care": "spc/exclusion/palliative_care",
+        "frailty_and_advanced_illness_66_plus": (
+            "spc/exclusion/frailty_and_advanced_illness_66_plus"
+        ),
+        "institutional_snp_or_long_term_institution_66_plus": (
+            "spc/exclusion/isnp_or_long_term_institution_66_plus"
+        ),
+    },
+    "SPD": {
+        "died_during_measurement_period": "spd/exclusion/death",
+        "hospice_during_measurement_period": "spd/exclusion/hospice",
+        "esrd": "spd/exclusion/esrd_or_dialysis",
+        "dialysis": "spd/exclusion/esrd_or_dialysis",
+        "pregnancy": "spd/exclusion/pregnancy",
+        "in_vitro_fertilization": "spd/exclusion/pregnancy_lactation_and_fertility",
+        "clomiphene_dispensed": "spd/exclusion/pregnancy_lactation_and_fertility",
+        "cirrhosis": "spd/exclusion/cirrhosis",
+        "myalgia_myositis_myopathy_rhabdomyolysis": "spd/exclusion/rhabdomyolysis_and_myopathy",
+        "palliative_care": "spd/exclusion/palliative_care",
+        "frailty_and_advanced_illness_66_plus": (
+            "spd/exclusion/frailty_and_advanced_illness_66_plus"
+        ),
+        "institutional_snp_or_long_term_institution_66_plus": (
+            "spd/exclusion/isnp_or_long_term_institution_66_plus"
+        ),
+        "diabetes_medication_only_with_pcos_gestational_or_steroid_induced": (
+            "spd/exclusion/polycystic_ovary_syndrome"
+        ),
+    },
+    "TSC": {
+        "numerator_screening_in_my": "tsc/numerator/tobacco_status_answer",
+        "numerator_tobacco_cessation_intervention": "tsc/numerator/cessation_intervention",
+        "exclusion_death_during_measurement_period": "tsc/exclusion/death",
+        "exclusion_hospice_during_measurement_period": "tsc/exclusion/hospice",
+        "exclusion_palliative_care_during_measurement_period": "tsc/exclusion/palliative_care",
+        "exclusion_isnp_or_long_term_institution_66_plus": (
+            "tsc/exclusion/isnp_or_long_term_institution_66_plus"
+        ),
+        "exclusion_frailty_and_advanced_illness_66_plus": (
+            "tsc/exclusion/frailty_and_advanced_illness_66_plus"
+        ),
+    },
+    "SNS": {
+        "numerator_screening_in_my": "sns/numerator/prapare_panel",
+        "numerator_sdoh_intervention_food_housing_transportation_utility": (
+            "sns/numerator/domain_screens_and_interventions"
+        ),
+        "numerator_domain_specific_sdoh_instruments": (
+            "sns/numerator/domain_screens_and_interventions"
+        ),
+        "numerator_prapare_item_positivity_semantics": "sns/numerator/prapare_panel",
+        "exclusion_death_during_measurement_period": "sns/exclusion/death",
+        "exclusion_hospice_during_measurement_period": "sns/exclusion/hospice",
+        "exclusion_palliative_care_during_measurement_period": "sns/exclusion/palliative_care",
+        "exclusion_isnp_or_long_term_institution_66_plus": (
+            "sns/exclusion/isnp_or_long_term_institution_66_plus"
+        ),
+        "exclusion_frailty_and_advanced_illness_66_plus": (
+            "sns/exclusion/frailty_and_advanced_illness_66_plus"
+        ),
+    },
+}
+
+
+def coverage_element_id(measure_id: MeasureId, coverage_key: str) -> str:
+    """The rule JSON element a rule module's ``COVERAGE`` key cites (KeyError when unmapped)."""
+    return COVERAGE_ELEMENTS[measure_id][coverage_key]
+
+
 def rule_text_dir() -> Traversable:
     return resources.files("caregap.measures.rules") / "json"
 

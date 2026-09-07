@@ -46,7 +46,7 @@
     {
       "id": "eed/denominator/diabetes_active",
       "kind": "denominator",
-      "text": "Diabetes = a diabetes_snomed condition active in the MY or the prior year (onset <= Dec 31 of the MY, abatement null or >= Jan 1 of MY-1). Prediabetes codes (prediabetes trap set) never qualify.",
+      "text": "Diabetes = a diabetes_snomed condition active in the MY or the prior year (onset <= Dec 31 of the MY, abatement null or > Jan 1 of MY-1; abated ON Jan 1 of MY-1 is not active). Prediabetes codes (prediabetes trap set) never qualify.",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
@@ -66,7 +66,7 @@
     {
       "id": "eed/numerator/prior_year_negative_exam",
       "kind": "numerator",
-      "text": "A retinal_exam_proc procedure in MY-1 also closes the gap when it carries a retinopathy-negative answer (LOINC 71490-7 or 71491-5 with value LA18643-9) and no diabetic-retinopathy diagnosis has onset on or before the exam date.",
+      "text": "A retinal_exam_proc procedure in MY-1 also closes the gap when a retinopathy-negative answer (LOINC 71490-7 or 71491-5 with value LA18643-9) is dated on the exam date or later inside MY-1 (an answer dated before the exam is not that exam's result) and no diabetic-retinopathy diagnosis has onset on or before the exam date. Each MY-1 exam is tested on its own.",
       "source": "demo_choice",
       "citation": "ncqa-eed",
       "quote": null,
@@ -136,7 +136,7 @@
     {
       "id": "eed/coverage/e1_prior_hospice",
       "kind": "coverage",
-      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice entirely BEFORE the MY is deterministically NOT an exclusion; an episode whose recorded end (performed_end_date / encounter end) falls inside [Jan 1 of the MY, as_of] IS hospice in the MY (exclusion, not E1).",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
@@ -146,7 +146,7 @@
     {
       "id": "eed/coverage/e4_advanced_illness_hint",
       "kind": "coverage",
-      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "text": "E4 (global): a dementia diagnosis active in the MY (abatement null or after Jan 1 of the MY) OR a dementia medication authored in the MY or the prior year, plus an inpatient/ED encounter in the MY at age 66+, raises a review flag; never computed as an exclusion.",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
@@ -156,11 +156,11 @@
     {
       "id": "eed/coverage/e6_diabetes_abated_in_my",
       "kind": "coverage",
-      "text": "E6: a diabetes condition abated inside the MY raises a review flag; the member stays in the denominator.",
+      "text": "E6: a diabetes condition abated inside [Jan 1 of the MY, as_of] raises a review flag (exactly as CBP's E6); HbA1c results (hba1c_loinc) dated in that window are attached as supporting evidence but are never required. No diabetes-medication value set exists in the P1/P6 catalogue, so no medication signal is read. The member stays in the denominator.",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
-      "rationale": "Synthea abatement dates are unreliable as resolution evidence; a human decides whether the diagnosis still stands.",
+      "rationale": "Synthea abatement dates are unreliable as resolution evidence; a human decides whether the diagnosis still stands. The HbA1c arm is evidence only so that E6 means the same thing for every measure.",
       "coverage": "partial"
     },
     {

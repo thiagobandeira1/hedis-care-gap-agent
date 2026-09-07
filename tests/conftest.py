@@ -109,6 +109,7 @@ def build_small_value_sets() -> ValueSets:
         _vs("bp_loinc", "LOINC", ["85354-9", "8480-6", "8462-4"], source=p6),
         _vs("tobacco_status_loinc", "LOINC", ["72166-2"], source=p6),
         _vs("sdoh_loinc", "LOINC", ["93025-5"]),
+        _vs("pregnancy_snomed", "SNOMED", ["72892002"]),
     ]
     return ValueSets(version="test", sets={vs.id: vs for vs in sets})
 

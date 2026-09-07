@@ -21,7 +21,7 @@ quoted
       (``rules/global_rules.py``) and are deliberately NOT re-implemented here.
 demo_choice
     * "diabetes" = any ``diabetes_snomed`` condition active in [Jan 1 of MY-1, Dec 31 of MY]
-      (onset on/before the window end, abatement null or on/after the window start —
+      (onset on/before the window end, abatement null or strictly after the window start —
       :func:`caregap.measures.evidence.condition_active_in`). The public claims / pharmacy
       identification paths are not implemented (diagnosis-only denominator);
     * ``prediabetes_trap_snomed`` codes NEVER count toward the denominator, even when they
@@ -30,7 +30,8 @@ demo_choice
     * "negative exam in the year prior" = a ``retinal_exam_proc`` procedure dated in
       [Jan 1 of MY-1, Dec 31 of MY-1] AND at least one retinopathy-severity observation
       (LOINC 71490-7 left eye / 71491-5 right eye) whose answer is LA18643-9 ("no apparent
-      retinopathy") dated in that same year AND no ``diabetic_retinopathy_snomed`` condition
+      retinopathy") dated on the exam date or later inside MY-1 (an answer dated BEFORE the
+      exam cannot be that exam's result) AND no ``diabetic_retinopathy_snomed`` condition
       with onset on/before that exam date (a retinopathy diagnosis on/before the exam means the
       exam could not have been negative). Each prior-year exam is tested on its own; any one
       qualifying exam closes the numerator;
@@ -40,11 +41,11 @@ demo_choice
       MY bounds;
     * open-gap subtypes ``prior_year_exam_without_negative_result`` and
       ``prior_year_exam_with_retinopathy`` explain why a prior-year exam did not qualify;
-    * E6 (measure scope): a diabetes condition abated in [my_start, as_of] while an HbA1c
-      result (``hba1c_loinc``) is dated in [my_start, as_of] — the abatement may be a coding
-      artefact, so the verdict is promoted to needs_review. The SPEC also names "diabetes
-      meds" as an E6 trigger; no diabetes-medication value set exists in the P1/P6 catalogue,
-      so that arm is NOT implemented (contract gap, reported — not silently worked around);
+    * E6 (measure scope): a diabetes condition abated in [my_start, as_of] — exactly as CBP's
+      E6 for hypertension; the abatement may be a coding artefact, so the verdict is promoted
+      to needs_review. HbA1c results (``hba1c_loinc``) dated in [my_start, as_of] are attached
+      as supporting evidence when present but are NOT a precondition. No diabetes-medication
+      value set exists in the P1/P6 catalogue, so no medication signal is read;
     * death before the MY -> denominator ``no`` (``global_rules.died_before_my``).
 not_representable (listed in the coverage table, never computed)
     * palliative care during the MY;
@@ -242,21 +243,30 @@ def _numerator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) ->
 
     negatives = _negative_retinopathy_results(record, prior)
     retinopathy = conditions_in(record, vs, RETINOPATHY_SET)
-    qualifying = [p for p in prior_exams if not _blocked_by_retinopathy(p, retinopathy)]
-    if negatives and qualifying:
+    # An exam qualifies only with a negative answer dated on/after it (inside MY-1) and no
+    # retinopathy diagnosis with onset on/before it; each exam is tested on its own.
+    qualifying = [
+        p
+        for p in prior_exams
+        if not _blocked_by_retinopathy(p, retinopathy)
+        and any(o.effective_date >= p.performed_date for o in negatives)
+    ]
+    if qualifying:
         latest = qualifying[-1]
+        earliest_exam = min(p.performed_date for p in qualifying)
+        linked = [o for o in negatives if o.effective_date >= earliest_exam]
         return TriResult(
             value="yes",
             reasons=[
                 f"no retinal exam in {_fmt(my)}",
                 f"retinal exam on {latest.performed_date.isoformat()} in {_fmt(prior)} with a "
                 f"negative retinopathy result ({'/'.join(RETINOPATHY_SEVERITY_CODES)} = "
-                f"{NEGATIVE_RETINOPATHY_ANSWER}) and no diabetic retinopathy diagnosis "
-                "on/before the exam (demo_choice)",
+                f"{NEGATIVE_RETINOPATHY_ANSWER}) dated on/after the exam and no diabetic "
+                "retinopathy diagnosis on/before the exam (demo_choice)",
             ],
             evidence=[
                 *(proc_ref(p, "numerator") for p in qualifying),
-                *(obs_ref(o, "numerator") for o in negatives),
+                *(obs_ref(o, "numerator") for o in linked),
             ],
             window_start=prior.start,
             window_end=prior.end,
@@ -265,11 +275,18 @@ def _numerator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) ->
     blocking = [c for c in retinopathy if any(_blocked_by_retinopathy(p, [c]) for p in prior_exams)]
     reasons = [f"no retinal exam in {_fmt(my)}"]
     subtype: str
+    unblocked = [p for p in prior_exams if not _blocked_by_retinopathy(p, retinopathy)]
     if not negatives:
         subtype = PRIOR_YEAR_EXAM_WITHOUT_NEGATIVE_RESULT
         reasons.append(
             f"retinal exam in {_fmt(prior)} but no negative retinopathy result "
             f"({'/'.join(RETINOPATHY_SEVERITY_CODES)} = {NEGATIVE_RETINOPATHY_ANSWER}) in that year"
+        )
+    elif unblocked:
+        subtype = PRIOR_YEAR_EXAM_WITHOUT_NEGATIVE_RESULT
+        reasons.append(
+            f"retinal exam in {_fmt(prior)} but every negative retinopathy result is dated "
+            "before the exam (not linked to it)"
         )
     else:
         subtype = PRIOR_YEAR_EXAM_WITH_RETINOPATHY
@@ -295,21 +312,21 @@ def _numerator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) ->
 def _escalations(
     record: PatientRecord, ctx: MeasurementContext, vs: ValueSets
 ) -> list[EscalationFlag]:
+    """E6: diabetes abated inside [my_start, as_of]; HbA1c results in the window are
+    attached as supporting evidence (never a precondition)."""
     my = measurement_year(ctx.as_of)
     abated = [c for c in _diabetes_conditions(record, vs) if my.contains(c.abatement_date)]
     if not abated:
         return []
     hba1c = observations_in(record, vs, HBA1C_SET, my)
-    if not hba1c:
-        return []
+    reason = f"diabetes condition abated inside {_fmt(my)} (possible coding artefact)"
+    if hba1c:
+        reason += f"; {len(hba1c)} HbA1c result(s) in the window attached"
     return [
         EscalationFlag(
             kind="E6",
             scope="measure",
-            reason=(
-                "diabetes condition abated in the measurement year while an HbA1c result "
-                "exists in the measurement year (possible coding artefact)"
-            ),
+            reason=reason,
             evidence=[
                 *(cond_ref(c, "escalation") for c in abated),
                 *(obs_ref(o, "escalation") for o in hba1c),

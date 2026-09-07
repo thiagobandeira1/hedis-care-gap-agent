@@ -7,17 +7,18 @@ measure summary. Demo-grade, HEDIS-aligned, not NCQA-certified (SPEC section 2, 
 Element tags
 ------------
 quoted
-    * numerator — "colonoscopy during the measurement period or the nine years prior";
-    * numerator — "FOBT during the measurement period" (FIT / gFOBT result, LOINC 57905-2);
+    * denominator age band 50-75 at Dec 31 of the MY (the Technical Notes Metric text; the
+      public NCQA text for MY2024+ lists 45-75 - the corpus wins);
+    * numerator concept: "appropriate screening for colorectal cancer" (the corpus names no
+      modality or look-back);
     * exclusion — colorectal cancer "any time during the member's history through the end
       of the measurement period" (``colorectal_cancer_snomed`` condition, onset <= as_of);
     * exclusions the engine applies GLOBALLY (never re-implemented here): death during the
       measurement period; hospice during the measurement period.
 demo_choice
-    * denominator age band 50-75 at Dec 31 of the MY, fixed by SPEC section 2 (the public
-      NCQA text for MY2024+ lists 45-75; verify against the corpus before promoting the band
-      to ``quoted``);
-    * "nine years prior" anchored to calendar years: [Jan 1 of MY-9, as_of];
+    * colonoscopy during the MY or the nine years prior, anchored to calendar years:
+      [Jan 1 of MY-9, as_of] (NCQA public summary, cite-only - ``rules/json/col.json``);
+    * FOBT / FIT during the MY (LOINC 57905-2 result; NCQA public summary, cite-only);
     * every numerator window ENDS at ``as_of`` (prospective gap detection), so an event
       dated after ``as_of`` never counts; denominator / exclusion windows use MY bounds;
     * FOBT/FIT recorded as a *procedure* (SNOMED 104435004, the literal code) counts in the
@@ -64,7 +65,7 @@ from caregap.p6.models import PatientRecord, ProcedureEvent
 MIN_AGE = 50
 MAX_AGE = 75
 COLONOSCOPY_LOOKBACK_YEARS = 10
-"""MY plus the nine prior calendar years (quoted "nine years prior"; calendar anchoring is demo)."""
+"""MY plus the nine prior calendar years (demo_choice: NCQA "nine years prior", cite-only)."""
 FOBT_PROCEDURE_CODE = "104435004"
 """SNOMED "Screening for occult blood in feces (procedure)" — the literal FOBT procedure code."""
 

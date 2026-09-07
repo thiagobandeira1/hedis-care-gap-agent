@@ -16,6 +16,7 @@ import pytest
 
 from caregap.measures.context import MeasurementContext
 from caregap.measures.engine import MeasureEngine, RuleOutput
+from caregap.measures.evidence import PREGNANCY_STATUS_LOINC
 from caregap.measures.models import Coverage
 from caregap.measures.rules.spc import SpcRule
 from caregap.measures.rules.spd import (
@@ -37,6 +38,7 @@ from caregap.p6.models import (
     ConditionEvent,
     EncounterEvent,
     MedicationEvent,
+    ObservationEvent,
     PatientHeader,
     PatientRecord,
     ProcedureEvent,
@@ -62,6 +64,7 @@ MI = "22298006"  # ASCVD
 ESRD = "46177005"
 DIALYSIS = "265764009"
 PREGNANCY = "72892002"
+PREGNANT = "77386006"  # SNOMED answer to LOINC 82810-3 "Pregnancy status"
 HOSPICE = "385763009"
 DEMENTIA = "26929004"
 DONEPEZIL = "310436"
@@ -123,9 +126,25 @@ class RecordFactory:
     sex: str = "male"
     death_date: date | None = None
     conditions: list[ConditionEvent] = field(default_factory=list)
+    observations: list[ObservationEvent] = field(default_factory=list)
     procedures: list[ProcedureEvent] = field(default_factory=list)
     medications: list[MedicationEvent] = field(default_factory=list)
     encounters: list[EncounterEvent] = field(default_factory=list)
+
+    def observation(
+        self, code: str, effective: date, *, value_code: str | None = None, system: str = "LOINC"
+    ) -> "RecordFactory":
+        self.observations.append(
+            ObservationEvent(
+                observation_id=f"obs-{len(self.observations) + 1}",
+                code=code,
+                code_system=system,
+                effective_date=effective,
+                value_code=value_code,
+                value_code_system="SNOMED" if value_code else None,
+            )
+        )
+        return self
 
     def condition(
         self,
@@ -196,7 +215,7 @@ class RecordFactory:
             ),
             as_of=as_of,
             conditions=list(self.conditions),
-            observations=[],
+            observations=list(self.observations),
             procedures=list(self.procedures),
             medications=list(self.medications),
             encounters=list(self.encounters),
@@ -281,7 +300,8 @@ def test_denominator_window_is_my_and_prior_year() -> None:
         (date(2026, 1, 1), None, RETRO, "no"),  # onset after the MY end (unmasked record)
         (PRIOR_START, None, RETRO, "yes"),  # onset on the prior-year start
         (date(2010, 1, 1), date(2023, 12, 31), RETRO, "no"),  # abated before the prior year
-        (date(2010, 1, 1), PRIOR_START, RETRO, "yes"),  # abated on the prior-year start
+        (date(2010, 1, 1), PRIOR_START, RETRO, "no"),  # abated ON the prior-year start
+        (date(2010, 1, 1), date(2024, 1, 2), RETRO, "yes"),  # abated the day after the start
         (date(2010, 1, 1), date(2024, 6, 30), RETRO, "yes"),  # abated during the prior year
         (date(2010, 1, 1), None, RETRO, "yes"),
         (date(2026, 12, 31), None, DEMO, "yes"),  # demo anchor: MY end is Dec 31 2026
@@ -500,7 +520,8 @@ def test_numerator_evidence_lists_only_counted_statins_in_stable_order() -> None
         (PRIOR_START, None, True),
         (date(2023, 12, 31), None, True),  # onset earlier, never abated -> active in window
         (date(2010, 1, 1), date(2023, 12, 31), False),  # abated before the window
-        (date(2010, 1, 1), PRIOR_START, True),  # abated on the window start
+        (date(2010, 1, 1), PRIOR_START, False),  # abated ON the window start: not active
+        (date(2010, 1, 1), date(2024, 1, 2), True),  # abated the day after the window start
         (MY_END, None, True),
         (date(2026, 1, 1), None, False),  # onset after the MY end (unmasked record)
     ],
@@ -510,7 +531,7 @@ def test_exclusion_esrd_window(onset: date, abatement: date | None, hit: bool) -
     assert [h.category for h in out.exclusions] == (["esrd"] if hit else [])
     if hit:
         (esrd,) = out.exclusions
-        assert esrd.source == "quoted"
+        assert esrd.source == "demo_choice"  # window wider than the quoted D12 text
         assert esrd.window_label == "MY or prior year"
         assert [(e.event_id, e.role) for e in esrd.evidence] == [("cond-2", "exclusion")]
 
@@ -530,7 +551,7 @@ def test_exclusion_dialysis_window(performed: date, hit: bool) -> None:
     assert [h.category for h in out.exclusions] == (["dialysis"] if hit else [])
     if hit:
         (dialysis,) = out.exclusions
-        assert dialysis.source == "quoted"
+        assert dialysis.source == "demo_choice"  # window wider than the quoted D12 text
         assert dialysis.window_label == "MY or prior year"
         assert [(e.event_id, e.section, e.role) for e in dialysis.evidence] == [
             ("proc-1", "procedures", "exclusion")
@@ -544,11 +565,49 @@ def test_exclusion_both_esrd_and_dialysis_ordered() -> None:
     assert [h.category for h in out.exclusions] == ["esrd", "dialysis"]
 
 
-def test_exclusion_pregnancy_not_coded_for_spd() -> None:
-    """SPEC SPD row limits coded exclusions to ESRD / dialysis (pregnancy stays a reviewer job)."""
-    out = evaluate(diabetic(sex="female").condition(PREGNANCY, date(2025, 3, 1)))
-    assert out.exclusions == []
-    assert COVERAGE["pregnancy"] == "not_representable"
+@pytest.mark.parametrize(
+    ("onset", "abatement", "hit"),
+    [
+        (date(2025, 3, 1), None, True),  # in the MY
+        (date(2024, 2, 1), date(2024, 10, 1), True),  # entirely in the prior year
+        (date(2023, 2, 1), date(2023, 10, 1), False),  # before the window
+        (date(2023, 2, 1), PRIOR_START, False),  # abated ON the window start
+        (date(2026, 1, 1), None, False),  # after the MY end (unmasked record)
+    ],
+)
+def test_exclusion_pregnancy_condition_mirrors_spc(
+    onset: date, abatement: date | None, hit: bool
+) -> None:
+    """Pregnancy in the MY or the prior year excludes (demo_choice, mirroring SPC)."""
+    out = evaluate(diabetic(sex="female").condition(PREGNANCY, onset, abatement=abatement))
+    assert [(h.category, h.source, h.window_label) for h in out.exclusions] == (
+        [("pregnancy", "demo_choice", "MY or prior year")] if hit else []
+    )
+    assert COVERAGE["pregnancy"] == "observable"
+
+
+@pytest.mark.parametrize(
+    ("effective", "value_code", "hit"),
+    [
+        (date(2025, 4, 1), PREGNANT, True),
+        (PRIOR_START, PREGNANT, True),
+        (date(2023, 12, 31), PREGNANT, False),
+        (date(2025, 4, 1), "60001007", False),  # "not pregnant"
+        (date(2025, 4, 1), None, False),
+    ],
+)
+def test_exclusion_pregnancy_status_observation_counts_for_spd_and_spc(
+    effective: date, value_code: str | None, hit: bool
+) -> None:
+    rf = diabetic(sex="female").observation(
+        PREGNANCY_STATUS_LOINC, effective, value_code=value_code
+    )
+    out = evaluate(rf)
+    expected = [("pregnancy_status_positive", "demo_choice", "MY or prior year")] if hit else []
+    assert [(h.category, h.source, h.window_label) for h in out.exclusions] == expected
+    # SPC applies the very same helper over the same window.
+    spc = SpcRule().evaluate(rf.condition(MI, date(2019, 1, 1)).build(), ctx_for(rf), VS)
+    assert [(h.category, h.source, h.window_label) for h in spc.exclusions] == expected
 
 
 # --- escalations: E3 as SPC ------------------------------------------------------------------

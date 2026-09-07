@@ -1,6 +1,8 @@
 """Global rules (SPEC section 2): death / hospice exclusions, E1 and E4 global escalations."""
 
-from datetime import date
+from datetime import date, datetime
+
+import pytest
 
 from caregap.measures.context import MeasurementContext
 from caregap.measures.rules.global_rules import (
@@ -223,7 +225,7 @@ def dementia_record(
     if via_medication:
         record = build_record(
             patient_header=patient(birth_date=birth),
-            medications=[medication(DONEPEZIL, authored=date(2023, 1, 10))],
+            medications=[medication(DONEPEZIL, authored=date(2024, 1, 10))],
             encounters=encounters,
         )
     else:
@@ -271,11 +273,36 @@ def test_e4_via_dementia_medication(small_value_sets: ValueSets) -> None:
     assert flags[0].evidence[0].event_id == "m1"
 
 
-def test_e4_dementia_abated_before_my_does_not_count(small_value_sets: ValueSets) -> None:
+def test_e4_dementia_abated_before_or_on_my_start_does_not_count(
+    small_value_sets: ValueSets,
+) -> None:
     record, ctx = dementia_record(abatement=ONE_DAY_BEFORE)
     assert kinds(record, ctx, small_value_sets) == []
-    active, ctx2 = dementia_record(abatement=MY_START_2025)
-    assert kinds(active, ctx2, small_value_sets) == ["E4"]
+    on_start, ctx2 = dementia_record(abatement=MY_START_2025)
+    assert kinds(on_start, ctx2, small_value_sets) == []
+    active, ctx3 = dementia_record(abatement=date(2025, 1, 2))
+    assert kinds(active, ctx3, small_value_sets) == ["E4"]
+
+
+@pytest.mark.parametrize(
+    ("authored", "raised"),
+    [
+        (date(2023, 12, 31), False),  # before the prior year
+        (date(2024, 1, 1), True),  # prior-year start
+        (date(2025, 12, 31), True),  # as_of
+    ],
+)
+def test_e4_dementia_medication_window_is_my_or_prior_year(
+    small_value_sets: ValueSets, authored: date, raised: bool
+) -> None:
+    record = build_record(
+        patient_header=patient(birth_date=BIRTH_1959),
+        medications=[medication(DONEPEZIL, authored=authored)],
+        encounters=[encounter(start=date(2025, 5, 1), encounter_class="IMP")],
+    )
+    assert kinds(record, ctx_for(EVAL_AS_OF, BIRTH_1959), small_value_sets) == (
+        ["E4"] if raised else []
+    )
 
 
 def test_e4_acute_evidence_is_capped_at_three(small_value_sets: ValueSets) -> None:
@@ -307,3 +334,64 @@ def test_e1_and_e4_can_coexist_in_order(small_value_sets: ValueSets) -> None:
         encounters=[encounter(start=date(2025, 5, 1), encounter_class="IMP")],
     )
     assert kinds(record, ctx_for(EVAL_AS_OF, BIRTH_1959), small_value_sets) == ["E1", "E4"]
+
+
+# --- hospice episodes that END inside the MY (review gate C8) -------------------------------
+
+
+@pytest.mark.parametrize(
+    ("end", "excluded", "e1"),
+    [
+        (date(2025, 1, 1), True, False),  # ends on my_start
+        (date(2025, 4, 1), True, False),  # ends inside the MY
+        (date(2024, 12, 31), False, True),  # ends the day before the MY: E1 hint only
+        (date(2024, 9, 1), False, False),  # ends > 90 days before the MY
+        (None, False, False),  # no recorded end: deterministically NOT an exclusion (SPEC)
+    ],
+)
+def test_hospice_procedure_ending_inside_my_is_an_exclusion(
+    small_value_sets: ValueSets, end: date | None, excluded: bool, e1: bool
+) -> None:
+    record = build_record(
+        procedures=[procedure(HOSPICE, performed=date(2024, 6, 1), performed_end=end)]
+    )
+    ctx = ctx_for()
+    assert categories(record, ctx, small_value_sets) == (
+        ["hospice_during_measurement_period"] if excluded else []
+    )
+    assert kinds(record, ctx, small_value_sets) == (["E1"] if e1 else [])
+
+
+def test_hospice_encounter_ending_inside_my_is_an_exclusion(small_value_sets: ValueSets) -> None:
+    record = build_record(
+        encounters=[
+            encounter(start=date(2024, 6, 1), type_code=HOSPICE, end_ts=datetime(2025, 2, 1, 9, 0))
+        ]
+    )
+    hits = global_exclusions(record, ctx_for(), small_value_sets)
+    assert [(h.category, [r.event_id for r in h.evidence]) for h in hits] == [
+        ("hospice_during_measurement_period", ["e1"])
+    ]
+
+
+def test_hospice_episode_ending_after_as_of_is_masked_and_ignored(
+    small_value_sets: ValueSets,
+) -> None:
+    raw = build_record(
+        as_of=DEMO_AS_OF,
+        procedures=[procedure(HOSPICE, performed=date(2025, 6, 1), performed_end=date(2026, 9, 1))],
+    )
+    record = mask_as_of(raw, DEMO_AS_OF)
+    assert record.procedures[0].performed_end_date is None
+    assert categories(record, ctx_for(DEMO_AS_OF), small_value_sets) == []
+
+
+def test_hospice_episode_from_lookback_ending_in_my_is_exclusion_not_e1(
+    small_value_sets: ValueSets,
+) -> None:
+    record = build_record(
+        procedures=[procedure(HOSPICE, performed=DAYS_89_BEFORE, performed_end=date(2025, 1, 5))]
+    )
+    ctx = ctx_for()
+    assert categories(record, ctx, small_value_sets) == ["hospice_during_measurement_period"]
+    assert kinds(record, ctx, small_value_sets) == []

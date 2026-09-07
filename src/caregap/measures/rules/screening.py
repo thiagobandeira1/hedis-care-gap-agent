@@ -57,9 +57,8 @@ not_representable (listed in the coverage table, never computed)
 Doctrine: deterministic and pure; order-independent over shuffled events; every date is
 compared against ``ctx`` / ``windows``; ``clinical_status`` / ``verification_status`` /
 ``MedicationEvent.status`` are never read; features never enter; the record is read only
-through :mod:`caregap.measures.evidence` (plus :func:`_children_of`, a local helper that
-mirrors those semantics because ``evidence.py`` has no child-observation lookup — contract
-gap, reported). No measure-scoped exclusions or escalations (E1/E4 are global).
+through :mod:`caregap.measures.evidence` (``child_observations_of`` groups the PRAPARE
+components). No measure-scoped exclusions or escalations (E1/E4 are global).
 """
 
 from collections.abc import Sequence
@@ -68,6 +67,7 @@ from dataclasses import dataclass
 from caregap.measures.context import MeasurementContext
 from caregap.measures.engine import RuleOutput
 from caregap.measures.evidence import (
+    child_observations_of,
     enc_ref,
     encounters_in,
     obs_ref,
@@ -98,21 +98,28 @@ PRAPARE_CODE = "93025-5"
 STATUS_WITHOUT_VALUE = "status_without_value"
 POSITIVE_DOMAINS_PREFIX = "positive_domains:"
 
-#: Every public exclusion criterion (and the numerator rates) for the screening measures and
-#: how far this demo rule can observe them. Shared by both instances.
-COVERAGE: dict[str, Coverage] = {
-    # numerator rates
-    "numerator_screening_in_my": "observable",
-    "numerator_tobacco_cessation_intervention": "not_representable",
-    "numerator_sdoh_intervention_food_housing_transportation_utility": "not_representable",
-    "numerator_domain_specific_sdoh_instruments": "not_representable",  # PRAPARE only
-    "numerator_prapare_item_positivity_semantics": "not_representable",  # answered != positive
-    # public exclusion criteria (death / hospice are the GLOBAL rules, quoted)
+#: Public exclusion criteria shared by both screening measures (death / hospice are the
+#: GLOBAL rules, quoted) and how far this demo rule can observe them.
+_SHARED_COVERAGE: dict[str, Coverage] = {
     "exclusion_death_during_measurement_period": "observable",
     "exclusion_hospice_during_measurement_period": "observable",
     "exclusion_palliative_care_during_measurement_period": "not_representable",
     "exclusion_isnp_or_long_term_institution_66_plus": "not_representable",
     "exclusion_frailty_and_advanced_illness_66_plus": "partial",  # global E4 hint only
+}
+#: TSC: the screening rate is observable; the cessation-intervention rate is not.
+TSC_COVERAGE: dict[str, Coverage] = {
+    "numerator_screening_in_my": "observable",
+    "numerator_tobacco_cessation_intervention": "not_representable",
+    **_SHARED_COVERAGE,
+}
+#: SNS: one PRAPARE screening event is observable; per-domain rates / instruments are not.
+SNS_COVERAGE: dict[str, Coverage] = {
+    "numerator_screening_in_my": "observable",
+    "numerator_sdoh_intervention_food_housing_transportation_utility": "not_representable",
+    "numerator_domain_specific_sdoh_instruments": "not_representable",  # PRAPARE only
+    "numerator_prapare_item_positivity_semantics": "not_representable",  # answered != positive
+    **_SHARED_COVERAGE,
 }
 
 
@@ -130,6 +137,8 @@ class ScreeningSpec:
     """Whether a non-null ``value_code`` is needed for the observation to count."""
     report_domains: bool
     """Whether answered child components are reported as ``positive_domains:<codes>``."""
+    coverage: dict[str, Coverage]
+    """The measure's coverage table (public criteria -> observable / partial / not)."""
 
 
 TSC_SPEC = ScreeningSpec(
@@ -138,6 +147,7 @@ TSC_SPEC = ScreeningSpec(
     label="tobacco use screening (72166-2 with a coded status)",
     require_value_code=True,
     report_domains=False,
+    coverage=TSC_COVERAGE,
 )
 SNS_SPEC = ScreeningSpec(
     set_id=SDOH_SCREENING_SET,
@@ -145,6 +155,7 @@ SNS_SPEC = ScreeningSpec(
     label="social need screening (PRAPARE 93025-5)",
     require_value_code=False,
     report_domains=True,
+    coverage=SNS_COVERAGE,
 )
 
 
@@ -159,26 +170,6 @@ def _tri_all(values: Sequence[Tri]) -> Tri:
 
 def _fmt(window: Window) -> str:
     return f"{window.label} [{window.start:%Y-%m-%d} .. {window.end:%Y-%m-%d}]"
-
-
-def _children_of(
-    record: PatientRecord, parent_ids: frozenset[str], window: Window
-) -> list[ObservationEvent]:
-    """Component observations of the given parents, dated in the window, stable-sorted.
-
-    ``evidence.py`` has no child-observation lookup (contract gap, reported); this mirrors its
-    semantics — exact id match, inclusive window, deterministic ``(date, id)`` order.
-    """
-    return sorted(
-        (
-            o
-            for o in record.observations
-            if o.parent_observation_id is not None
-            and o.parent_observation_id in parent_ids
-            and window.contains(o.effective_date)
-        ),
-        key=lambda o: (o.effective_date, o.observation_id),
-    )
 
 
 def _age_tri(age_at_my_end: int | None) -> tuple[Tri, str]:
@@ -233,7 +224,7 @@ def _positive_domains(
 ) -> str | None:
     """``positive_domains:<sorted codes>`` for answered components, or None when there are none."""
     parent_ids = frozenset(p.observation_id for p in parents)
-    children = _children_of(record, parent_ids, window)
+    children = child_observations_of(record, parent_ids, window)
     answered = {o.code for o in children if o.value_code is not None}
     if not answered:
         return None
@@ -294,7 +285,7 @@ class _ScreeningRule:
             denominator=_denominator(record, ctx),
             numerator=_numerator(record, ctx, value_sets, self.spec),
             exclusions=[],  # none observable beyond the global death/hospice rules
-            coverage=dict(COVERAGE),
+            coverage=dict(self.spec.coverage),
             escalations=[],  # no measure-scoped escalations for the screening measures
         )
 

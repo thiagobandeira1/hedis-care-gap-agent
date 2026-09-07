@@ -29,30 +29,42 @@ citations (CMS 2026 Star Ratings Technical Notes via P2's committed corpus; publ
 summaries by URL; the public ACC/AHA statin-intensity table). Age = age at Dec 31 of the
 measurement year (MY). Numerator windows end at `as_of`; denominator/exclusion windows use MY
 bounds. `clinical_status`/`verification_status` never consulted; `MedicationRequest.status`
-read ONLY for the statin on-therapy rule and the E3 conflict flag (ADR-0002).
+read ONLY for the statin on-therapy rule and the E3 conflict flag (ADR-0002). "Condition active
+in a window" means ONE thing everywhere (`evidence.condition_active_in`): onset ≤ window end and
+abatement null or **strictly after** the window start (abated on the first day = not active).
+Pregnancy is ONE shared helper (`evidence.pregnancy_hits`): a `pregnancy_snomed` condition active
+in the window OR a LOINC 82810-3 "Pregnancy status" observation answered SNOMED 77386006 in the
+window (`pregnancy_status_positive`, demo) — CBP over the MY, SPC/SPD over MY or prior year.
 
 | ID | Denominator | Numerator (window ends at as_of) | Coded exclusions | Escalations |
 |---|---|---|---|---|
 | **CBP** (C14) | 18–85; hypertension condition onset ≤ my_end, abatement null or > my_start | most-recent-date BP panel in MY: parent 85354-9 with BOTH 8480-6/8462-4 children sharing `parent_observation_id`, unit mm[Hg], encounter class not IMP/EMER; representative = lowest SBP and lowest DBP among same-date panels; met iff SBP<140 and DBP<90; none in MY → open `no_bp_in_my` | death/hospice in MY; ESRD dx (quoted); dialysis (demo); pregnancy in MY; kidney transplant (demo) | E1, E4, E5 incomplete panel/unit, E6 htn abated in MY |
-| **EED** (C11) | 18–75; diabetes active in MY or prior year (prediabetes never) | retinal exam in MY; OR in MY-1 with negative retinopathy answers (71490-7/71491-5 = LA18643-9) and no retinopathy dx ≤ exam (demo) | death/hospice | E1, E4, E6 |
+| **EED** (C11) | 18–75; diabetes active in MY or prior year (prediabetes never) | retinal exam in MY; OR in MY-1 with a negative retinopathy answer (71490-7/71491-5 = LA18643-9) dated on/after the exam inside MY-1 and no retinopathy dx ≤ exam (demo) | death/hospice | E1, E4, E6 diabetes abated in MY (HbA1c attached as evidence only) |
 | **BCS** (C01) | female 52–74 | mammogram in [Oct 1 MY-2, as_of] (27-month, demo) | death/hospice; bilateral mastectomy (`not_representable`) | E1, E4 |
 | **COL** (C02) | 50–75 | colonoscopy 73761001 in [Jan 1 MY-9, as_of] OR FOBT/FIT (57905-2 obs / 104435004 proc) in MY; sigmoidoscopy/CT/sDNA `not_representable` | death/hospice; colorectal cancer any time (quoted); total colectomy (`not_representable`) | E1, E4, E7 ambiguous colon code |
 | **SPC** (C19) | male 21–75 / female 40–75; ASCVD condition onset ≤ my_end | ON THERAPY in MY: statin RxNorm with moderate/high intensity, authored in MY OR authored earlier with `status == active`; stopped/cancelled never count; low-only → open `low_intensity_only` | death/hospice; ESRD/dialysis in MY or prior year; pregnancy; cirrhosis/myopathy (`not_representable`) | E1, E4, E3 medication_status_conflict |
-| **SPD** (D12-style) | 40–75; diabetes as EED; not in SPC denominator (product choice: no double outreach) | ON THERAPY as SPC, any intensity | death/hospice; ESRD/dialysis | E1, E4, E3 |
+| **SPD** (D12-style) | 40–75; diabetes as EED; not in SPC denominator (product choice: no double outreach) | ON THERAPY as SPC, any intensity | death/hospice; ESRD/dialysis in MY or prior year (demo: wider than the quoted D12 text, mirrors SPC); pregnancy in MY or prior year (demo, mirrors SPC) | E1, E4, E3 |
 | **TSC / SNS** (MY2026-style screening, one shared rule) | 18+ with ≥1 encounter in MY | 72166-2 with non-null value_code in MY / 93025-5 PRAPARE in MY | death/hospice | none |
 
 Global rules: `death_date < my_start` → not_eligible; `my_start ≤ death_date ≤ as_of` →
-excluded (quoted); hospice in [my_start, as_of] → excluded; hospice before MY is
-**deterministically not** an exclusion (public text says "during the measurement period";
-32% of living Synthea patients carry prior hospice codes) — only a hospice event within 90
-days before my_start raises **E1 (global)**. Dementia dx/meds + inpatient/ED in MY at 66+
-raises **E4 (global)**; never computed as an exclusion.
+excluded (quoted); hospice in [my_start, as_of] → excluded — a hospice procedure / encounter
+whose recorded end (`performed_end_date` / encounter end) falls in that window counts (an
+episode that started before the MY and ended inside it); hospice entirely before the MY (or
+with no recorded end) is **deterministically not** an exclusion (public text says "during the
+measurement period"; 32% of living Synthea patients carry prior hospice codes) — only a
+hospice event within 90 days before my_start raises **E1 (global)**. Dementia dx active in the
+MY OR dementia medication authored in MY or prior year, plus inpatient/ED in MY at 66+, raises
+**E4 (global)**; never computed as an exclusion. A global death/hospice exclusion is
+denominator-independent: it wins over an `unknown` denominator (e.g. unknown birth date) —
+the member can never receive outreach.
 
 Verdict algebra (one exhaustively tested function over Tri³): denominator no → `not_eligible`;
 unknown → `needs_review`; definite exclusion → `excluded`; numerator yes → `closed`; unknown →
 `needs_review`; else `gap_open`; any escalation whose resolution could flip the verdict promotes
-to `needs_review`. Escalations E1–E7 are enumerated. Coverage tables list every public exclusion
-criterion as observable/partial/not_representable (UI card + `/v1/measures`).
+to `needs_review`. Escalations E1, E3–E7 are enumerated (E2 was never defined and is not in the
+vocabulary). Coverage tables list every public exclusion criterion as
+observable/partial/not_representable (UI card + `/v1/measures`); `rule_text.COVERAGE_ELEMENTS`
+joins every coverage key to its rule JSON element id.
 
 Priority: `score = star_weight × clinical_weight × time_pressure`; star 3 for CBP else 1;
 clinical CBP 3, SPC 3, SPD/EED/COL/BCS 2, TSC/SNS 1 (+1 for CBP `no_bp_in_my` / SPC

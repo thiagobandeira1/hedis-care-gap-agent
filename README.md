@@ -93,8 +93,8 @@ Escalations hold a patient for a human and are never computed as exclusions: E1 
 hospice event within 90 days before the MY; E3 a statin authored in the MY with status stopped or
 cancelled; E4 (global) dementia plus inpatient/ED care in the MY at 66+; E5 a BP panel missing a
 child or with a non-mm[Hg] unit; E6 the qualifying condition abated inside the MY; E7 an
-ambiguous colon code (possible colectomy or cancer). E2 is declared in the escalation vocabulary
-but no shipped rule emits it.
+ambiguous colon code (possible colectomy or cancer). There is no E2: the vocabulary is E1 and
+E3–E7.
 
 ## How the guardrails are enforced
 

@@ -5,12 +5,14 @@ from datetime import date, datetime
 import pytest
 
 from caregap.measures.evidence import (
+    child_observations_of,
     cond_ref,
     condition_active_in,
     conditions_in,
     enc_ref,
     encounter_class_of,
     encounters_in,
+    encounters_overlapping,
     latest,
     med_ref,
     medications_in,
@@ -18,8 +20,11 @@ from caregap.measures.evidence import (
     observations_in,
     observations_with_code,
     patient_ref,
+    pregnancy_evidence,
+    pregnancy_hits,
     proc_ref,
     procedures_in,
+    procedures_overlapping,
 )
 from caregap.measures.value_sets import ValueSets
 from caregap.measures.windows import Window, lookback_years, measurement_year
@@ -68,7 +73,8 @@ def test_unknown_value_set_id_raises_key_error(small_value_sets: ValueSets) -> N
     ("onset", "abatement", "active"),
     [
         (date(2020, 1, 1), None, True),
-        (date(2020, 1, 1), date(2025, 1, 1), True),  # abated ON window start: still active
+        (date(2020, 1, 1), date(2025, 1, 1), False),  # abated ON window start: NOT active
+        (date(2020, 1, 1), date(2025, 1, 2), True),  # abated the day after the window start
         (date(2020, 1, 1), date(2024, 12, 31), False),  # abated the day before the window
         (date(2020, 1, 1), date(2026, 3, 1), True),  # abates after the window
         (date(2025, 12, 31), None, True),  # onset ON window end
@@ -222,4 +228,75 @@ def test_ref_builders_carry_ids_codes_and_dates_only() -> None:
         None,
         date(2025, 7, 1),
         "exclusion",
+    )
+
+
+# --- shared helpers promoted at the review gate (2026-09-05) --------------------------------
+
+
+def test_child_observations_of_groups_by_parent_id_with_optional_window() -> None:
+    rows = [
+        *bp_panel(effective=date(2025, 3, 1), panel_id="p1"),
+        *bp_panel(effective=date(2025, 6, 1), panel_id="p2"),
+        observation("8480-6", effective=date(2025, 6, 1), parent_observation_id="ghost"),
+    ]
+    record = build_record(observations=rows)
+    children = child_observations_of(record, frozenset({"p1", "p2"}))
+    assert [c.parent_observation_id for c in children] == ["p1", "p1", "p2", "p2"]
+    assert [c.effective_date for c in children] == sorted(c.effective_date for c in children)
+    windowed = child_observations_of(
+        record, frozenset({"p1", "p2"}), MY_2025.model_copy(update={"start": date(2025, 4, 1)})
+    )
+    assert {c.parent_observation_id for c in windowed} == {"p2"}
+    assert child_observations_of(record, frozenset()) == []
+
+
+def test_procedures_and_encounters_overlapping_count_an_end_date_inside_the_window(
+    small_value_sets: ValueSets,
+) -> None:
+    record = build_record(
+        procedures=[
+            procedure("385763009", performed=date(2024, 9, 1), performed_end=date(2025, 4, 1)),
+            procedure("385763009", performed=date(2024, 9, 1), performed_end=date(2024, 12, 31)),
+            procedure("385763009", performed=date(2024, 9, 1)),
+        ],
+        encounters=[
+            encounter(start=date(2024, 9, 1), end_ts=datetime(2025, 1, 1, 8, 0), type_code="x"),
+            encounter(start=date(2024, 9, 1), end_ts=datetime(2024, 12, 31, 8, 0)),
+        ],
+    )
+    assert [
+        p.procedure_id
+        for p in procedures_overlapping(record, small_value_sets, "hospice_snomed", MY_2025)
+    ] == ["pr1"]
+    assert procedures_in(record, small_value_sets, "hospice_snomed", MY_2025) == []
+    assert [e.encounter_id for e in encounters_overlapping(record, MY_2025)] == ["e1"]
+    assert encounters_in(record, MY_2025) == []
+
+
+def test_pregnancy_evidence_and_hits_over_condition_and_status_observation(
+    small_value_sets: ValueSets,
+) -> None:
+    record = build_record(
+        conditions=[
+            condition("72892002", onset=date(2024, 6, 1), abatement=date(2025, 1, 1)),  # on start
+            condition("72892002", onset=date(2025, 3, 1)),
+        ],
+        observations=[
+            observation("82810-3", effective=date(2025, 4, 1), value_code="77386006"),
+            observation("82810-3", effective=date(2025, 5, 1), value_code="60001007"),
+            observation("82810-3", effective=date(2024, 12, 31), value_code="77386006"),
+        ],
+    )
+    conditions, status = pregnancy_evidence(record, small_value_sets, MY_2025)
+    assert [c.event_id for c in conditions] == ["c2"]
+    assert [o.event_id for o in status] == ["o1"]
+    hits = pregnancy_hits(record, small_value_sets, MY_2025, condition_source="demo_choice")
+    assert [(h.category, h.source, h.window_label) for h in hits] == [
+        ("pregnancy", "demo_choice", "MY"),
+        ("pregnancy_status_positive", "demo_choice", "MY"),
+    ]
+    assert all(e.role == "exclusion" for h in hits for e in h.evidence)
+    assert (
+        pregnancy_hits(build_record(), small_value_sets, MY_2025, condition_source="quoted") == []
     )

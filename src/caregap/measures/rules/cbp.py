@@ -20,8 +20,10 @@ quoted
     the MY (applied by the GLOBAL rules in ``rules/global_rules.py``, never here).
 demo_choice
   * hypertension = ``hypertension_snomed`` condition with ``onset_date <= my_end`` and
-    ``abatement_date`` null or ``> my_start``. The public "diagnosis on or before June 30 of
-    the MY" nuance is deliberately NOT implemented (onset through Dec 31 counts).
+    ``abatement_date`` null or ``> my_start`` (:func:`evidence.condition_active_in` over the
+    full MY - the one abatement semantics every measure shares: abated ON Jan 1 of the MY is
+    NOT active). The public "diagnosis on or before June 30 of the MY" nuance is deliberately
+    NOT implemented (onset through Dec 31 counts).
   * a "reading" is a P6 BP panel: a LOINC 85354-9 parent observation whose children (same
     ``parent_observation_id``) include BOTH 8480-6 (SBP) and 8462-4 (DBP), each with a
     numeric value and ``value_unit == "mm[Hg]"`` (UCUM, P6 canonical);
@@ -29,12 +31,17 @@ demo_choice
     panels are ignored; a NULL or unresolvable encounter counts as non-acute;
   * numerator window [my_start, as_of]; the most recent DATE among non-acute panels decides.
     Any panel on that date that is incomplete, non-numeric, or not in mm[Hg] makes the
-    numerator ``unknown`` and raises E5 (the representative BP cannot be computed);
+    numerator ``unknown`` and raises E5 (the representative BP cannot be computed) - even
+    when a complete panel exists on that same date; defective panels on EARLIER dates are
+    ignored, exactly as complete earlier panels are (the most recent date decides);
   * no non-acute panel in the window -> numerator ``no`` with subtype ``no_bp_in_my``;
   * dialysis = ``dialysis_snomed`` procedure any time through as_of;
   * kidney transplant = ``kidney_transplant_snomed`` condition or procedure any time;
-  * pregnancy is also detected from LOINC 82810-3 "Pregnancy status" with value SNOMED
-    77386006 ("Patient currently pregnant") dated in the MY - Synthea records it this way;
+  * pregnancy (shared helper :func:`evidence.pregnancy_hits`, window = the full MY): a
+    ``pregnancy_snomed`` condition active in the MY (quoted criterion) OR a LOINC 82810-3
+    "Pregnancy status" observation with value SNOMED 77386006 ("Patient currently pregnant")
+    dated in the MY (``pregnancy_status_positive``, demo_choice - Synthea records it this
+    way). SPC and SPD apply the same helper over MY-or-prior-year;
   * "any time" exclusion windows end at ``as_of`` (the record is as_of-masked);
   * E6 (measure scope): a hypertension condition whose ``abatement_date`` falls in
     [my_start, as_of] - the diagnosis may have resolved inside the MY.
@@ -54,14 +61,18 @@ from dataclasses import dataclass, field
 from caregap.measures.context import MeasurementContext
 from caregap.measures.engine import RuleOutput
 from caregap.measures.evidence import (
+    PREGNANCY_SET,
+    PREGNANCY_STATUS_LOINC,
+    PREGNANT_VALUE_CODES,
+    child_observations_of,
     cond_ref,
     condition_active_in,
     conditions_in,
     encounter_class_of,
     obs_ref,
     observations_in,
-    observations_with_code,
     patient_ref,
+    pregnancy_hits,
     proc_ref,
     procedures_in,
 )
@@ -99,10 +110,9 @@ HYPERTENSION_SET = "hypertension_snomed"
 ESRD_SET = "esrd_snomed"
 DIALYSIS_SET = "dialysis_snomed"
 KIDNEY_TRANSPLANT_SET = "kidney_transplant_snomed"
-PREGNANCY_SET = "pregnancy_snomed"
-#: LOINC "Pregnancy status" and the SNOMED answer meaning "currently pregnant" (demo_choice).
-PREGNANCY_STATUS_LOINC = "82810-3"
-PREGNANT_VALUE_CODES: frozenset[str] = frozenset({"77386006"})
+#: Pregnancy set + the LOINC 82810-3 / SNOMED 77386006 status pair live in ``evidence`` (shared
+#: with SPC / SPD) and are re-exported here for the packet builder and the tests.
+__all__ = ["PREGNANCY_SET", "PREGNANCY_STATUS_LOINC", "PREGNANT_VALUE_CODES"]
 
 NO_BP_IN_MY = "no_bp_in_my"
 
@@ -169,16 +179,13 @@ def _age_tri(age: int | None) -> tuple[Tri, str]:
 def _hypertension_in_denominator(
     record: PatientRecord, ctx: MeasurementContext, vs: ValueSets
 ) -> list[EvidenceRef]:
-    """Onset on/before MY end and abatement null or strictly after MY start (SPEC table).
-
-    Deliberately not :func:`evidence.condition_active_in` (which admits an abatement ON the
-    window start) - the SPEC wording for CBP is ``abatement > my_start``.
-    """
+    """Onset on/before MY end and abatement null or strictly after MY start (SPEC table) -
+    the shared :func:`evidence.condition_active_in` over the full MY."""
+    my = measurement_year_full(ctx.as_of)
     return [
         cond_ref(c, "eligibility")
         for c in conditions_in(record, vs, HYPERTENSION_SET)
-        if c.onset_date <= ctx.my_end
-        and (c.abatement_date is None or c.abatement_date > ctx.my_start)
+        if condition_active_in(c, my)
     ]
 
 
@@ -237,20 +244,23 @@ def _panels(
     """
     window = measurement_year(ctx.as_of)
     bp_observations = observations_in(record, vs, BP_SET, any_time(ctx.as_of))
-    children: dict[str, list[ObservationEvent]] = {}
-    for o in bp_observations:
-        if o.parent_observation_id is not None and o.code in {SBP_CODE, DBP_CODE}:
-            children.setdefault(o.parent_observation_id, []).append(o)
+    bp_ids = frozenset(o.observation_id for o in bp_observations)
+    parents = [
+        o for o in bp_observations if o.code == PANEL_CODE and window.contains(o.effective_date)
+    ]
+    children = child_observations_of(record, frozenset(p.observation_id for p in parents))
 
     panels: list[_Panel] = []
     ignored: list[ObservationEvent] = []
-    for parent in bp_observations:
-        if parent.code != PANEL_CODE or not window.contains(parent.effective_date):
-            continue
+    for parent in parents:
         if encounter_class_of(record, parent.encounter_id) in ACUTE_ENCOUNTER_CLASSES:
             ignored.append(parent)
             continue
-        mine = children.get(parent.observation_id, [])
+        mine = [
+            c
+            for c in children
+            if c.parent_observation_id == parent.observation_id and c.observation_id in bp_ids
+        ]
         sbp = [c for c in mine if c.code == SBP_CODE]
         dbp = [c for c in mine if c.code == DBP_CODE]
         defects = _component_defects("SBP", sbp) + _component_defects("DBP", dbp)
@@ -384,35 +394,7 @@ def _exclusions(
             )
         )
 
-    pregnancy = [
-        cond_ref(c, "exclusion")
-        for c in conditions_in(record, vs, PREGNANCY_SET)
-        if condition_active_in(c, my)
-    ]
-    if pregnancy:
-        hits.append(
-            ExclusionHit(
-                category="pregnancy",
-                source="quoted",
-                window_label=my.label,
-                evidence=pregnancy,
-            )
-        )
-
-    pregnancy_status = [
-        obs_ref(o, "exclusion")
-        for o in observations_with_code(record, PREGNANCY_STATUS_LOINC, my)
-        if o.value_code in PREGNANT_VALUE_CODES
-    ]
-    if pregnancy_status:
-        hits.append(
-            ExclusionHit(
-                category="pregnancy_status_positive",
-                source="demo_choice",
-                window_label=my.label,
-                evidence=pregnancy_status,
-            )
-        )
+    hits.extend(pregnancy_hits(record, vs, my, condition_source="quoted"))
     return hits
 
 

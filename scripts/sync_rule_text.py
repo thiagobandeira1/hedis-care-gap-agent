@@ -391,8 +391,10 @@ def _global_escalations(m: str) -> list[RuleElement]:
             f"{m}/coverage/e1_prior_hospice",
             "coverage",
             "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none "
-            "inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically "
-            "NOT an exclusion.",
+            "inside the MY, raises a review flag. Hospice entirely BEFORE the MY is "
+            "deterministically NOT an exclusion; an episode whose recorded end "
+            "(performed_end_date / encounter end) falls inside [Jan 1 of the MY, as_of] IS "
+            "hospice in the MY (exclusion, not E1).",
             rationale=(
                 "The public wording is 'any time during the measurement period'; 32% of "
                 "living Synthea patients carry prior hospice codes, so prior hospice can only "
@@ -403,9 +405,10 @@ def _global_escalations(m: str) -> list[RuleElement]:
         demo(
             f"{m}/coverage/e4_advanced_illness_hint",
             "coverage",
-            "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED "
-            "encounter in the MY at age 66+ raises a review flag; never computed as an "
-            "exclusion.",
+            "E4 (global): a dementia diagnosis active in the MY (abatement null or after Jan "
+            "1 of the MY) OR a dementia medication authored in the MY or the prior year, plus "
+            "an inpatient/ED encounter in the MY at age 66+, raises a review flag; never "
+            "computed as an exclusion.",
             rationale=(
                 "The public frailty-and-advanced-illness exclusion needs two frailty "
                 "indications on different dates plus advanced-illness claims; Synthea carries "
@@ -428,6 +431,21 @@ def _e3(m: str) -> RuleElement:
             "MedicationRequest.status; a stop inside the MY may mean the therapy ended."
         ),
         coverage="partial",
+    )
+
+
+def _pregnancy_status(m: str, window: str) -> RuleElement:
+    return demo(
+        f"{m}/exclusion/pregnancy_status_observation",
+        "exclusion",
+        f"Pregnancy is also detected from a LOINC 82810-3 'Pregnancy status' observation "
+        f"answered SNOMED 77386006 ('Patient currently pregnant') dated in {window} "
+        "(exclusion category pregnancy_status_positive).",
+        rationale=(
+            "Synthea records pregnancy this way beside (or instead of) a pregnancy condition; "
+            "the same shared helper (evidence.pregnancy_hits) serves CBP, SPC and SPD."
+        ),
+        coverage="observable",
     )
 
 
@@ -493,11 +511,13 @@ def build_cbp(corpus: Corpus) -> RuleText:
             f"{m}/denominator/hypertension_active",
             "denominator",
             "Hypertension = a hypertension_snomed condition with onset <= Dec 31 of the MY and "
-            "abatement null or > Jan 1 of the MY.",
+            "abatement null or > Jan 1 of the MY (abated ON Jan 1 is not active).",
             rationale=(
                 "The Technical Notes give no diagnosis window; Synthea records one condition "
                 "row per diagnosis (no visit-level claims), so 'active during the MY' is the "
-                "closest evidence. clinical_status / verification_status are never read."
+                "closest evidence. The strict '> Jan 1' abatement edge is the one semantics "
+                "every measure shares (evidence.condition_active_in). clinical_status / "
+                "verification_status are never read."
             ),
         ),
         tn.quoted(
@@ -595,9 +615,11 @@ def build_cbp(corpus: Corpus) -> RuleText:
             coverage="observable",
             rationale=(
                 "pregnancy_snomed condition active in the MY (a trap set keeps non-pregnancy "
-                "obstetric codes out). The corpus sentence has no closing period."
+                "obstetric codes out); shared helper evidence.pregnancy_hits, as SPC / SPD. "
+                "The corpus sentence has no closing period."
             ),
         ),
+        _pregnancy_status(m, "the MY"),
         _palliative(
             tn,
             f"{m}/exclusion/palliative_care",
@@ -623,20 +645,25 @@ def build_cbp(corpus: Corpus) -> RuleText:
         demo(
             f"{m}/coverage/e5_incomplete_panel_or_unit",
             "coverage",
-            "E5: a BP panel in the MY missing its systolic or diastolic child, or carrying a "
-            "unit other than mm[Hg], raises a review flag; such a panel never counts toward "
-            "the numerator.",
+            "E5: a non-acute BP panel dated on the MOST RECENT panel date in [Jan 1 of the "
+            "MY, as_of] that is missing its systolic or diastolic child, is non-numeric, or "
+            "carries a unit other than mm[Hg] makes the numerator unknown (needs_review) and "
+            "raises a review flag - even when a complete panel exists on that same date. "
+            "Defective panels on earlier dates are ignored, exactly as complete earlier "
+            "panels are: the most recent date decides.",
             rationale=(
-                "An incomplete or mis-united panel may still be a real reading a human can "
-                "confirm; the engine refuses to guess."
+                "The representative BP is taken from the most recent date only; a defective "
+                "panel there may still be a real reading a human can confirm, so the engine "
+                "refuses to guess rather than silently picking the complete one."
             ),
             coverage="partial",
         ),
         demo(
             f"{m}/coverage/e6_hypertension_abated_in_my",
             "coverage",
-            "E6: a hypertension condition abated inside the MY raises a review flag; the "
-            "member stays in the denominator.",
+            "E6: a hypertension condition abated inside [Jan 1 of the MY, as_of] raises a "
+            "review flag; a condition abated ON Jan 1 is outside the denominator (not active) "
+            "but still raises E6.",
             rationale=(
                 "Synthea abatement dates are unreliable as resolution evidence; a human "
                 "decides whether the diagnosis still stands."
@@ -695,8 +722,8 @@ def build_eed(corpus: Corpus) -> RuleText:
             f"{m}/denominator/diabetes_active",
             "denominator",
             "Diabetes = a diabetes_snomed condition active in the MY or the prior year (onset "
-            "<= Dec 31 of the MY, abatement null or >= Jan 1 of MY-1). Prediabetes codes "
-            "(prediabetes trap set) never qualify.",
+            "<= Dec 31 of the MY, abatement null or > Jan 1 of MY-1; abated ON Jan 1 of MY-1 "
+            "is not active). Prediabetes codes (prediabetes trap set) never qualify.",
             rationale=(
                 "HEDIS-style summaries identify diabetes from claims or pharmacy data in the "
                 "MY or the year prior (NCQA public summary, cite-only); Synthea offers "
@@ -714,9 +741,11 @@ def build_eed(corpus: Corpus) -> RuleText:
         demo(
             f"{m}/numerator/prior_year_negative_exam",
             "numerator",
-            "A retinal_exam_proc procedure in MY-1 also closes the gap when it carries a "
-            "retinopathy-negative answer (LOINC 71490-7 or 71491-5 with value LA18643-9) and "
-            "no diabetic-retinopathy diagnosis has onset on or before the exam date.",
+            "A retinal_exam_proc procedure in MY-1 also closes the gap when a "
+            "retinopathy-negative answer (LOINC 71490-7 or 71491-5 with value LA18643-9) is "
+            "dated on the exam date or later inside MY-1 (an answer dated before the exam is "
+            "not that exam's result) and no diabetic-retinopathy diagnosis has onset on or "
+            "before the exam date. Each MY-1 exam is tested on its own.",
             rationale=(
                 "NCQA's public EED summary counts a negative retinal exam from the year prior "
                 "(cite-only); the Technical Notes name only the MY. The retinopathy-negative "
@@ -769,11 +798,15 @@ def build_eed(corpus: Corpus) -> RuleText:
         demo(
             f"{m}/coverage/e6_diabetes_abated_in_my",
             "coverage",
-            "E6: a diabetes condition abated inside the MY raises a review flag; the member "
-            "stays in the denominator.",
+            "E6: a diabetes condition abated inside [Jan 1 of the MY, as_of] raises a review "
+            "flag (exactly as CBP's E6); HbA1c results (hba1c_loinc) dated in that window are "
+            "attached as supporting evidence but are never required. No diabetes-medication "
+            "value set exists in the P1/P6 catalogue, so no medication signal is read. The "
+            "member stays in the denominator.",
             rationale=(
                 "Synthea abatement dates are unreliable as resolution evidence; a human "
-                "decides whether the diagnosis still stands."
+                "decides whether the diagnosis still stands. The HbA1c arm is evidence only "
+                "so that E6 means the same thing for every measure."
             ),
             coverage="partial",
         ),
@@ -1148,8 +1181,10 @@ def build_spc(corpus: Corpus) -> RuleText:
             "ignored.",
             rationale=(
                 "The public event / diagnosis look-back (an MI, CABG or PCI event in the "
-                "prior year, or an IVD diagnosis in both years) needs claims; Synthea carries "
-                "one condition row per diagnosis, so onset is the only usable signal."
+                "prior year, or an IVD diagnosis in both years) is deliberately NOT "
+                "implemented: the snapshots do carry MI conditions and CABG / PCI procedures, "
+                "but Synthea records one condition row per diagnosis with no visit-level "
+                "claims, so 'ever diagnosed by MY end' is the demo's ASCVD signal."
             ),
         ),
         tn.quoted(
@@ -1208,8 +1243,12 @@ def build_spc(corpus: Corpus) -> RuleText:
             "Exclusions",
             "Pregnancy during the measurement year or year prior to the measurement year.",
             coverage="observable",
-            rationale="pregnancy_snomed condition active in [Jan 1 of MY-1, Dec 31 of the MY].",
+            rationale=(
+                "pregnancy_snomed condition active in [Jan 1 of MY-1, Dec 31 of the MY] "
+                "(shared helper evidence.pregnancy_hits, as CBP / SPD)."
+            ),
         ),
+        _pregnancy_status(m, "the MY or the prior year"),
         tn.not_representable(
             f"{m}/exclusion/cirrhosis",
             "exclusion",
@@ -1387,17 +1426,22 @@ def build_spd(corpus: Corpus) -> RuleText:
             ),
             coverage="observable",
         ),
-        tn.quoted(
+        demo(
             f"{m}/exclusion/esrd_or_dialysis",
             "exclusion",
-            "Exclusions",
-            "ESRD diagnosis or dialysis coverage dates",
-            coverage="observable",
+            "ESRD or dialysis in the MY or the prior year: an esrd_snomed condition active in "
+            "[Jan 1 of MY-1, Dec 31 of the MY] or a dialysis_snomed procedure in that window "
+            "(two exclusion categories: esrd, dialysis).",
             rationale=(
-                "esrd_snomed condition active in the window or a dialysis_snomed procedure in "
-                "it, as implemented by the SPD rule (dialysis coverage dates are enrollment "
-                "data; procedures stand in)."
+                "The quoted D12 text ('ESRD diagnosis or dialysis coverage dates ... at any "
+                "time during the measurement period') names the MY only; the demo mirrors "
+                "SPC's MY-or-prior-year window so one statin patient is judged the same way "
+                "by both rules - a WIDER window than the public text, hence demo_choice. "
+                "Dialysis coverage dates are enrollment data; procedures stand in."
             ),
+            quote="ESRD diagnosis or dialysis coverage dates",
+            citation=tn.citation("Exclusions"),
+            coverage="observable",
         ),
         tn.not_representable(
             f"{m}/exclusion/rhabdomyolysis_and_myopathy",
@@ -1413,9 +1457,24 @@ def build_spd(corpus: Corpus) -> RuleText:
             "Pregnancy, Lactation, and Fertility",
             rationale=(
                 "Lactation and fertility treatment have no codes in the committed Synthea "
-                "scan; pregnancy alone is observable but the SPEC does not apply it to SPD."
+                "scan; the pregnancy part IS computed (see spd/exclusion/pregnancy), so the "
+                "criterion as a whole is partial."
             ),
+            coverage="partial",
         ),
+        demo(
+            f"{m}/exclusion/pregnancy",
+            "exclusion",
+            "Pregnancy in the MY or the prior year: a pregnancy_snomed condition active in "
+            "[Jan 1 of MY-1, Dec 31 of the MY] excludes the member.",
+            rationale=(
+                "Mirrors SPC (shared helper evidence.pregnancy_hits) so one statin patient is "
+                "judged the same way by both rules; the public D12 text names pregnancy "
+                "without a window, so the window is a demo choice."
+            ),
+            coverage="observable",
+        ),
+        _pregnancy_status(m, "the MY or the prior year"),
         tn.not_representable(
             f"{m}/exclusion/cirrhosis",
             "exclusion",
@@ -1434,6 +1493,35 @@ def build_spd(corpus: Corpus) -> RuleText:
             ),
             quote="Pre-Diabetes",
             citation=tn.citation("Exclusions"),
+            coverage="partial",
+        ),
+        demo(
+            f"{m}/exclusion/palliative_care",
+            "exclusion",
+            "Palliative care during the MY (HEDIS SPD criterion; not in the D12 text).",
+            rationale="No palliative-care codes appear in the committed Synthea scan (SCAN.md).",
+            citation="ncqa-spc",
+            coverage="not_representable",
+        ),
+        demo(
+            f"{m}/exclusion/isnp_or_long_term_institution_66_plus",
+            "exclusion",
+            "Members 66+ enrolled in an I-SNP or living long-term in an institution (HEDIS "
+            "SPD criterion; not in the D12 text).",
+            rationale="Plan enrollment data; Synthea / P6 carry no enrollment records.",
+            citation="ncqa-spc",
+            coverage="not_representable",
+        ),
+        demo(
+            f"{m}/exclusion/frailty_and_advanced_illness_66_plus",
+            "exclusion",
+            "Members 66+ with frailty and advanced illness (HEDIS SPD criterion; not in the "
+            "D12 text).",
+            rationale=(
+                "Synthea carries no frailty claims; the global E4 flag only hints (dementia + "
+                "inpatient/ED care at 66+)."
+            ),
+            citation="ncqa-spc",
             coverage="partial",
         ),
         tn.not_representable(
@@ -1522,6 +1610,30 @@ def _screening_tail(m: str) -> list[RuleElement]:
             "(global rule).",
             rationale="Global rule applied to every measure; prior hospice is E1 only.",
             coverage="observable",
+        ),
+        demo(
+            f"{m}/exclusion/palliative_care",
+            "exclusion",
+            "Palliative care during the MY (public criterion of the screening measures).",
+            rationale="No palliative-care codes appear in the committed Synthea scan (SCAN.md).",
+            coverage="not_representable",
+        ),
+        demo(
+            f"{m}/exclusion/isnp_or_long_term_institution_66_plus",
+            "exclusion",
+            "Members 66+ enrolled in an I-SNP or living long-term in an institution.",
+            rationale="Plan enrollment data; Synthea / P6 carry no enrollment records.",
+            coverage="not_representable",
+        ),
+        demo(
+            f"{m}/exclusion/frailty_and_advanced_illness_66_plus",
+            "exclusion",
+            "Members 66+ with frailty and advanced illness.",
+            rationale=(
+                "Synthea carries no frailty claims; the global E4 flag only hints (dementia + "
+                "inpatient/ED care at 66+)."
+            ),
+            coverage="partial",
         ),
         demo(
             f"{m}/coverage/no_measure_escalations",

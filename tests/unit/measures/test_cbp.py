@@ -643,8 +643,13 @@ ANY_TIME = "any time through as_of"
         ),
         pytest.param(
             lambda f: f.condition(PREGNANCY, date(2024, 4, 1), abatement=date(2025, 1, 1)),
+            [],
+            id="pregnancy_condition_abated_on_my_start_is_not_active",
+        ),
+        pytest.param(
+            lambda f: f.condition(PREGNANCY, date(2024, 4, 1), abatement=date(2025, 1, 2)),
             [("pregnancy", "quoted", "MY")],
-            id="pregnancy_condition_abated_on_my_start",
+            id="pregnancy_condition_abated_day_after_my_start",
         ),
         pytest.param(
             lambda f: f.condition(PREGNANCY, date(2026, 1, 1)),
@@ -889,3 +894,34 @@ def test_priority_no_bp_in_my_outranks_uncontrolled() -> None:
     assert uncontrolled == 9.0
     _, prospective, _ = _engine_eval(RecordFactory().htn(), as_of=MID_YEAR)
     assert prospective > no_bp
+
+
+# --- review-gate regressions (2026-09-05) -----------------------------------------------------
+
+
+def test_e5_defective_panel_on_an_earlier_date_is_ignored() -> None:
+    """The most recent panel DATE decides; a defective panel on an earlier date is as
+    irrelevant as a complete earlier panel (cbp.json e5 element)."""
+    out = evaluate(RecordFactory().htn().bp(date(2025, 3, 1), 130, None).bp(JUN, 130, 80))
+    assert out.numerator.value == "yes"
+    assert _kinds(out) == set()
+    out = evaluate(RecordFactory().htn().bp(JUN, 130, 80).bp(JUN, 130, None))
+    assert out.numerator.value == "unknown"
+    assert _kinds(out) == {"E5"}
+
+
+def test_engine_death_in_my_wins_over_unknown_birth_date() -> None:
+    """A member who died in the MY is excluded even when the denominator is unknown."""
+    record = RecordFactory(birth_date=None, death_date=JUN).htn().bp(JUN, 130, 80).record()
+    ev = MeasureEngine([CbpRule()], VALUE_SETS).evaluate_one(record, _ctx(record), "CBP")
+    assert ev.verdict == "excluded"
+    assert ev.priority_score == 0.0
+    assert [h.category for h in ev.exclusions] == ["died_during_measurement_period"]
+    record = RecordFactory(birth_date=None).htn().procedure(HOSPICE, JUN).record()
+    ev = MeasureEngine([CbpRule()], VALUE_SETS).evaluate_one(record, _ctx(record), "CBP")
+    assert ev.verdict == "excluded"
+    # A measure-level exclusion (ESRD) still needs a definite denominator.
+    record = RecordFactory(birth_date=None).htn().condition(ESRD, date(2000, 1, 1)).record()
+    ev = MeasureEngine([CbpRule()], VALUE_SETS).evaluate_one(record, _ctx(record), "CBP")
+    assert ev.verdict == "needs_review"
+    assert ev.exclusions == []

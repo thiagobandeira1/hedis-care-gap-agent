@@ -25,12 +25,15 @@ from caregap.measures.ids import (
     MeasureId,
 )
 from caregap.measures.rule_text import (
+    COVERAGE_ELEMENTS,
     RuleElement,
     RuleText,
     all_rule_texts,
+    coverage_element_id,
     load_rule_text,
     rule_text_path,
 )
+from caregap.measures.rules import all_rules
 
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "scripts" / "sync_rule_text.py"
@@ -50,6 +53,7 @@ SPEC_EXCLUSIONS: dict[MeasureId, dict[str, tuple[str, str]]] = {
         "esrd": ("quoted", "observable"),
         "dialysis": ("demo_choice", "observable"),
         "pregnancy": ("quoted", "observable"),
+        "pregnancy_status_observation": ("demo_choice", "observable"),
         "kidney_transplant": ("demo_choice", "observable"),
     },
     "EED": {
@@ -72,13 +76,17 @@ SPEC_EXCLUSIONS: dict[MeasureId, dict[str, tuple[str, str]]] = {
         "hospice": ("quoted", "observable"),
         "esrd_or_dialysis": ("quoted", "observable"),
         "pregnancy": ("quoted", "observable"),
+        "pregnancy_status_observation": ("demo_choice", "observable"),
         "cirrhosis": ("not_representable", "not_representable"),
         "myalgia_myositis_myopathy_rhabdomyolysis": ("not_representable", "not_representable"),
     },
     "SPD": {
         "death": ("demo_choice", "observable"),
         "hospice": ("quoted", "observable"),
-        "esrd_or_dialysis": ("quoted", "observable"),
+        # Window widened to MY-or-prior-year (mirrors SPC), so wider than the quoted text.
+        "esrd_or_dialysis": ("demo_choice", "observable"),
+        "pregnancy": ("demo_choice", "observable"),
+        "pregnancy_status_observation": ("demo_choice", "observable"),
     },
     "TSC": {
         "death": ("demo_choice", "observable"),
@@ -278,6 +286,37 @@ def test_spec_table_demo_choices_are_stated() -> None:
         assert texts["CBP"].element(f"cbp/exclusion/{slug}").source == "demo_choice"
     assert texts["BCS"].normative_quote is not None
     assert texts["BCS"].normative_quote.conflict is not None
+
+
+# --- coverage-table keys join to rule JSON element ids ----------------------------------------
+
+
+def test_every_rule_coverage_key_maps_to_a_rule_json_element() -> None:
+    """Rule modules keep their public-criterion vocabulary; ``COVERAGE_ELEMENTS`` is the join
+    the UI / packet use, so every key must be mapped and every target must exist."""
+    for rule in all_rules():
+        text = load_rule_text(rule.measure_id)
+        element_ids = {e.id for e in text.elements}
+        module = importlib.import_module(type(rule).__module__)
+        table = rule.spec.coverage if hasattr(rule, "spec") else module.COVERAGE
+        mapping = COVERAGE_ELEMENTS[rule.measure_id]
+        assert set(table) == set(mapping), f"{rule.measure_id}: COVERAGE keys vs mapping"
+        for key, element_id in mapping.items():
+            assert element_id in element_ids, f"{rule.measure_id}/{key} -> {element_id}"
+            assert coverage_element_id(rule.measure_id, key) == element_id
+    assert set(COVERAGE_ELEMENTS) == set(ALL_MEASURES)
+
+
+def test_pregnancy_elements_are_consistent_across_the_three_statin_and_bp_measures() -> None:
+    texts = all_rule_texts()
+    for measure in ("CBP", "SPC", "SPD"):
+        status = texts[measure].element(f"{measure.lower()}/exclusion/pregnancy_status_observation")
+        assert status.source == "demo_choice" and status.coverage == "observable"
+        assert "82810-3" in status.text and "77386006" in status.text
+        assert "pregnancy_hits" in (status.rationale or "")
+    assert texts["SPD"].element("spd/exclusion/pregnancy").source == "demo_choice"
+    assert texts["SPD"].element("spd/exclusion/esrd_or_dialysis").source == "demo_choice"
+    assert texts["SPD"].element("spd/exclusion/esrd_or_dialysis").quote is not None
 
 
 # --- verbatim against P2's corpus -----------------------------------------------------------

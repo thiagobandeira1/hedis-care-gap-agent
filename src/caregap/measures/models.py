@@ -13,7 +13,8 @@ Section = Literal[
 ]
 EvidenceRole = Literal["eligibility", "numerator", "exclusion", "escalation"]
 Coverage = Literal["observable", "partial", "not_representable"]
-EscalationKind = Literal["E1", "E2", "E3", "E4", "E5", "E6", "E7"]
+EscalationKind = Literal["E1", "E3", "E4", "E5", "E6", "E7"]
+"""E2 was reserved but never defined by the SPEC; it is not part of the vocabulary."""
 Scope = Literal["global", "measure"]
 GapSource = Literal["engine", "validator_confirmed", "reviewer"]
 

@@ -145,11 +145,11 @@
     {
       "id": "spd/exclusion/esrd_or_dialysis",
       "kind": "exclusion",
-      "text": "ESRD diagnosis or dialysis coverage dates",
-      "source": "quoted",
+      "text": "ESRD or dialysis in the MY or the prior year: an esrd_snomed condition active in [Jan 1 of MY-1, Dec 31 of the MY] or a dialysis_snomed procedure in that window (two exclusion categories: esrd, dialysis).",
+      "source": "demo_choice",
       "citation": "cms-tn-2026 p.104",
       "quote": "ESRD diagnosis or dialysis coverage dates",
-      "rationale": "esrd_snomed condition active in the window or a dialysis_snomed procedure in it, as implemented by the SPD rule (dialysis coverage dates are enrollment data; procedures stand in).",
+      "rationale": "The quoted D12 text ('ESRD diagnosis or dialysis coverage dates ... at any time during the measurement period') names the MY only; the demo mirrors SPC's MY-or-prior-year window so one statin patient is judged the same way by both rules - a WIDER window than the public text, hence demo_choice. Dialysis coverage dates are enrollment data; procedures stand in.",
       "coverage": "observable"
     },
     {
@@ -169,8 +169,28 @@
       "source": "not_representable",
       "citation": "cms-tn-2026 p.104",
       "quote": "Pregnancy, Lactation, and Fertility",
-      "rationale": "Lactation and fertility treatment have no codes in the committed Synthea scan; pregnancy alone is observable but the SPEC does not apply it to SPD.",
-      "coverage": "not_representable"
+      "rationale": "Lactation and fertility treatment have no codes in the committed Synthea scan; the pregnancy part IS computed (see spd/exclusion/pregnancy), so the criterion as a whole is partial.",
+      "coverage": "partial"
+    },
+    {
+      "id": "spd/exclusion/pregnancy",
+      "kind": "exclusion",
+      "text": "Pregnancy in the MY or the prior year: a pregnancy_snomed condition active in [Jan 1 of MY-1, Dec 31 of the MY] excludes the member.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Mirrors SPC (shared helper evidence.pregnancy_hits) so one statin patient is judged the same way by both rules; the public D12 text names pregnancy without a window, so the window is a demo choice.",
+      "coverage": "observable"
+    },
+    {
+      "id": "spd/exclusion/pregnancy_status_observation",
+      "kind": "exclusion",
+      "text": "Pregnancy is also detected from a LOINC 82810-3 'Pregnancy status' observation answered SNOMED 77386006 ('Patient currently pregnant') dated in the MY or the prior year (exclusion category pregnancy_status_positive).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Synthea records pregnancy this way beside (or instead of) a pregnancy condition; the same shared helper (evidence.pregnancy_hits) serves CBP, SPC and SPD.",
+      "coverage": "observable"
     },
     {
       "id": "spd/exclusion/cirrhosis",
@@ -193,6 +213,36 @@
       "coverage": "partial"
     },
     {
+      "id": "spd/exclusion/palliative_care",
+      "kind": "exclusion",
+      "text": "Palliative care during the MY (HEDIS SPD criterion; not in the D12 text).",
+      "source": "demo_choice",
+      "citation": "ncqa-spc",
+      "quote": null,
+      "rationale": "No palliative-care codes appear in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spd/exclusion/isnp_or_long_term_institution_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66+ enrolled in an I-SNP or living long-term in an institution (HEDIS SPD criterion; not in the D12 text).",
+      "source": "demo_choice",
+      "citation": "ncqa-spc",
+      "quote": null,
+      "rationale": "Plan enrollment data; Synthea / P6 carry no enrollment records.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "spd/exclusion/frailty_and_advanced_illness_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66+ with frailty and advanced illness (HEDIS SPD criterion; not in the D12 text).",
+      "source": "demo_choice",
+      "citation": "ncqa-spc",
+      "quote": null,
+      "rationale": "Synthea carries no frailty claims; the global E4 flag only hints (dementia + inpatient/ED care at 66+).",
+      "coverage": "partial"
+    },
+    {
       "id": "spd/exclusion/polycystic_ovary_syndrome",
       "kind": "exclusion",
       "text": "Polycystic Ovary Syndrome",
@@ -205,7 +255,7 @@
     {
       "id": "spd/coverage/e1_prior_hospice",
       "kind": "coverage",
-      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice entirely BEFORE the MY is deterministically NOT an exclusion; an episode whose recorded end (performed_end_date / encounter end) falls inside [Jan 1 of the MY, as_of] IS hospice in the MY (exclusion, not E1).",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
@@ -215,7 +265,7 @@
     {
       "id": "spd/coverage/e4_advanced_illness_hint",
       "kind": "coverage",
-      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "text": "E4 (global): a dementia diagnosis active in the MY (abatement null or after Jan 1 of the MY) OR a dementia medication authored in the MY or the prior year, plus an inpatient/ED encounter in the MY at age 66+, raises a review flag; never computed as an exclusion.",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,

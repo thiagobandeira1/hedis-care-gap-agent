@@ -369,8 +369,15 @@ DENOMINATOR_CASES: tuple[DenomCase, ...] = (
         "no diabetes condition active",
     ),
     DenomCase(
-        "old diabetes abated on prior_my_start -> yes",
+        "old diabetes abated ON prior_my_start -> no (abatement must be after the start)",
         RecordFactory().diabetes(date(2015, 1, 1), abatement=PRIOR_START),
+        RETRO,
+        "no",
+        "no diabetes condition active",
+    ),
+    DenomCase(
+        "old diabetes abated the day after prior_my_start -> yes",
+        RecordFactory().diabetes(date(2015, 1, 1), abatement=date(2024, 1, 2)),
         RETRO,
         "yes",
         "diabetes condition active",
@@ -659,6 +666,31 @@ NUMERATOR_CASES: tuple[NumCase, ...] = (
         evidence_ids=frozenset({"p3", "c2"}),
     ),
     NumCase(
+        "prior-year exam, negative answer dated BEFORE the exam -> no (not linked)",
+        RecordFactory().diabetes().exam(date(2024, 5, 5)).negative_eyes(date(2024, 5, 4)),
+        RETRO,
+        "no",
+        subtype=PRIOR_YEAR_EXAM_WITHOUT_NEGATIVE_RESULT,
+    ),
+    NumCase(
+        "prior-year exam, negative answer dated after the exam in MY-1 -> yes",
+        RecordFactory().diabetes().exam(date(2024, 5, 5)).negative_eyes(date(2024, 6, 1)),
+        RETRO,
+        "yes",
+        evidence_ids=frozenset({"p2", "o3", "o4"}),
+    ),
+    NumCase(
+        "negative answer after the exam but retinopathy onset on the exam date -> no",
+        RecordFactory()
+        .diabetes()
+        .condition(RETINOPATHY, date(2024, 5, 5))
+        .exam(date(2024, 5, 5))
+        .negative_eyes(date(2024, 6, 1)),
+        RETRO,
+        "no",
+        subtype=PRIOR_YEAR_EXAM_WITH_RETINOPATHY,
+    ),
+    NumCase(
         "no exam anywhere -> no",
         RecordFactory().diabetes().negative_eyes(date(2024, 5, 5)),
         RETRO,
@@ -750,22 +782,22 @@ E6_CASES: tuple[E6Case, ...] = (
         True,
     ),
     E6Case(
-        "abated in MY, no HbA1c -> none",
+        "abated in MY, no HbA1c -> E6 (abatement alone triggers, as CBP)",
         RecordFactory().diabetes(abatement=date(2025, 3, 1)),
         RETRO,
-        False,
+        True,
     ),
     E6Case(
-        "abated in MY, HbA1c only in the prior year -> none",
+        "abated in MY, HbA1c only in the prior year -> E6",
         RecordFactory().diabetes(abatement=date(2025, 3, 1)).hba1c(PRIOR_END),
         RETRO,
-        False,
+        True,
     ),
     E6Case(
-        "abated in MY, HbA1c after as_of -> none",
+        "abated in MY, HbA1c after as_of -> E6",
         RecordFactory().diabetes(abatement=date(2025, 3, 1)).hba1c(date(2025, 7, 1)),
         MID,
-        False,
+        True,
     ),
     E6Case(
         "abated the day before my_start + HbA1c in MY -> none",
@@ -794,12 +826,12 @@ E6_CASES: tuple[E6Case, ...] = (
         False,
     ),
     E6Case(
-        "HbA1c code under another code system -> none",
+        "HbA1c code under another code system -> E6 (abatement alone)",
         RecordFactory()
         .diabetes(abatement=date(2025, 3, 1))
         .observation(HBA1C, date(2025, 4, 1), value_num=7.0, system="SNOMED"),
         RETRO,
-        False,
+        True,
     ),
 )
 
@@ -825,6 +857,13 @@ def test_e6_flag_shape(rule: EedRule, vs: ValueSets) -> None:
     assert flag.scope == "measure"
     assert {e.role for e in flag.evidence} == {"escalation"}
     assert {e.event_id for e in flag.evidence} == {"c1", "o2", "o3"}
+    assert "2 HbA1c result(s)" in flag.reason
+    # Without HbA1c the flag still fires, on the condition alone.
+    (flag,) = _run(
+        rule, vs, RecordFactory().diabetes(abatement=date(2025, 3, 1)).build()
+    ).escalations
+    assert {e.event_id for e in flag.evidence} == {"c1"}
+    assert "HbA1c" not in flag.reason
 
 
 def test_rule_never_emits_global_or_other_escalations(rule: EedRule, vs: ValueSets) -> None:

@@ -46,11 +46,11 @@
     {
       "id": "cbp/denominator/hypertension_active",
       "kind": "denominator",
-      "text": "Hypertension = a hypertension_snomed condition with onset <= Dec 31 of the MY and abatement null or > Jan 1 of the MY.",
+      "text": "Hypertension = a hypertension_snomed condition with onset <= Dec 31 of the MY and abatement null or > Jan 1 of the MY (abated ON Jan 1 is not active).",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
-      "rationale": "The Technical Notes give no diagnosis window; Synthea records one condition row per diagnosis (no visit-level claims), so 'active during the MY' is the closest evidence. clinical_status / verification_status are never read.",
+      "rationale": "The Technical Notes give no diagnosis window; Synthea records one condition row per diagnosis (no visit-level claims), so 'active during the MY' is the closest evidence. The strict '> Jan 1' abatement edge is the one semantics every measure shares (evidence.condition_active_in). clinical_status / verification_status are never read.",
       "coverage": null
     },
     {
@@ -140,7 +140,17 @@
       "source": "quoted",
       "citation": "cms-tn-2026 p.56",
       "quote": "Members with a diagnosis of pregnancy any time during the measurement year. Do not include laboratory claims",
-      "rationale": "pregnancy_snomed condition active in the MY (a trap set keeps non-pregnancy obstetric codes out). The corpus sentence has no closing period.",
+      "rationale": "pregnancy_snomed condition active in the MY (a trap set keeps non-pregnancy obstetric codes out); shared helper evidence.pregnancy_hits, as SPC / SPD. The corpus sentence has no closing period.",
+      "coverage": "observable"
+    },
+    {
+      "id": "cbp/exclusion/pregnancy_status_observation",
+      "kind": "exclusion",
+      "text": "Pregnancy is also detected from a LOINC 82810-3 'Pregnancy status' observation answered SNOMED 77386006 ('Patient currently pregnant') dated in the MY (exclusion category pregnancy_status_positive).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Synthea records pregnancy this way beside (or instead of) a pregnancy condition; the same shared helper (evidence.pregnancy_hits) serves CBP, SPC and SPD.",
       "coverage": "observable"
     },
     {
@@ -186,7 +196,7 @@
     {
       "id": "cbp/coverage/e1_prior_hospice",
       "kind": "coverage",
-      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice entirely BEFORE the MY is deterministically NOT an exclusion; an episode whose recorded end (performed_end_date / encounter end) falls inside [Jan 1 of the MY, as_of] IS hospice in the MY (exclusion, not E1).",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
@@ -196,7 +206,7 @@
     {
       "id": "cbp/coverage/e4_advanced_illness_hint",
       "kind": "coverage",
-      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "text": "E4 (global): a dementia diagnosis active in the MY (abatement null or after Jan 1 of the MY) OR a dementia medication authored in the MY or the prior year, plus an inpatient/ED encounter in the MY at age 66+, raises a review flag; never computed as an exclusion.",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
@@ -206,17 +216,17 @@
     {
       "id": "cbp/coverage/e5_incomplete_panel_or_unit",
       "kind": "coverage",
-      "text": "E5: a BP panel in the MY missing its systolic or diastolic child, or carrying a unit other than mm[Hg], raises a review flag; such a panel never counts toward the numerator.",
+      "text": "E5: a non-acute BP panel dated on the MOST RECENT panel date in [Jan 1 of the MY, as_of] that is missing its systolic or diastolic child, is non-numeric, or carries a unit other than mm[Hg] makes the numerator unknown (needs_review) and raises a review flag - even when a complete panel exists on that same date. Defective panels on earlier dates are ignored, exactly as complete earlier panels are: the most recent date decides.",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
-      "rationale": "An incomplete or mis-united panel may still be a real reading a human can confirm; the engine refuses to guess.",
+      "rationale": "The representative BP is taken from the most recent date only; a defective panel there may still be a real reading a human can confirm, so the engine refuses to guess rather than silently picking the complete one.",
       "coverage": "partial"
     },
     {
       "id": "cbp/coverage/e6_hypertension_abated_in_my",
       "kind": "coverage",
-      "text": "E6: a hypertension condition abated inside the MY raises a review flag; the member stays in the denominator.",
+      "text": "E6: a hypertension condition abated inside [Jan 1 of the MY, as_of] raises a review flag; a condition abated ON Jan 1 is outside the denominator (not active) but still raises E6.",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,

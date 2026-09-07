@@ -79,6 +79,48 @@ gate (stage G). None blocks tests; all are documented in the modules that carry 
 
 Findings: 28 confirmed (every one reproduced by a verifier), 3 refuted, 52 unverified (their verifiers were cut off by the session limit). Fixers did not run.
 
+### Resolved at the measure-rules fix pass (2026-09-07)
+
+Fixed (each with a regression test; goldens regenerated - only the coverage tables of the five
+persona goldens changed, no persona / gold-panel verdict changed, `caregap eval --tier engine
+--gate` still PASS at 1.000/1.000/1.000):
+
+- ~~C4~~ / ~~C13~~ CBP E5: the engine's "most recent date decides" semantics is the SPEC's;
+  `cbp.json` e5 element now says exactly that (earlier defective panels ignored; a defective
+  panel on the latest date makes the numerator unknown even beside a complete one).
+- ~~C5~~ / ~~C12~~ EED E6 = diabetes abated in [my_start, as_of] (as CBP); HbA1c results are
+  attached as evidence only; no diabetes-medication set exists (stated in `eed.json`).
+- ~~C6~~ / ~~C10~~ / ~~C11~~ pregnancy: one shared `evidence.pregnancy_hits` (condition active
+  OR LOINC 82810-3 = 77386006) used by CBP (MY), SPC and SPD (MY or prior year); new
+  `*/exclusion/pregnancy_status_observation` demo elements; SPD `pregnancy` now observable.
+- ~~C8~~ hospice episodes: `performed_end_date` / encounter `end_ts` inside [my_start, as_of]
+  is hospice-in-MY (exclusion); an end inside the 90-day lookback is E1.
+- ~~C9~~ / ~~C18~~ / backlog #1: ONE abatement semantics (`abatement > window.start`, the SPEC
+  CBP row) in `evidence.condition_active_in`; CBP uses the helper; EED/SPD/SPC/E4 boundary
+  tests flipped accordingly and the rule JSON texts say "abated ON the first day is not active".
+- ~~C14~~ / ~~C21~~ E4: dementia dx active in the MY OR dementia medication authored in MY or
+  prior year (one window, documented as demo_choice in every `*/coverage/e4_advanced_illness_hint`).
+- ~~C15~~ / ~~C27~~ EED prior-year negative answer must be dated on/after the exam inside MY-1
+  (and no retinopathy dx <= exam); new open-gap reason when every answer predates the exam.
+- ~~C16~~ `spc.json` ascvd_onset rationale no longer claims PCI/CABG "need claims".
+- ~~C22~~ SPD ESRD/dialysis window retagged `demo_choice` (quote kept) with the widening rationale;
+  `ExclusionHit.source` and the packet category table follow.
+- ~~C23~~ `col.py` docstring tags now match `col.json`.
+- ~~C24~~ / backlog #5: `rule_text.COVERAGE_ELEMENTS` joins every rule `COVERAGE` key to a rule
+  JSON element id; parity test in `tests/unit/measures/test_rule_json.py`; TSC/SNS now carry
+  their own coverage tables and palliative / I-SNP / frailty elements.
+- ~~C25~~ / backlog #19: `E2` dropped from `EscalationKind`, SPEC and README.
+- ~~C26~~ / backlog #2 / #3: `rules/statin.py` (public names) shared by SPC and SPD;
+  `evidence.child_observations_of` shared by CBP and the screening rule.
+- ~~C28~~ engine: a global death / hospice exclusion wins over an `unknown` denominator
+  (unknown birth date) -> `excluded`; measure-level exclusions still need a definite denominator
+  (SPEC section 2 global-rules paragraph updated).
+
+Left for the orchestrator: `scripts/gold.py` (gold trigger facts, C1 territory) still derives
+E4 "active" with `abatement >= my_start`; the engine now uses `>`; the boundary case did not
+occur in the 60-patient panel (engine outcomes unchanged) but the labeler script should be
+aligned before the next freeze.
+
 ### Confirmed (fix, with a regression test each)
 
 | # | sev | lens | finding | where |
@@ -86,31 +128,31 @@ Findings: 28 confirmed (every one reproduced by a verifier), 3 refuted, 52 unver
 | C1 | high | adjudication | Gold set exercises zero escalation units; E1-E7 and review_flag_rate are unmeasured | `scripts/gold.py:499` |
 | C2 | high | hitl | Two concurrent decisions on one pending thread are both accepted (approve writes outbox while reject is recorded) | `src/caregap/graph/runner.py:152` |
 | C3 | high | hitl | Resume timeout: abandoned worker writes the outbox after the ledger and decision record say 'error' | `src/caregap/graph/runner.py:247` |
-| C4 | medium | adjudication | CBP E5 ignores defective BP panels that are not on the most recent date | `src/caregap/measures/rules/cbp.py:288` |
-| C5 | medium | adjudication | EED E6 silently requires an HbA1c in the MY that the rule text does not mention | `src/caregap/measures/rules/eed.py:302` |
-| C6 | medium | adjudication | CBP applies an undocumented pregnancy-status observation exclusion (LOINC 82810-3) | `src/caregap/measures/rules/cbp.py:402` |
+| ~~C4~~ (resolved 2026-09-07) | medium | adjudication | CBP E5 ignores defective BP panels that are not on the most recent date | `src/caregap/measures/rules/cbp.py:288` |
+| ~~C5~~ (resolved 2026-09-07) | medium | adjudication | EED E6 silently requires an HbA1c in the MY that the rule text does not mention | `src/caregap/measures/rules/eed.py:302` |
+| ~~C6~~ (resolved 2026-09-07) | medium | adjudication | CBP applies an undocumented pregnancy-status observation exclusion (LOINC 82810-3) | `src/caregap/measures/rules/cbp.py:402` |
 | C7 | medium | hitl | Start timeout leaves a resumable interrupt that no ledger view lists; approving it flips an 'error' patient to 'completed' | `src/caregap/graph/runner.py:207` |
-| C8 | medium | leakage | Hospice episode that starts before the MY and ends inside it is neither excluded nor E1-flagged | `src/caregap/measures/rules/global_rules.py:42` |
-| C9 | medium | rules | Abatement on the window's first day means opposite things inside CBP (and vs the EED/SPD/SPC helper) | `src/caregap/measures/rules/cbp.py:181` |
-| C10 | medium | rules | Pregnancy recorded the Synthea way (LOINC 82810-3 = 77386006) excludes in CBP but not in SPC | `src/caregap/measures/rules/spc.py:257` |
-| C11 | medium | rules | SPD computes no pregnancy exclusion and mis-tags it not_representable although pregnancy_snomed exists and SPC uses it | `src/caregap/measures/rules/spd.py:231` |
-| C12 | medium | rules | eed.json E6 text describes a rule the engine does not implement (HbA1c conjunct missing from text; meds arm missing from code) | `src/caregap/measures/rules/eed.py:302` |
-| C13 | medium | rules | cbp.json E5 text contradicts the engine on when E5 fires and what a defective panel does to the numerator | `src/caregap/measures/rules/cbp.py:286` |
-| C14 | low | adjudication | Global E4 drops dementia diagnoses abated before the MY, contrary to the rule text | `src/caregap/measures/rules/global_rules.py:119` |
-| C15 | low | adjudication | EED prior-year negative answer is not matched to the exam date | `src/caregap/measures/rules/eed.py:243` |
-| C16 | low | adjudication | spc.json rationale claims PCI/CABG events 'need claims' although the snapshots carry them; CBP/EED abatement edge contradicts itself | `src/caregap/measures/rules/json/spc.json:72` |
+| ~~C8~~ (resolved 2026-09-07) | medium | leakage | Hospice episode that starts before the MY and ends inside it is neither excluded nor E1-flagged | `src/caregap/measures/rules/global_rules.py:42` |
+| ~~C9~~ (resolved 2026-09-07) | medium | rules | Abatement on the window's first day means opposite things inside CBP (and vs the EED/SPD/SPC helper) | `src/caregap/measures/rules/cbp.py:181` |
+| ~~C10~~ (resolved 2026-09-07) | medium | rules | Pregnancy recorded the Synthea way (LOINC 82810-3 = 77386006) excludes in CBP but not in SPC | `src/caregap/measures/rules/spc.py:257` |
+| ~~C11~~ (resolved 2026-09-07) | medium | rules | SPD computes no pregnancy exclusion and mis-tags it not_representable although pregnancy_snomed exists and SPC uses it | `src/caregap/measures/rules/spd.py:231` |
+| ~~C12~~ (resolved 2026-09-07) | medium | rules | eed.json E6 text describes a rule the engine does not implement (HbA1c conjunct missing from text; meds arm missing from code) | `src/caregap/measures/rules/eed.py:302` |
+| ~~C13~~ (resolved 2026-09-07) | medium | rules | cbp.json E5 text contradicts the engine on when E5 fires and what a defective panel does to the numerator | `src/caregap/measures/rules/cbp.py:286` |
+| ~~C14~~ (resolved 2026-09-07) | low | adjudication | Global E4 drops dementia diagnoses abated before the MY, contrary to the rule text | `src/caregap/measures/rules/global_rules.py:119` |
+| ~~C15~~ (resolved 2026-09-07) | low | adjudication | EED prior-year negative answer is not matched to the exam date | `src/caregap/measures/rules/eed.py:243` |
+| ~~C16~~ (resolved 2026-09-07) | low | adjudication | spc.json rationale claims PCI/CABG events 'need claims' although the snapshots carry them; CBP/EED abatement edge contradicts itself | `src/caregap/measures/rules/json/spc.json:72` |
 | C17 | low | leakage | Panel 'deceased' flag is not as_of-aware and can contradict the as_of-masked verdicts shown next to it | `src/caregap/p6/snapshot.py:74` |
-| C18 | low | leakage | Backlog #1 confirmed: abatement exactly on the window start is 'active' for EED/SPD/SPC exclusions but 'inactive' for the CBP denominator; the frozen gold mirrors both | `src/caregap/measures/evidence.py:100` |
+| ~~C18~~ (resolved 2026-09-07) | low | leakage | Backlog #1 confirmed: abatement exactly on the window start is 'active' for EED/SPD/SPC exclusions but 'inactive' for the CBP denominator; the frozen gold mirrors both | `src/caregap/measures/evidence.py:100` |
 | C19 | low | leakage | ADR-0002 leak direction confirmed; a pre-MY statin marked 'stopped' after as_of becomes a plain gap_open with no E3, contrary to the ADR's '(or an E3 review)' wording | `src/caregap/measures/rules/spc.py:142` |
 | C20 | low | leakage | Backlog #22 (leakage half) confirmed as far as this checkout allows: labelers saw as_of-masked worksheets and descriptive-fact selection; freeze-before-engine ordering is consistent with timestamps but not provable without history | `scripts/worksheet.py:268` |
-| C21 | low | rules | E4 dementia-medication arm has no date window while the dementia-condition arm is windowed to the MY | `src/caregap/measures/rules/global_rules.py:131` |
-| C22 | low | rules | SPD ESRD/dialysis window is tagged quoted but is wider than the quoted D12 text | `src/caregap/measures/rules/spd.py:19` |
-| C23 | low | rules | col.py docstring tags disagree with col.json tags (backlog item 4 confirmed) | `src/caregap/measures/rules/col.py:10` |
-| C24 | low | rules | Coverage tables use three vocabularies and cannot be joined to rule JSON element ids (backlog item 5 confirmed) | `src/caregap/measures/rules/col.py:76` |
-| C25 | low | rules | E2 is declared but never emitted (backlog item 19 confirmed) | `src/caregap/measures/models.py:16` |
-| C26 | low | rules | Shared statin and child-observation helpers live in the wrong modules (backlog items 2 and 3 confirmed) | `src/caregap/measures/rules/spd.py:82` |
-| C27 | low | rules | EED prior-year negative result is not linked to the exam that closes the numerator | `src/caregap/measures/rules/eed.py:243` |
-| C28 | low | rules | A member who died in the MY with unknown birth date becomes a needs_review candidate with priority instead of excluded | `src/caregap/measures/engine.py:78` |
+| ~~C21~~ (resolved 2026-09-07) | low | rules | E4 dementia-medication arm has no date window while the dementia-condition arm is windowed to the MY | `src/caregap/measures/rules/global_rules.py:131` |
+| ~~C22~~ (resolved 2026-09-07) | low | rules | SPD ESRD/dialysis window is tagged quoted but is wider than the quoted D12 text | `src/caregap/measures/rules/spd.py:19` |
+| ~~C23~~ (resolved 2026-09-07) | low | rules | col.py docstring tags disagree with col.json tags (backlog item 4 confirmed) | `src/caregap/measures/rules/col.py:10` |
+| ~~C24~~ (resolved 2026-09-07) | low | rules | Coverage tables use three vocabularies and cannot be joined to rule JSON element ids (backlog item 5 confirmed) | `src/caregap/measures/rules/col.py:76` |
+| ~~C25~~ (resolved 2026-09-07) | low | rules | E2 is declared but never emitted (backlog item 19 confirmed) | `src/caregap/measures/models.py:16` |
+| ~~C26~~ (resolved 2026-09-07) | low | rules | Shared statin and child-observation helpers live in the wrong modules (backlog items 2 and 3 confirmed) | `src/caregap/measures/rules/spd.py:82` |
+| ~~C27~~ (resolved 2026-09-07) | low | rules | EED prior-year negative result is not linked to the exam that closes the numerator | `src/caregap/measures/rules/eed.py:243` |
+| ~~C28~~ (resolved 2026-09-07) | low | rules | A member who died in the MY with unknown birth date becomes a needs_review candidate with priority instead of excluded | `src/caregap/measures/engine.py:78` |
 
 ### Unverified (re-verify before fixing; ordered as reported)
 

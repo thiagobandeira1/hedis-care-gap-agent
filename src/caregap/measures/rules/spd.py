@@ -16,8 +16,9 @@ quoted
   * denominator age band: 40-75, age at Dec 31 of the measurement year (MY), any sex;
   * numerator concept: a statin "fill" during the measurement period - unlike SPC (C19), the
     public D12 text carries NO intensity requirement, so a statin of ANY intensity counts;
-  * exclusions: ESRD or dialysis (MY or the year prior, as SPC); died / hospice during the MY
-    (applied by the GLOBAL rules in ``rules/global_rules.py``, never re-implemented here).
+  * exclusions: ESRD or dialysis "at any time during the measurement period" (the window
+    itself is a demo_choice, see below); hospice during the MY (applied by the GLOBAL rules in
+    ``rules/global_rules.py``, never re-implemented here).
 demo_choice
   * "diabetes" is identified exactly as EED (C11) does it: a ``diabetes_snomed`` condition
     active in [Jan 1 of MY-1, Dec 31 of MY] (onset on/before the window end, abatement null or
@@ -28,21 +29,25 @@ demo_choice
     condition with ``onset_date <= my_end`` AND SPC-eligible age/sex makes the SPD denominator
     ``no`` with the reason ``routed_to_spc``; the SPC rule owns that patient.
   * "dispensed" is approximated by ``MedicationRequest`` rows exactly as SPC does (the
-    on-therapy helper is imported from ``rules/spc.py``): on therapy iff a ``statin_rxnorm``
+    on-therapy helper is imported from ``rules/statin.py``): on therapy iff a ``statin_rxnorm``
     request is authored in [my_start, as_of], or authored before my_start with
     ``status == "active"``; ``stopped`` / ``cancelled`` / ``entered-in-error`` never count.
     ADR-0002: SPC, this rule, and E3 are the ONLY readers of ``MedicationEvent.status``.
-  * exclusion window = [Jan 1 of MY-1, Dec 31 of MY], built from MY bounds; the numerator
-    window ends at ``as_of``.
+  * ESRD / dialysis exclusion window = [Jan 1 of MY-1, Dec 31 of MY] (MY or the year prior,
+    mirroring SPC) - WIDER than the quoted D12 text ("during the measurement period"), so the
+    hits are tagged ``demo_choice``; the numerator window ends at ``as_of``.
+  * pregnancy (MY or the year prior, mirroring SPC; the SPEC SPD row lists it as demo): a
+    ``pregnancy_snomed`` condition active in the window OR a LOINC 82810-3 "Pregnancy status"
+    observation answered SNOMED 77386006 in the window (``pregnancy_status_positive``) - the
+    shared :func:`evidence.pregnancy_hits`. The public D12 criterion is "Pregnancy, Lactation,
+    and Fertility"; only the pregnancy part is observable (coverage ``partial``).
   * E3 ``medication_status_conflict`` (measure scope, shared with SPC): a statin authored in
     the MY with status stopped or cancelled, raised even when another statin closes the gap.
 not_representable (listed in the coverage table, never computed)
   * the pharmacy-claims denominator ("at least two diabetes medication fills") and its
     companion exclusion for members on diabetes medication without a diabetes diagnosis who
     have PCOS / gestational / steroid-induced diabetes (moot: this denominator is dx-based);
-  * pregnancy / in-vitro fertilisation / clomiphene: public HEDIS SPD criteria; the SPEC SPD
-    row deliberately limits coded exclusions to ESRD / dialysis, so they are NOT computed here
-    (``pregnancy_snomed`` exists and SPC uses it - see the coverage comment);
+  * in-vitro fertilisation / clomiphene / lactation: no codes in the committed Synthea scan;
   * cirrhosis; myalgia / myositis / myopathy / rhabdomyolysis; palliative care; I-SNP /
     long-term institutional residence (66+).
   * frailty plus advanced illness (66+) is ``partial``: only the global E4 hint.
@@ -64,6 +69,7 @@ from caregap.measures.evidence import (
     med_ref,
     medications_in,
     patient_ref,
+    pregnancy_hits,
     proc_ref,
     procedures_in,
 )
@@ -77,13 +83,15 @@ from caregap.measures.models import (
 )
 from caregap.measures.rules.global_rules import died_before_my
 
-# Shared statin machinery lives in rules/spc.py (module-level helpers, reused - not copied):
-# the on-therapy rule and E3 are the ONLY readers of MedicationEvent.status (ADR-0002).
-from caregap.measures.rules.spc import _age_sex as spc_age_sex
-from caregap.measures.rules.spc import _escalations as spc_e3_escalations
-from caregap.measures.rules.spc import _exclusion_window as spc_exclusion_window
-from caregap.measures.rules.spc import _on_therapy as spc_on_therapy
-from caregap.measures.rules.spc import _tri_all as tri_all
+# Shared statin machinery lives in rules/statin.py (reused by SPC - not copied): the
+# on-therapy rule and E3 are the ONLY readers of MedicationEvent.status (ADR-0002).
+from caregap.measures.rules.statin import (
+    e3_escalations,
+    exclusion_window,
+    on_therapy,
+    spc_age_sex,
+    tri_all,
+)
 from caregap.measures.tri import Tri
 from caregap.measures.value_sets import ValueSets
 from caregap.measures.windows import Window, any_time
@@ -107,11 +115,9 @@ DIALYSIS_SET = "dialysis_snomed"
 COVERAGE: dict[str, Coverage] = {
     "died_during_measurement_period": "observable",  # global rule (quoted)
     "hospice_during_measurement_period": "observable",  # global rule (quoted)
-    "esrd": "observable",  # esrd_snomed condition active in MY or prior year (quoted)
-    "dialysis": "observable",  # dialysis_snomed procedure in MY or prior year (quoted)
-    # Public HEDIS SPD criteria the SPEC SPD row leaves uncoded (pregnancy_snomed exists and
-    # SPC computes it; adding it here is a one-line change once the SPEC row lists it).
-    "pregnancy": "not_representable",
+    "esrd": "observable",  # esrd_snomed condition active in MY or prior year (demo_choice)
+    "dialysis": "observable",  # dialysis_snomed procedure in MY or prior year (demo_choice)
+    "pregnancy": "observable",  # condition active / 82810-3 status in MY or prior year (demo)
     "in_vitro_fertilization": "not_representable",
     "clomiphene_dispensed": "not_representable",
     "cirrhosis": "not_representable",
@@ -208,21 +214,19 @@ def _denominator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) 
 
 
 def _numerator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) -> TriResult:
-    on_therapy = [
-        m
-        for m in medications_in(record, vs, STATIN_SET, any_time(ctx.as_of))
-        if spc_on_therapy(m, ctx)
+    statins = [
+        m for m in medications_in(record, vs, STATIN_SET, any_time(ctx.as_of)) if on_therapy(m, ctx)
     ]
-    value: Tri = "yes" if on_therapy else "no"
+    value: Tri = "yes" if statins else "no"
     reason = (
         "statin of any intensity on therapy in the measurement year"
-        if on_therapy
+        if statins
         else "no statin therapy in the measurement year"
     )
     return TriResult(
         value=value,
         reasons=[reason],
-        evidence=[med_ref(m, "numerator") for m in on_therapy],
+        evidence=[med_ref(m, "numerator") for m in statins],
         window_start=ctx.my_start,
         window_end=ctx.as_of,
     )
@@ -231,9 +235,11 @@ def _numerator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) ->
 def _exclusions(
     record: PatientRecord, ctx: MeasurementContext, vs: ValueSets
 ) -> list[ExclusionHit]:
-    window = spc_exclusion_window(ctx)
+    window = exclusion_window(ctx)
     hits: list[ExclusionHit] = []
 
+    # demo_choice: the quoted D12 text says "during the measurement period"; the demo mirrors
+    # SPC's MY-or-prior-year window so one statin patient is judged the same way twice.
     esrd = [
         cond_ref(c, "exclusion")
         for c in conditions_in(record, vs, ESRD_SET)
@@ -241,7 +247,9 @@ def _exclusions(
     ]
     if esrd:
         hits.append(
-            ExclusionHit(category="esrd", source="quoted", window_label=window.label, evidence=esrd)
+            ExclusionHit(
+                category="esrd", source="demo_choice", window_label=window.label, evidence=esrd
+            )
         )
 
     dialysis = [proc_ref(p, "exclusion") for p in procedures_in(record, vs, DIALYSIS_SET, window)]
@@ -249,11 +257,12 @@ def _exclusions(
         hits.append(
             ExclusionHit(
                 category="dialysis",
-                source="quoted",
+                source="demo_choice",
                 window_label=window.label,
                 evidence=dialysis,
             )
         )
+    hits.extend(pregnancy_hits(record, vs, window, condition_source="demo_choice"))
     return hits
 
 
@@ -261,7 +270,7 @@ def _escalations(
     record: PatientRecord, ctx: MeasurementContext, vs: ValueSets
 ) -> list[EscalationFlag]:
     """E3 exactly as SPC raises it (same statin set, same MY window, same statuses)."""
-    return spc_e3_escalations(record, ctx, vs)
+    return e3_escalations(record, ctx, vs)
 
 
 class SpdRule:

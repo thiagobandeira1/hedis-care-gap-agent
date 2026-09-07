@@ -64,7 +64,8 @@ class MeasureEngine:
         rule = self._rules[measure_id]
         out = rule.evaluate(record, ctx, self._value_sets)
         # Global rules apply to every measure (death / hospice in MY; E1 / E4 hints).
-        exclusions = [*global_exclusions(record, ctx, self._value_sets), *out.exclusions]
+        global_hits = global_exclusions(record, ctx, self._value_sets)
+        exclusions = [*global_hits, *out.exclusions]
         escalations = [*global_escalations(record, ctx, self._value_sets), *out.escalations]
         denominator = out.denominator
         if ctx.age_at_my_end is None and denominator.value != "no":
@@ -79,12 +80,19 @@ class MeasureEngine:
             out.numerator.value,
             escalated=bool(escalations),
         )
+        kept_exclusions = exclusions if denominator.value == "yes" else []
+        if denominator.value == "unknown" and global_hits:
+            # A global death / hospice exclusion is denominator-independent: a member who
+            # died or entered hospice in the MY can never receive outreach, so ``excluded``
+            # wins over the unknown-denominator review (SPEC section 2, global rules).
+            verdict = "excluded"
+            kept_exclusions = global_hits
         return MeasureEvaluation(
             measure_id=measure_id,
             rule_version=rule.rule_version,
             denominator=denominator,
             numerator=out.numerator,
-            exclusions=exclusions if denominator.value == "yes" else [],
+            exclusions=kept_exclusions,
             coverage=out.coverage,
             escalations=escalations if denominator.value != "no" else [],
             verdict=verdict,

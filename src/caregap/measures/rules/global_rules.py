@@ -3,12 +3,15 @@
 Exclusions (quoted from the public Technical Notes text):
 - died during the measurement period: ``my_start <= death_date <= as_of``;
 - hospice during the measurement period: any hospice procedure / encounter type / condition
-  dated in [my_start, as_of]. Hospice BEFORE the MY is deterministically NOT an exclusion.
+  whose start OR recorded end (``performed_end_date`` / encounter ``end_ts``) falls in
+  [my_start, as_of] - an episode that starts before the MY and ends inside it counts. Hospice
+  entirely BEFORE the MY (or with no recorded end) is deterministically NOT an exclusion.
 
 Escalations (global scope — hold all drafting until a human resolves them):
 - E1: a hospice event within 90 days before my_start (possible continuation into the MY);
-- E4: dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY for
-  age >= 66 (advanced-illness hint; never computed as an exclusion).
+- E4: dementia diagnosis active in the MY (abatement null or after Jan 1 of the MY) OR a
+  dementia medication authored in the MY or the prior year, plus an inpatient/ED encounter in
+  the MY, for age >= 66 (advanced-illness hint; never computed as an exclusion).
 
 Death before the MY makes the patient ``not_eligible`` for everything — handled by the
 denominator helpers each rule uses (``alive_for_my``).
@@ -21,10 +24,12 @@ from caregap.measures.evidence import (
     conditions_in,
     enc_ref,
     encounters_in,
+    encounters_overlapping,
+    med_ref,
     medications_in,
     patient_ref,
     proc_ref,
-    procedures_in,
+    procedures_overlapping,
 )
 from caregap.measures.models import EscalationFlag, EvidenceRef, ExclusionHit
 from caregap.measures.value_sets import ValueSets
@@ -42,11 +47,16 @@ def died_before_my(record: PatientRecord, ctx: MeasurementContext) -> bool:
 def hospice_events(
     record: PatientRecord, value_sets: ValueSets, window: Window
 ) -> list[EvidenceRef]:
-    """Hospice evidence in a window across the three places Synthea records it."""
+    """Hospice evidence in a window across the three places Synthea records it.
+
+    A procedure counts when its ``performed_date`` OR ``performed_end_date`` falls in the
+    window; an encounter when its ``start_date`` OR ``end_ts`` date does (an episode that
+    started before the window and ended inside it). Conditions count by ``onset_date``.
+    """
     refs: list[EvidenceRef] = []
     refs += [
         proc_ref(p, "exclusion")
-        for p in procedures_in(record, value_sets, "hospice_snomed", window)
+        for p in procedures_overlapping(record, value_sets, "hospice_snomed", window)
     ]
     refs += [
         cond_ref(c, "exclusion")
@@ -56,7 +66,7 @@ def hospice_events(
     hospice_codes = value_sets.codes("hospice_snomed")
     refs += [
         enc_ref(e, "exclusion")
-        for e in encounters_in(record, window)
+        for e in encounters_overlapping(record, window)
         if e.type_code is not None and e.type_code in hospice_codes
     ]
     return refs
@@ -110,25 +120,20 @@ def global_escalations(
                 evidence=[e.model_copy(update={"role": "escalation"}) for e in prior_hospice],
             )
         )
-    # E4: advanced-illness hint (dementia + acute care in the MY, age >= 66).
+    # E4: advanced-illness hint (dementia + acute care in the MY, age >= 66). demo_choice:
+    # the dementia diagnosis must be active in the MY; a dementia medication counts when
+    # authored in the MY or the prior year (Synthea authors most requests once).
     if ctx.age_at_my_end is not None and ctx.age_at_my_end >= 66:
         my = measurement_year(ctx.as_of)
+        meds_window = Window(start=ctx.prior_my_start, end=ctx.as_of, label="MY or prior year")
         dementia = [
             cond_ref(c, "escalation")
             for c in conditions_in(record, value_sets, "dementia_snomed")
             if condition_active_in(c, my)
         ]
         dementia += [
-            EvidenceRef(
-                section="medications",
-                event_id=m.medication_request_id,
-                code=m.code,
-                code_system=m.code_system,
-                display=m.code_display,
-                event_date=m.authored_date,
-                role="escalation",
-            )
-            for m in medications_in(record, value_sets, "dementia_meds_rxnorm")
+            med_ref(m, "escalation")
+            for m in medications_in(record, value_sets, "dementia_meds_rxnorm", meds_window)
         ]
         acute = [
             enc_ref(e, "escalation")

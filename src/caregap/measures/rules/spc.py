@@ -16,7 +16,8 @@ quoted
   * numerator concept: at least one high-intensity or moderate-intensity statin during the
     measurement year;
   * exclusions: ESRD or dialysis during the MY or the year prior; pregnancy during the MY
-    or the year prior; died / hospice during the MY (applied by the GLOBAL rules, not here).
+    or the year prior (``pregnancy_snomed`` condition active in the window - the shared
+    :func:`evidence.pregnancy_hits`); died / hospice during the MY (GLOBAL rules, not here).
 demo_choice
   * ASCVD = any ``ascvd_snomed`` condition with ``onset_date <= my_end`` (abatement ignored).
     The public two-year ASCVD event / diagnosis look-back is deliberately NOT implemented.
@@ -30,6 +31,10 @@ demo_choice
   * only low-intensity statins on therapy -> numerator ``no``, subtype ``low_intensity_only``.
   * exclusion window = [Jan 1 of MY-1, Dec 31 of MY], built from MY bounds; the numerator
     window ends at ``as_of``.
+  * pregnancy is also detected from LOINC 82810-3 "Pregnancy status" answered SNOMED 77386006
+    dated in the exclusion window (``pregnancy_status_positive``, as CBP / SPD).
+  * the statin machinery (age/sex band, on-therapy rule, exclusion window, E3) lives in
+    ``rules/statin.py`` and is shared with SPD.
   * E3 ``medication_status_conflict``: a statin authored in the MY with status stopped or
     cancelled, raised even when another statin closes the numerator.
 not_representable (listed in the coverage table, never computed)
@@ -40,8 +45,6 @@ documented non-member (intentionally no code set)
   * fibromyalgia is NOT a public SPC exclusion criterion; it is named here so nobody adds it.
 """
 
-from collections.abc import Sequence
-
 from caregap.measures.context import MeasurementContext
 from caregap.measures.engine import RuleOutput
 from caregap.measures.evidence import (
@@ -51,6 +54,7 @@ from caregap.measures.evidence import (
     med_ref,
     medications_in,
     patient_ref,
+    pregnancy_hits,
     proc_ref,
     procedures_in,
 )
@@ -63,23 +67,36 @@ from caregap.measures.models import (
     TriResult,
 )
 from caregap.measures.rules.global_rules import died_before_my
+from caregap.measures.rules.statin import (
+    ACTIVE_STATUS,
+    CONFLICT_STATUSES,
+    EXCLUSION_WINDOW_LABEL,
+    FEMALE_AGE_BAND,
+    MALE_AGE_BAND,
+    NEVER_COUNT_STATUSES,
+    e3_escalations,
+    exclusion_window,
+    on_therapy,
+    spc_age_sex,
+    tri_all,
+)
 from caregap.measures.tri import Tri
 from caregap.measures.value_sets import StatinIntensity, ValueSets
-from caregap.measures.windows import Window, any_time, measurement_year
-from caregap.p6.models import MedicationEvent, PatientRecord
+from caregap.measures.windows import any_time
+from caregap.p6.models import PatientRecord
 
-MALE_AGE_BAND: tuple[int, int] = (21, 75)
-FEMALE_AGE_BAND: tuple[int, int] = (40, 75)
+__all__ = [
+    "ACTIVE_STATUS",
+    "CONFLICT_STATUSES",
+    "EXCLUSION_WINDOW_LABEL",
+    "FEMALE_AGE_BAND",
+    "MALE_AGE_BAND",
+    "NEVER_COUNT_STATUSES",
+]
 
-#: ``MedicationRequest.status`` values that never count as therapy (ADR-0002).
-NEVER_COUNT_STATUSES: frozenset[str] = frozenset({"stopped", "cancelled", "entered-in-error"})
-#: A statin authored in the MY carrying one of these raises E3.
-CONFLICT_STATUSES: frozenset[str] = frozenset({"stopped", "cancelled"})
-ACTIVE_STATUS = "active"
 QUALIFYING_INTENSITIES: frozenset[StatinIntensity] = frozenset({"moderate", "high"})
 
 LOW_INTENSITY_ONLY = "low_intensity_only"
-EXCLUSION_WINDOW_LABEL = "MY or prior year"
 
 #: Every public SPC exclusion criterion and how far this demo rule can observe it.
 COVERAGE: dict[str, Coverage] = {
@@ -100,54 +117,6 @@ COVERAGE: dict[str, Coverage] = {
 NON_EXCLUSIONS: tuple[str, ...] = ("fibromyalgia",)
 
 
-def _tri_all(values: Sequence[Tri]) -> Tri:
-    """Kleene AND: any ``no`` wins, then any ``unknown``, else ``yes``."""
-    if "no" in values:
-        return "no"
-    if "unknown" in values:
-        return "unknown"
-    return "yes"
-
-
-def _status(m: MedicationEvent) -> str:
-    return (m.status or "").strip().lower()
-
-
-def _in_band(age: int, band: tuple[int, int], label: str) -> tuple[Tri, str]:
-    low, high = band
-    if low <= age <= high:
-        return "yes", f"{label} aged {age} at MY end: within {low}-{high}"
-    return "no", f"{label} aged {age} at MY end: outside {low}-{high}"
-
-
-def _age_sex(record: PatientRecord, ctx: MeasurementContext) -> tuple[Tri, str]:
-    """Sex-specific age band; ``unknown`` only when the missing datum would decide it."""
-    age = ctx.age_at_my_end
-    if age is None:
-        return "unknown", "birth_date unknown"
-    sex = record.patient.sex.strip().lower()
-    if sex == "male":
-        return _in_band(age, MALE_AGE_BAND, "male")
-    if sex == "female":
-        return _in_band(age, FEMALE_AGE_BAND, "female")
-    male_low, high = MALE_AGE_BAND
-    female_low, _ = FEMALE_AGE_BAND
-    if female_low <= age <= high:
-        return "yes", f"sex unknown, aged {age} at MY end: within both bands"
-    if age < male_low or age > high:
-        return "no", f"sex unknown, aged {age} at MY end: outside both bands"
-    return "unknown", f"sex unknown, aged {age} at MY end: eligible only if male"
-
-
-def _on_therapy(m: MedicationEvent, ctx: MeasurementContext) -> bool:
-    status = _status(m)
-    if status in NEVER_COUNT_STATUSES:
-        return False
-    if ctx.my_start <= m.authored_date <= ctx.as_of:
-        return True
-    return m.authored_date < ctx.my_start and status == ACTIVE_STATUS
-
-
 def _denominator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) -> TriResult:
     values: list[Tri] = []
     reasons: list[str] = []
@@ -158,7 +127,7 @@ def _denominator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) 
         reasons.append("died before the measurement year")
         evidence.append(patient_ref("eligibility", event_date=record.patient.death_date))
 
-    age_sex_value, age_sex_reason = _age_sex(record, ctx)
+    age_sex_value, age_sex_reason = spc_age_sex(record, ctx)
     values.append(age_sex_value)
     reasons.append(age_sex_reason)
     evidence.append(patient_ref("eligibility", event_date=record.patient.birth_date))
@@ -175,7 +144,7 @@ def _denominator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) 
         reasons.append("no ASCVD condition with onset on/before MY end")
 
     return TriResult(
-        value=_tri_all(values),
+        value=tri_all(values),
         reasons=reasons,
         evidence=evidence,
         window_start=ctx.my_start,
@@ -185,14 +154,14 @@ def _denominator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) 
 
 def _numerator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) -> TriResult:
     intensity_set = vs["statin_intensity"]
-    on_therapy = [
+    statins = [
         (m, intensity_set.intensity_of(m.code))
         for m in medications_in(record, vs, "statin_rxnorm", any_time(ctx.as_of))
-        if _on_therapy(m, ctx)
+        if on_therapy(m, ctx)
     ]
-    qualifying = [m for m, intensity in on_therapy if intensity in QUALIFYING_INTENSITIES]
-    unknown = [m for m, intensity in on_therapy if intensity is None]
-    low = [m for m, intensity in on_therapy if intensity == "low"]
+    qualifying = [m for m, intensity in statins if intensity in QUALIFYING_INTENSITIES]
+    unknown = [m for m, intensity in statins if intensity is None]
+    low = [m for m, intensity in statins if intensity == "low"]
 
     value: Tri
     reason: str
@@ -202,7 +171,7 @@ def _numerator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) ->
         chosen = qualifying
     elif unknown:
         value, reason = "unknown", "statin intensity unknown"
-        chosen = [m for m, _ in on_therapy]
+        chosen = [m for m, _ in statins]
     elif low:
         value, reason = "no", "only low-intensity statin therapy in the measurement year"
         subtype = LOW_INTENSITY_ONLY
@@ -221,14 +190,10 @@ def _numerator(record: PatientRecord, ctx: MeasurementContext, vs: ValueSets) ->
     )
 
 
-def _exclusion_window(ctx: MeasurementContext) -> Window:
-    return Window(start=ctx.prior_my_start, end=ctx.my_end, label=EXCLUSION_WINDOW_LABEL)
-
-
 def _exclusions(
     record: PatientRecord, ctx: MeasurementContext, vs: ValueSets
 ) -> list[ExclusionHit]:
-    window = _exclusion_window(ctx)
+    window = exclusion_window(ctx)
     hits: list[ExclusionHit] = []
 
     esrd = [
@@ -254,45 +219,15 @@ def _exclusions(
             )
         )
 
-    pregnancy = [
-        cond_ref(c, "exclusion")
-        for c in conditions_in(record, vs, "pregnancy_snomed")
-        if condition_active_in(c, window)
-    ]
-    if pregnancy:
-        hits.append(
-            ExclusionHit(
-                category="pregnancy",
-                source="quoted",
-                window_label=window.label,
-                evidence=pregnancy,
-            )
-        )
+    hits.extend(pregnancy_hits(record, vs, window, condition_source="quoted"))
     return hits
 
 
 def _escalations(
     record: PatientRecord, ctx: MeasurementContext, vs: ValueSets
 ) -> list[EscalationFlag]:
-    my = measurement_year(ctx.as_of)
-    conflicts = [
-        m
-        for m in medications_in(record, vs, "statin_rxnorm", my)
-        if _status(m) in CONFLICT_STATUSES
-    ]
-    if not conflicts:
-        return []
-    return [
-        EscalationFlag(
-            kind="E3",
-            scope="measure",
-            reason=(
-                "medication_status_conflict: statin authored in the measurement year with "
-                "status stopped/cancelled"
-            ),
-            evidence=[med_ref(m, "escalation") for m in conflicts],
-        )
-    ]
+    """E3 ``medication_status_conflict`` (``rules/statin.py``, shared with SPD)."""
+    return e3_escalations(record, ctx, vs)
 
 
 class SpcRule:

@@ -6,8 +6,9 @@ windows, and evidence construction are uniform (and testable once) across measur
 
 from collections.abc import Iterable
 from datetime import date
+from typing import Literal
 
-from caregap.measures.models import EvidenceRef, EvidenceRole
+from caregap.measures.models import EvidenceRef, EvidenceRole, ExclusionHit
 from caregap.measures.value_sets import ValueSets
 from caregap.measures.windows import Window
 from caregap.p6.models import (
@@ -98,10 +99,14 @@ def conditions_in(
 
 
 def condition_active_in(c: ConditionEvent, window: Window) -> bool:
-    """Onset on/before the window end and not abated before the window start."""
+    """Onset on/before the window end and abatement null or strictly AFTER the window start.
+
+    One semantics for every caller (SPEC section 2, CBP row: ``abatement null or >
+    my_start``): a condition abated ON the window's first day is NOT active in the window.
+    """
     if c.onset_date > window.end:
         return False
-    return c.abatement_date is None or c.abatement_date >= window.start
+    return c.abatement_date is None or c.abatement_date > window.start
 
 
 def procedures_in(
@@ -113,6 +118,27 @@ def procedures_in(
             p
             for p in record.procedures
             if p.code_system == system and p.code in codes and window.contains(p.performed_date)
+        ),
+        key=lambda p: (p.performed_date, p.procedure_id),
+    )
+
+
+def procedures_overlapping(
+    record: PatientRecord, value_sets: ValueSets, set_id: str, window: Window
+) -> list[ProcedureEvent]:
+    """Procedures whose ``performed_date`` OR ``performed_end_date`` falls inside the window.
+
+    An episode that starts before the window and ends inside it (hospice) counts; a future end
+    date is nulled by ``mask_as_of`` so an open-ended prior episode never leaks in.
+    """
+    codes, system = value_sets.codes(set_id), value_sets.system(set_id)
+    return sorted(
+        (
+            p
+            for p in record.procedures
+            if p.code_system == system
+            and p.code in codes
+            and (window.contains(p.performed_date) or window.contains(p.performed_end_date))
         ),
         key=lambda p: (p.performed_date, p.procedure_id),
     )
@@ -162,6 +188,102 @@ def encounters_in(record: PatientRecord, window: Window) -> list[EncounterEvent]
         (e for e in record.encounters if window.contains(e.start_date)),
         key=lambda e: (e.start_date, e.encounter_id),
     )
+
+
+def encounters_overlapping(record: PatientRecord, window: Window) -> list[EncounterEvent]:
+    """Encounters whose ``start_date`` OR ``end_ts`` date falls inside the window."""
+    return sorted(
+        (
+            e
+            for e in record.encounters
+            if window.contains(e.start_date)
+            or (e.end_ts is not None and window.contains(e.end_ts.date()))
+        ),
+        key=lambda e: (e.start_date, e.encounter_id),
+    )
+
+
+def child_observations_of(
+    record: PatientRecord, parent_ids: frozenset[str], window: Window | None = None
+) -> list[ObservationEvent]:
+    """Component observations whose ``parent_observation_id`` is one of ``parent_ids``.
+
+    Exact id match; ``window`` (when given) filters on the child's own ``effective_date``;
+    deterministic ``(date, id)`` order. Shared by the CBP panel grouping and the screening
+    domain components.
+    """
+    return sorted(
+        (
+            o
+            for o in record.observations
+            if o.parent_observation_id is not None
+            and o.parent_observation_id in parent_ids
+            and (window is None or window.contains(o.effective_date))
+        ),
+        key=lambda o: (o.effective_date, o.observation_id),
+    )
+
+
+# --- pregnancy (shared by CBP / SPC / SPD) ---------------------------------------------------
+
+PREGNANCY_SET = "pregnancy_snomed"
+#: LOINC "Pregnancy status" and the SNOMED answer meaning "currently pregnant" (demo_choice):
+#: Synthea records pregnancy this way beside (or instead of) a pregnancy condition.
+PREGNANCY_STATUS_LOINC = "82810-3"
+PREGNANT_VALUE_CODES: frozenset[str] = frozenset({"77386006"})
+PREGNANCY_CATEGORY = "pregnancy"
+PREGNANCY_STATUS_CATEGORY = "pregnancy_status_positive"
+
+
+def pregnancy_evidence(
+    record: PatientRecord, value_sets: ValueSets, window: Window
+) -> tuple[list[EvidenceRef], list[EvidenceRef]]:
+    """(pregnancy conditions active in the window, positive pregnancy-status observations
+    dated in the window) as exclusion evidence."""
+    conditions = [
+        cond_ref(c, "exclusion")
+        for c in conditions_in(record, value_sets, PREGNANCY_SET)
+        if condition_active_in(c, window)
+    ]
+    status = [
+        obs_ref(o, "exclusion")
+        for o in observations_with_code(record, PREGNANCY_STATUS_LOINC, window)
+        if o.value_code in PREGNANT_VALUE_CODES
+    ]
+    return conditions, status
+
+
+def pregnancy_hits(
+    record: PatientRecord,
+    value_sets: ValueSets,
+    window: Window,
+    *,
+    condition_source: Literal["quoted", "demo_choice"],
+) -> list[ExclusionHit]:
+    """The pregnancy exclusion as every measure applies it: ``pregnancy`` (condition; tagged
+    per the measure's public text) then ``pregnancy_status_positive`` (observation;
+    demo_choice)."""
+    conditions, status = pregnancy_evidence(record, value_sets, window)
+    hits: list[ExclusionHit] = []
+    if conditions:
+        hits.append(
+            ExclusionHit(
+                category=PREGNANCY_CATEGORY,
+                source=condition_source,
+                window_label=window.label,
+                evidence=conditions,
+            )
+        )
+    if status:
+        hits.append(
+            ExclusionHit(
+                category=PREGNANCY_STATUS_CATEGORY,
+                source="demo_choice",
+                window_label=window.label,
+                evidence=status,
+            )
+        )
+    return hits
 
 
 def encounter_class_of(record: PatientRecord, encounter_id: str | None) -> str | None:

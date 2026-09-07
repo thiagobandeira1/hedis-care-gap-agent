@@ -133,7 +133,15 @@ MEASURE_VALUE_SETS: dict[MeasureId, tuple[str, ...]] = {
     "EED": (*eed.EedRule.value_set_ids, RETINOPATHY_NEGATIVE_SET),
     "BCS": ("mammogram_proc",),
     "COL": (*col.ColRule.value_set_ids, FOBT_PROCEDURE_SET),
-    "SPC": (ASCVD_SET, STATIN_SET, STATIN_INTENSITY_SET, ESRD_SET, DIALYSIS_SET, PREGNANCY_SET),
+    "SPC": (
+        ASCVD_SET,
+        STATIN_SET,
+        STATIN_INTENSITY_SET,
+        ESRD_SET,
+        DIALYSIS_SET,
+        PREGNANCY_SET,
+        PREGNANCY_STATUS_POSITIVE_SET,
+    ),
     "SPD": (
         spd.DIABETES_SET,
         spd.PREDIABETES_TRAP_SET,
@@ -141,6 +149,8 @@ MEASURE_VALUE_SETS: dict[MeasureId, tuple[str, ...]] = {
         spd.STATIN_SET,
         spd.ESRD_SET,
         spd.DIALYSIS_SET,
+        PREGNANCY_SET,
+        PREGNANCY_STATUS_POSITIVE_SET,
     ),
     "TSC": (screening.TOBACCO_STATUS_SET,),
     "SNS": (screening.SDOH_SCREENING_SET,),
@@ -196,9 +206,15 @@ GLOBAL_CATEGORIES: tuple[CategorySpec, ...] = (
     CategorySpec("hospice_during_measurement_period", HOSPICE_SET, "quoted", _my_to_as_of),
 )
 
-_STATIN_EXCLUSIONS: tuple[CategorySpec, ...] = (
+_SPC_STATIN_EXCLUSIONS: tuple[CategorySpec, ...] = (
     CategorySpec("esrd", ESRD_SET, "quoted", _my_or_prior_year),
     CategorySpec("dialysis", DIALYSIS_SET, "quoted", _my_or_prior_year),
+)
+# SPD's quoted D12 text says "during the measurement period"; the MY-or-prior-year window
+# mirrors SPC and is therefore a demo_choice (rules/spd.py).
+_SPD_STATIN_EXCLUSIONS: tuple[CategorySpec, ...] = (
+    CategorySpec("esrd", ESRD_SET, "demo_choice", _my_or_prior_year),
+    CategorySpec("dialysis", DIALYSIS_SET, "demo_choice", _my_or_prior_year),
 )
 
 MEASURE_CATEGORIES: dict[MeasureId, tuple[CategorySpec, ...]] = {
@@ -215,10 +231,25 @@ MEASURE_CATEGORIES: dict[MeasureId, tuple[CategorySpec, ...]] = {
     "BCS": (),
     "COL": (CategorySpec("colorectal_cancer", col.COLORECTAL_CANCER_SET, "quoted", _any_time),),
     "SPC": (
-        *_STATIN_EXCLUSIONS,
+        *_SPC_STATIN_EXCLUSIONS,
         CategorySpec("pregnancy", PREGNANCY_SET, "quoted", _my_or_prior_year),
+        CategorySpec(
+            "pregnancy_status_positive",
+            PREGNANCY_STATUS_POSITIVE_SET,
+            "demo_choice",
+            _my_or_prior_year,
+        ),
     ),
-    "SPD": _STATIN_EXCLUSIONS,
+    "SPD": (
+        *_SPD_STATIN_EXCLUSIONS,
+        CategorySpec("pregnancy", PREGNANCY_SET, "demo_choice", _my_or_prior_year),
+        CategorySpec(
+            "pregnancy_status_positive",
+            PREGNANCY_STATUS_POSITIVE_SET,
+            "demo_choice",
+            _my_or_prior_year,
+        ),
+    ),
     "TSC": (),
     "SNS": (),
 }

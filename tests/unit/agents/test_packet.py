@@ -328,19 +328,21 @@ def _all_exclusions_record(measure: MeasureId) -> tuple[PatientRecord, Measureme
                 value_code_system="SNOMED",
             )
         )
-    elif measure == "SPC":
+    elif measure in {"SPC", "SPD"}:
         conditions += [
-            condition(ASCVD, onset=date(2019, 1, 1)),
+            condition(ASCVD if measure == "SPC" else DIABETES, onset=date(2019, 1, 1)),
             condition(ESRD, onset=date(2024, 6, 1)),
             condition(PREGNANCY, onset=date(2024, 11, 1), abatement=date(2025, 6, 1)),
         ]
         procedures.append(procedure(DIALYSIS, performed=date(2024, 8, 1)))
-    elif measure == "SPD":
-        conditions += [
-            condition(DIABETES, onset=date(2020, 1, 1)),
-            condition(ESRD, onset=date(2024, 6, 1)),
-        ]
-        procedures.append(procedure(DIALYSIS, performed=date(2024, 8, 1)))
+        observations.append(
+            observation(
+                PREGNANCY_STATUS,
+                effective=date(2024, 4, 1),
+                value_code=PREGNANT,
+                value_code_system="SNOMED",
+            )
+        )
     elif measure == "COL":
         header = header.model_copy(update={"birth_date": BIRTH_60})
         conditions.append(condition(COLORECTAL_CANCER, onset=date(2010, 1, 1)))

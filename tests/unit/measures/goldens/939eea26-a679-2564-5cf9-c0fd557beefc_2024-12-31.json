@@ -312,7 +312,7 @@
       "institutional_snp_or_long_term_institution_66_plus": "not_representable",
       "myalgia_myositis_myopathy_rhabdomyolysis": "not_representable",
       "palliative_care": "not_representable",
-      "pregnancy": "not_representable"
+      "pregnancy": "observable"
     },
     "denominator": {
       "evidence": [
@@ -370,10 +370,7 @@
       "exclusion_hospice_during_measurement_period": "observable",
       "exclusion_isnp_or_long_term_institution_66_plus": "not_representable",
       "exclusion_palliative_care_during_measurement_period": "not_representable",
-      "numerator_domain_specific_sdoh_instruments": "not_representable",
-      "numerator_prapare_item_positivity_semantics": "not_representable",
       "numerator_screening_in_my": "observable",
-      "numerator_sdoh_intervention_food_housing_transportation_utility": "not_representable",
       "numerator_tobacco_cessation_intervention": "not_representable"
     },
     "denominator": {
@@ -461,8 +458,7 @@
       "numerator_domain_specific_sdoh_instruments": "not_representable",
       "numerator_prapare_item_positivity_semantics": "not_representable",
       "numerator_screening_in_my": "observable",
-      "numerator_sdoh_intervention_food_housing_transportation_utility": "not_representable",
-      "numerator_tobacco_cessation_intervention": "not_representable"
+      "numerator_sdoh_intervention_food_housing_transportation_utility": "not_representable"
     },
     "denominator": {
       "evidence": [

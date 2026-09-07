@@ -20,11 +20,12 @@ import pytest
 from caregap.measures.context import MeasurementContext
 from caregap.measures.engine import MeasureEngine, RuleOutput
 from caregap.measures.rules.screening import (
-    COVERAGE,
     MAX_ENCOUNTER_EVIDENCE,
     PRAPARE_CODE,
+    SNS_COVERAGE,
     STATUS_WITHOUT_VALUE,
     TOBACCO_STATUS_CODE,
+    TSC_COVERAGE,
     SnsRule,
     TscRule,
 )
@@ -225,13 +226,16 @@ def test_no_measure_scoped_exclusions_or_escalations(rule: TscRule | SnsRule) ->
 @pytest.mark.parametrize("rule", RULES, ids=RULE_IDS)
 def test_coverage_table(rule: TscRule | SnsRule) -> None:
     out = run(rule, eligible())
-    assert out.coverage == COVERAGE
-    assert out.coverage is not COVERAGE  # a copy; the rule never hands out its own table
-    assert out.coverage["numerator_tobacco_cessation_intervention"] == "not_representable"
-    assert (
-        out.coverage["numerator_sdoh_intervention_food_housing_transportation_utility"]
-        == "not_representable"
-    )
+    expected = TSC_COVERAGE if rule.measure_id == "TSC" else SNS_COVERAGE
+    assert out.coverage == expected
+    assert out.coverage is not expected  # a copy; the rule never hands out its own table
+    if rule.measure_id == "TSC":
+        assert out.coverage["numerator_tobacco_cessation_intervention"] == "not_representable"
+    else:
+        assert (
+            out.coverage["numerator_sdoh_intervention_food_housing_transportation_utility"]
+            == "not_representable"
+        )
     assert out.coverage["exclusion_death_during_measurement_period"] == "observable"
     assert out.coverage["exclusion_hospice_during_measurement_period"] == "observable"
     assert set(out.coverage.values()) <= {"observable", "partial", "not_representable"}
@@ -628,7 +632,9 @@ def test_two_instances_share_denominator_and_differ_only_in_numerator() -> None:
     f = _busy_record()
     tsc, sns = run(TscRule(), f), run(SnsRule(), f)
     assert tsc.denominator == sns.denominator
-    assert tsc.coverage == sns.coverage
+    # Exclusion coverage is shared; only the numerator-rate rows differ per measure.
+    shared = {k: v for k, v in tsc.coverage.items() if k.startswith("exclusion_")}
+    assert shared == {k: v for k, v in sns.coverage.items() if k.startswith("exclusion_")}
     assert tsc.numerator.value == sns.numerator.value == "yes"
     assert {e.code for e in tsc.numerator.evidence} == {TOBACCO_STATUS_CODE}
     assert {e.code for e in sns.numerator.evidence} == {PRAPARE_CODE}

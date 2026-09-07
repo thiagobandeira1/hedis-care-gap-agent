@@ -85,6 +85,36 @@
       "coverage": "observable"
     },
     {
+      "id": "sns/exclusion/palliative_care",
+      "kind": "exclusion",
+      "text": "Palliative care during the MY (public criterion of the screening measures).",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "No palliative-care codes appear in the committed Synthea scan (SCAN.md).",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "sns/exclusion/isnp_or_long_term_institution_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66+ enrolled in an I-SNP or living long-term in an institution.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Plan enrollment data; Synthea / P6 carry no enrollment records.",
+      "coverage": "not_representable"
+    },
+    {
+      "id": "sns/exclusion/frailty_and_advanced_illness_66_plus",
+      "kind": "exclusion",
+      "text": "Members 66+ with frailty and advanced illness.",
+      "source": "demo_choice",
+      "citation": "caregap-spec sec.2",
+      "quote": null,
+      "rationale": "Synthea carries no frailty claims; the global E4 flag only hints (dementia + inpatient/ED care at 66+).",
+      "coverage": "partial"
+    },
+    {
       "id": "sns/coverage/no_measure_escalations",
       "kind": "coverage",
       "text": "No measure-scoped escalations; only the global E1 / E4 hints apply.",
@@ -97,7 +127,7 @@
     {
       "id": "sns/coverage/e1_prior_hospice",
       "kind": "coverage",
-      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice BEFORE the MY is deterministically NOT an exclusion.",
+      "text": "E1 (global): a hospice event within 90 days before Jan 1 of the MY, with none inside the MY, raises a review flag. Hospice entirely BEFORE the MY is deterministically NOT an exclusion; an episode whose recorded end (performed_end_date / encounter end) falls inside [Jan 1 of the MY, as_of] IS hospice in the MY (exclusion, not E1).",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
@@ -107,7 +137,7 @@
     {
       "id": "sns/coverage/e4_advanced_illness_hint",
       "kind": "coverage",
-      "text": "E4 (global): dementia diagnosis or dementia medication plus an inpatient/ED encounter in the MY at age 66+ raises a review flag; never computed as an exclusion.",
+      "text": "E4 (global): a dementia diagnosis active in the MY (abatement null or after Jan 1 of the MY) OR a dementia medication authored in the MY or the prior year, plus an inpatient/ED encounter in the MY at age 66+, raises a review flag; never computed as an exclusion.",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,
