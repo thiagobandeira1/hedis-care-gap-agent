@@ -14,10 +14,12 @@ Doctrine (SPEC section 3, enforced by ``tests/unit/graph/test_structure.py``):
   ``(date, id)``, gaps by rank).
 """
 
+import threading
 from collections.abc import Sequence
 from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Any, Protocol
 
+from langchain_core.runnables import RunnableConfig
 from langgraph.types import interrupt
 
 from caregap.agents.drafter import (
@@ -74,6 +76,20 @@ class NodeFn(Protocol):
     the runtime's node protocol is keyword-aware, a bare ``Callable`` is not)."""
 
     def __call__(self, state: GapState) -> dict[str, Any]: ...
+
+
+ATTEMPT_FLAG = "__caregap_attempt"
+"""``configurable`` key under which the runner hands every ``graph.invoke`` a private
+``threading.Event``, set once the runner has abandoned that attempt (per-patient timeout).
+Non-primitive and ``__``-prefixed, so LangGraph never copies it into checkpoint metadata."""
+
+
+def attempt_abandoned(config: RunnableConfig | None) -> bool:
+    """True when the runner gave up on the invocation this node belongs to. ``finalize`` then
+    refuses side effects, so the ledger's ``error`` stays the truth (SPEC section 3)."""
+    configurable = (config or {}).get("configurable") or {}
+    token = configurable.get(ATTEMPT_FLAG)
+    return isinstance(token, threading.Event) and token.is_set()
 
 
 RESOLUTION_TO_STATUS: dict[str, str] = {
@@ -484,7 +500,11 @@ def record_decision(deps: "GraphDeps") -> NodeFn:
 
 
 def finalize(deps: "GraphDeps") -> NodeFn:
-    def node(state: GapState) -> dict[str, Any]:
+    """The only outbox writer. Refuses to write for an attempt the runner has abandoned
+    (``attempt_abandoned``): the ledger already says ``error`` for it, and its checkpoint
+    ends with an ``error`` outcome so the two never disagree."""
+
+    def node(state: GapState, config: RunnableConfig | None = None) -> dict[str, Any]:
         started = _now()
         options = state["options"]
         load_error = state.get("load_error")
@@ -527,6 +547,11 @@ def finalize(deps: "GraphDeps") -> NodeFn:
             and options.approval_mode == "interrupt"
             and plan is not None
         )
+        if actionable and attempt_abandoned(config):
+            # The runner timed this attempt out and recorded ``error``: nothing may be sent
+            # on its behalf.
+            status = "error"
+            actionable = False
         approved_actions: list[str] = []
         if actionable and decision is not None and plan is not None:
             run_id, patient_id = state["run_id"], state["patient_id"]

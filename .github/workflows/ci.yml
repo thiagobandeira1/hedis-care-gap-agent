@@ -7,7 +7,14 @@ on:
 
 jobs:
   quality:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -23,15 +30,28 @@ jobs:
         run: uv run ruff format --check .
       - name: Type-check (mypy)
         run: uv run mypy
-      - name: Tests (keyless — every graph path under a fake model)
+      - name: Tests (keyless; every graph path under fakes; coverage floor from pyproject)
         run: uv run pytest
-      - name: Gap-detection eval ratchet gate (keyless; exit 2 until gold labels + baseline exist)
+      - name: Gap-detection eval ratchet gate (keyless; engine tier over the frozen gold set)
         run: uv run caregap eval --tier engine --gate
       - name: README eval regions match the committed artifacts
         run: uv run caregap report --check
-      - name: Guard — no data files or secrets tracked
+      - name: Guard — no data files, secrets, or restricted content tracked
+        if: matrix.os == 'ubuntu-latest'
         run: |
+          set -e
           if git ls-files | grep -E '\.(csv|tsv|parquet|db|duckdb|sqlite|sqlite3)$|^\.env$'; then
             echo "::error::Data files or .env are committed"; exit 1
+          fi
+          # Keys, MIMIC references (this repo is Synthea-only), and CPT value-set URIs never belong here.
+          if git grep -nE 'sk-ant-[A-Za-z0-9_-]{8,}' -- . ':!.github/workflows/ci.yml'; then
+            echo "::error::An Anthropic key pattern is committed"; exit 1
+          fi
+          # Code, tests, fixtures and scripts only: the docs legitimately say "no MIMIC".
+          if git grep -niE '\bmimic(-iv|-iii)?\b' -- src tests evals synthetic scripts; then
+            echo "::error::MIMIC references found in code or fixtures of a Synthea-only repository"; exit 1
+          fi
+          if git grep -nE 'ama-assn\.org/go/cpt|urn:oid:2\.16\.840\.1\.113883\.6\.12' -- . ':!.github/workflows/ci.yml'; then
+            echo "::error::CPT value-set URIs are licensed content and must not be vendored"; exit 1
           fi
           echo "OK"

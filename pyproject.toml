@@ -70,7 +70,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q --cov=caregap --cov-report=term-missing"
+addopts = "-q --cov=caregap --cov-report=term-missing --cov-fail-under=85"
 markers = [
     "llm: needs a real ANTHROPIC key (auto-skipped in CI)",
     "p6: needs a running fhir-feature-service (auto-skipped when unavailable)",

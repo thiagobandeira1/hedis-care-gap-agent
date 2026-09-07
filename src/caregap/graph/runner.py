@@ -4,11 +4,21 @@ It owns the lifecycle around ``graph.invoke``: the run / patient rows in the ``R
 the per-patient timeout (a worker thread that is abandoned, never killed, on expiry), the
 interrupt / completion split (pending is DERIVED from ``hitl.pending_request``, never
 stored by a node), decision idempotency and validation on resume, and supersession of older
-pending approvals once a newer run finalizes the patient. ``start`` / ``run_panel`` never
-raise: every failure becomes ``RunOutcome(status="error")`` plus a patient status of
-``error``. ``resume`` raises only for CALLER mistakes — :class:`NotAwaitingApproval` (the
-API's 409) and :class:`DecisionValidationError` (422, a ``ValueError`` whose single argument
-is the error list) — and turns everything else into an error outcome too.
+pending approvals once a newer run finalizes the patient.
+
+Concurrency: every ``start`` / ``resume`` of one (run, patient) thread runs under a
+per-thread lock, so two decisions racing on the same pending approval are serialized: the
+first is applied, the second re-derives ``pending`` and gets :class:`NotAwaitingApproval`
+(or the stored result when it carries the same ``decision_id``). The ledger is authoritative
+after a timeout: the abandoned attempt's token is set, ``finalize`` refuses the outbox write
+for it, the patient row stays ``error`` and any interrupt the abandoned worker leaves behind
+is inert (never listed, never resumable; a new run is the recovery path).
+
+``start`` / ``run_panel`` never raise: every failure becomes ``RunOutcome(status="error")``
+plus a patient status of ``error``. ``resume`` raises only for CALLER mistakes —
+:class:`NotAwaitingApproval` (the API's 409) and :class:`DecisionValidationError` (422, a
+``ValueError`` whose single argument is the error list) — and turns everything else into an
+error outcome too.
 
 Logs carry ids, statuses, durations, and error classes only (``logging_setup`` allowlist).
 """
@@ -25,6 +35,7 @@ from langgraph.types import Command
 
 from caregap.graph.build import GraphDeps
 from caregap.graph.hitl import pending_request, validate_decision
+from caregap.graph.nodes import ATTEMPT_FLAG
 from caregap.graph.state import (
     ApprovalDecision,
     ApprovalRequest,
@@ -119,18 +130,23 @@ class PatientRunner:
         self._deps = deps
         self._store = deps.run_store
         self._timeout_s = timeout_s
+        self._locks_guard = threading.Lock()
+        self._thread_locks: dict[str, threading.Lock] = {}
 
     # -- public API --------------------------------------------------------------------
 
     def start(self, run_id: str, patient_id: str, as_of: date, options: RunOptions) -> RunResult:
         """Run one patient from the start of the graph; never raises."""
         tid = thread_id(run_id, patient_id)
-        try:
-            self._ensure_run(run_id, as_of, options, [patient_id])
-            self._store.upsert_patient_run(run_id, patient_id, STATUS_RUNNING, None, None)
-        except Exception as exc:
-            return self._fail(run_id, patient_id, tid, exc)
-        return self._drive(run_id, patient_id, initial_state(run_id, patient_id, as_of, options))
+        with self._thread_lock(tid):
+            try:
+                self._ensure_run(run_id, as_of, options, [patient_id])
+                self._store.upsert_patient_run(run_id, patient_id, STATUS_RUNNING, None, None)
+            except Exception as exc:
+                return self._fail(run_id, patient_id, tid, exc)
+            return self._drive(
+                run_id, patient_id, initial_state(run_id, patient_id, as_of, options)
+            )
 
     def resume(self, run_id: str, patient_id: str, decision: ApprovalDecision) -> RunResult:
         """Apply a reviewer decision to the pending approval of one patient.
@@ -138,37 +154,58 @@ class PatientRunner:
         Idempotent on ``decision_id`` (the stored result is returned, the graph untouched).
         Raises :class:`NotAwaitingApproval` / :class:`DecisionValidationError` before any
         side effect; every later failure becomes an error outcome.
+
+        Atomic per thread: the replay lookup, the pending check, validation, the graph
+        invocation and the decision record all happen under the (run, patient) lock, so of
+        two decisions racing on one approval exactly one is applied and recorded. A thread
+        whose ledger row says ``error`` is never resumed, even if its checkpoint still holds
+        an interrupt (an attempt abandoned on timeout): the ledger is authoritative.
         """
-        stored = self._store.get_decision(decision.decision_id)
-        if stored is not None:
-            log.info(
-                "decision_replayed",
-                run_id=run_id,
-                patient_id=patient_id,
-                action=decision.action,
-            )
-            return stored.result
         tid = thread_id(run_id, patient_id)
-        pending = pending_request(self._graph, tid)
-        if pending is None:
-            raise NotAwaitingApproval(run_id, patient_id)
-        options = _options_of(self._graph.get_state(self._config(tid)).values)
-        errors = validate_decision(
-            decision,
-            pending,
-            max_revisions=options.max_revisions,
-            clinic_name=self._deps.clinic_name,
-            clinic_phone=self._deps.clinic_phone,
-        )
-        if errors:
-            raise DecisionValidationError(errors)
-        try:
-            self._store.upsert_patient_run(run_id, patient_id, STATUS_RUNNING, None, None)
-        except Exception as exc:
-            return self._fail(run_id, patient_id, tid, exc)
-        result = self._drive(run_id, patient_id, Command(resume=decision.model_dump(mode="json")))
-        self._record_decision(decision, run_id, patient_id, result)
-        return result
+        with self._thread_lock(tid):
+            stored = self._store.get_decision(decision.decision_id)
+            if stored is not None:
+                log.info(
+                    "decision_replayed",
+                    run_id=run_id,
+                    patient_id=patient_id,
+                    action=decision.action,
+                )
+                return stored.result
+            pending = pending_request(self._graph, tid)
+            if pending is None:
+                raise NotAwaitingApproval(run_id, patient_id)
+            try:
+                errored = self._ledger_says_error(run_id, patient_id)
+            except Exception as exc:
+                return self._fail(run_id, patient_id, tid, exc)
+            if errored:
+                log.warning(
+                    "decision_refused_after_error",
+                    run_id=run_id,
+                    patient_id=patient_id,
+                    thread_id=tid,
+                )
+                raise NotAwaitingApproval(run_id, patient_id)
+            options = _options_of(self._graph.get_state(self._config(tid)).values)
+            errors = validate_decision(
+                decision,
+                pending,
+                max_revisions=options.max_revisions,
+                clinic_name=self._deps.clinic_name,
+                clinic_phone=self._deps.clinic_phone,
+            )
+            if errors:
+                raise DecisionValidationError(errors)
+            try:
+                self._store.upsert_patient_run(run_id, patient_id, STATUS_RUNNING, None, None)
+            except Exception as exc:
+                return self._fail(run_id, patient_id, tid, exc)
+            result = self._drive(
+                run_id, patient_id, Command(resume=decision.model_dump(mode="json"))
+            )
+            self._record_decision(decision, run_id, patient_id, result)
+            return result
 
     def run_panel(
         self,
@@ -232,8 +269,20 @@ class PatientRunner:
         return outcome
 
     def _invoke_with_timeout(self, payload: GapState | Command[Any], tid: str) -> dict[str, Any]:
+        """Run ``graph.invoke`` on a worker thread bounded by ``timeout_s``.
+
+        On expiry the worker is abandoned (Python threads cannot be killed) and its attempt
+        token is set before :class:`PatientTimeout` is raised, so the ledger's ``error`` row
+        is written and stays authoritative: ``finalize`` sees the token and refuses the
+        outbox write (its checkpoint ends with an ``error`` outcome), nothing the worker
+        produces is read back here, and an interrupt it may still checkpoint is never stored
+        as pending; ``resume`` refuses it because the row says ``error``. That leftover
+        interrupt is deliberately left inert rather than listed: a request the ledger never
+        recorded is not an approval anyone was asked for (SPEC section 3).
+        """
         box = _Invocation()
-        config = self._config(tid)
+        token = threading.Event()
+        config = self._config(tid, token)
 
         def work() -> None:
             try:
@@ -245,8 +294,7 @@ class PatientRunner:
         worker.start()
         worker.join(self._timeout_s)
         if worker.is_alive():
-            # Abandoned on purpose: Python threads cannot be killed. It may still write its
-            # checkpoint later, but the RunStore already says ``error`` for this patient.
+            token.set()
             raise PatientTimeout(f"patient thread {tid!r} exceeded {self._timeout_s}s")
         if box.error is not None:
             raise box.error
@@ -300,6 +348,17 @@ class PatientRunner:
         if not fresh:
             log.warning("decision_already_recorded", run_id=run_id, patient_id=patient_id)
 
+    def _ledger_says_error(self, run_id: str, patient_id: str) -> bool:
+        row = self._store.get_patient_run(run_id, patient_id)
+        return row is not None and row.status == STATUS_ERROR
+
+    def _thread_lock(self, tid: str) -> threading.Lock:
+        with self._locks_guard:
+            lock = self._thread_locks.get(tid)
+            if lock is None:
+                lock = self._thread_locks[tid] = threading.Lock()
+            return lock
+
     def _ensure_run(
         self, run_id: str, as_of: date, options: RunOptions, patient_ids: list[str]
     ) -> None:
@@ -313,8 +372,11 @@ class PatientRunner:
             log.error("run_status_write_failed", run_id=run_id, error_class=type(exc).__name__)
 
     @staticmethod
-    def _config(tid: str) -> RunnableConfig:
-        return {"configurable": {"thread_id": tid}}
+    def _config(tid: str, token: threading.Event | None = None) -> RunnableConfig:
+        configurable: dict[str, Any] = {"thread_id": tid}
+        if token is not None:
+            configurable[ATTEMPT_FLAG] = token
+        return {"configurable": configurable}
 
 
 def _elapsed_ms(started: float) -> int:

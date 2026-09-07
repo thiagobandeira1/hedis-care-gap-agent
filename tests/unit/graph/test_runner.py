@@ -2,11 +2,13 @@
 interrupt / ``Command`` protocol as the real graph, no P6, no engine, no models).
 
 The mini graph scripts behaviour by patient id: ``boom-*`` raises, ``slow-*`` sleeps past the
-timeout, ``quiet-*`` finishes without an interrupt; everything else interrupts with an
-``ApprovalRequest`` exactly like ``await_approval``. Scenario tests over the REAL graph live
-in ``test_scenarios.py``.
+timeout, ``quiet-*`` finishes without an interrupt, ``holdstart-*`` / ``hold-*`` park on the
+test's ``Gate`` (before the interrupt / after the decision is applied); everything else
+interrupts with an ``ApprovalRequest`` exactly like ``await_approval``. Scenario tests over
+the REAL graph live in ``test_scenarios.py``.
 """
 
+import contextlib
 import json
 import sqlite3
 import threading
@@ -24,6 +26,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
 from caregap.agents.schemas import CareActionPlan, GapAction, PlannedGap
+from caregap.graph import nodes
 from caregap.graph.build import GraphDeps, checkpoint_serializer
 from caregap.graph.hitl import pending_request
 from caregap.graph.outbox import InMemoryOutbox
@@ -57,6 +60,24 @@ TIMEOUT_S = 0.3
 BOOM = "boom-"
 SLOW = "slow-"
 QUIET = "quiet-"
+HOLD_START = "holdstart-"
+HOLD = "hold-"
+GATE_MAX_WAIT_S = 10.0
+
+
+class Gate:
+    """Parks a scripted node until the test releases it; ``entered`` says it is parked."""
+
+    def __init__(self) -> None:
+        self.entered = threading.Event()
+        self.release = threading.Event()
+
+    def arrive(self) -> None:
+        self.entered.set()
+        assert self.release.wait(GATE_MAX_WAIT_S), "gate never released"
+
+
+GATE = Gate()
 
 PLAN = CareActionPlan(
     gaps=[PlannedGap(measure_id="BCS", rank=1, urgency="routine", rationale="due")],
@@ -83,7 +104,9 @@ def _work(state: GapState) -> dict[str, Any]:
         raise RuntimeError("scripted node failure")
     if patient_id.startswith(SLOW):
         time.sleep(SLOW_SECONDS)
-    return {"trace": [_trace("work")]}
+    if patient_id.startswith(HOLD_START):
+        GATE.arrive()
+    return {"plan": PLAN, "trace": [_trace("work")]}
 
 
 def _after_work(state: GapState) -> str:
@@ -111,6 +134,8 @@ def _await_approval(state: GapState) -> dict[str, Any]:
 
 
 def _record_decision(state: GapState) -> dict[str, Any]:
+    if state["patient_id"].startswith(HOLD):
+        GATE.arrive()
     decision = state["decision"]
     update: dict[str, Any] = {"trace": [_trace("record_decision")]}
     if decision.action == "revise":
@@ -140,12 +165,14 @@ def _finalize(state: GapState) -> dict[str, Any]:
     return {"outcome": outcome, "trace": [_trace("finalize")]}
 
 
-def build_mini_graph(checkpointer: BaseCheckpointSaver[Any]) -> Any:
+def build_mini_graph(
+    checkpointer: BaseCheckpointSaver[Any], *, finalize: nodes.NodeFn | None = None
+) -> Any:
     builder: StateGraph[GapState] = StateGraph(GapState)
     builder.add_node("work", _work)
     builder.add_node("await_approval", _await_approval)
     builder.add_node("record_decision", _record_decision)
-    builder.add_node("finalize", _finalize)
+    builder.add_node("finalize", finalize or _finalize)
     builder.add_edge(START, "work")
     builder.add_conditional_edges("work", _after_work, ["await_approval", "finalize"])
     builder.add_edge("await_approval", "record_decision")
@@ -157,16 +184,17 @@ def build_mini_graph(checkpointer: BaseCheckpointSaver[Any]) -> Any:
 _VALUE_SETS = load_value_sets()
 
 
-def real_deps(run_store: RunStore) -> GraphDeps:
+def real_deps(run_store: RunStore, *, outbox: InMemoryOutbox | None = None) -> GraphDeps:
     """A real ``GraphDeps`` (the pinned contract) over the committed snapshots and keyless
-    fakes. The mini graph reads none of it; the runner reads ``run_store`` and the clinic
-    strings (edited-plan re-lint)."""
+    fakes. The mini graph reads none of it (unless it borrows the real ``finalize``, which
+    writes ``outbox``); the runner reads ``run_store`` and the clinic strings (edited-plan
+    re-lint)."""
     return GraphDeps(
         p6=SnapshotP6Client(SNAPSHOT_DIR),
         models=fake_bundle([], []),
         engine=default_engine(),
         run_store=run_store,
-        outbox=InMemoryOutbox(),
+        outbox=outbox or InMemoryOutbox(),
         structured=StructuredCaller(),
         value_sets=_VALUE_SETS,
         clinic_name="Demo Primary Care",
@@ -179,10 +207,18 @@ def make_runner(
     *,
     checkpointer: BaseCheckpointSaver[Any] | None = None,
     timeout_s: float = 30.0,
+    real_finalize: bool = False,
+    outbox: InMemoryOutbox | None = None,
 ) -> tuple[PatientRunner, Any, RunStore]:
+    """``real_finalize`` swaps the scripted finalize for ``nodes.finalize(deps)``, the only
+    outbox writer, so its guards can be exercised over the mini graph."""
     store = store or RunStore(":memory:")
-    graph = build_mini_graph(checkpointer or MemorySaver())
-    runner = PatientRunner(graph, real_deps(store), timeout_s=timeout_s)
+    deps = real_deps(store, outbox=outbox)
+    graph = build_mini_graph(
+        checkpointer or MemorySaver(),
+        finalize=nodes.finalize(deps) if real_finalize else None,
+    )
+    runner = PatientRunner(graph, deps, timeout_s=timeout_s)
     return runner, graph, store
 
 
@@ -198,6 +234,16 @@ def as_json(result: object) -> str:
 @pytest.fixture
 def store() -> RunStore:
     return RunStore(":memory:")
+
+
+@pytest.fixture
+def gate() -> Iterator[Gate]:
+    GATE.entered.clear()
+    GATE.release.clear()
+    try:
+        yield GATE
+    finally:
+        GATE.release.set()  # never leave a parked worker behind
 
 
 # --- start -----------------------------------------------------------------------------------
@@ -424,6 +470,124 @@ def test_resume_node_failure_records_error_outcome(store: RunStore) -> None:
     stored = store.get_decision("d1")
     assert stored is not None
     assert stored.result == result
+
+
+# --- concurrency and timeouts ------------------------------------------------------------
+
+
+def abandoned_worker(tid: str) -> threading.Thread:
+    return next(t for t in threading.enumerate() if t.name == f"caregap-{tid}")
+
+
+def test_concurrent_decisions_on_one_thread_apply_exactly_one(store: RunStore) -> None:
+    """Two reviewers race on one pending approval with different decision ids: exactly one
+    decision reaches the graph and the ledger; the other is refused (409), not recorded."""
+    runner, graph, _ = make_runner(store)
+    runner.start("r1", "p1", AS_OF, RunOptions())
+    tid = thread_id("r1", "p1")
+    # Without per-thread serialization both racers pass the pending check and meet here.
+    barrier = threading.Barrier(2)
+    invocations: list[object] = []
+    original = graph.invoke
+
+    def gated(payload: object, *args: Any, **kwargs: Any) -> Any:
+        invocations.append(payload)
+        # The loser never arrives (it waits for the thread lock), so the barrier breaks.
+        with contextlib.suppress(threading.BrokenBarrierError):
+            barrier.wait(timeout=0.5)
+        return original(payload, *args, **kwargs)
+
+    graph.invoke = gated
+    results: dict[str, object] = {}
+
+    def submit(label: str, submitted: ApprovalDecision) -> None:
+        try:
+            results[label] = runner.resume("r1", "p1", submitted)
+        except NotAwaitingApproval as exc:
+            results[label] = exc
+
+    racers = [
+        threading.Thread(target=submit, args=("approve", decision("approve", "dA"))),
+        threading.Thread(target=submit, args=("reject", decision("reject", "dB"))),
+    ]
+    for racer in racers:
+        racer.start()
+    for racer in racers:
+        racer.join(10)
+        assert not racer.is_alive()
+
+    assert len(invocations) == 1, "exactly one decision may resume the interrupt"
+    outcomes = [r for r in results.values() if isinstance(r, RunOutcome)]
+    refused = [r for r in results.values() if isinstance(r, NotAwaitingApproval)]
+    assert (len(outcomes), len(refused)) == (1, 1)
+    stored = [store.get_decision(d) for d in ("dA", "dB")]
+    assert sum(s is not None for s in stored) == 1, "the loser is never recorded"
+    winner = next(s for s in stored if s is not None)
+    assert winner.result == outcomes[0]
+    assert winner.action == next(k for k, v in results.items() if isinstance(v, RunOutcome))
+    row = store.get_patient_run("r1", "p1")
+    assert row is not None
+    assert row.status == outcomes[0].status
+    assert pending_request(graph, tid) is None
+
+
+def test_resume_timeout_abandoned_worker_never_writes_outbox(store: RunStore, gate: Gate) -> None:
+    """A resume that times out after the decision was applied but before ``finalize`` ran:
+    the runner records ``error``; when the abandoned worker later reaches the real
+    ``finalize`` it must refuse the outbox write and agree with the ledger."""
+    outbox = InMemoryOutbox()
+    runner, graph, _ = make_runner(store, timeout_s=TIMEOUT_S, real_finalize=True, outbox=outbox)
+    request = runner.start("r1", "hold-p1", AS_OF, RunOptions())
+    assert isinstance(request, ApprovalRequest)
+    tid = thread_id("r1", "hold-p1")
+
+    result = runner.resume("r1", "hold-p1", decision("approve"))
+    assert result == RunOutcome(status="error", actionable=False)
+    assert gate.entered.wait(5), "the worker should be parked past the timeout"
+    assert outbox.entries == []
+    worker = abandoned_worker(tid)
+    assert worker.is_alive()
+
+    gate.release.set()
+    worker.join(10)
+    assert not worker.is_alive()
+    assert outbox.entries == [], "an abandoned attempt never writes the outbox"
+    row = store.get_patient_run("r1", "hold-p1")
+    assert row is not None
+    assert row.status == "error"
+    assert row.outcome is not None and row.outcome.status == "error"
+    stored = store.get_decision("d1")
+    assert stored is not None
+    assert stored.result == result
+    assert pending_request(graph, tid) is None
+    checkpoint = graph.get_state({"configurable": {"thread_id": tid}}).values["outcome"]
+    assert checkpoint.status == "error" and checkpoint.approved_actions == []
+
+
+def test_start_timeout_leftover_interrupt_is_not_resumable(store: RunStore, gate: Gate) -> None:
+    """A start that times out before the interrupt: the abandoned worker still checkpoints
+    one, but the ledger says ``error`` and never listed a request, so the interrupt is
+    inert: never in the approvals queue, refused by ``resume``, nothing reaches the outbox."""
+    outbox = InMemoryOutbox()
+    runner, graph, _ = make_runner(store, timeout_s=TIMEOUT_S, real_finalize=True, outbox=outbox)
+    tid = thread_id("r1", "holdstart-p1")
+    result = runner.start("r1", "holdstart-p1", AS_OF, RunOptions())
+    assert result == RunOutcome(status="error", actionable=False)
+    assert gate.entered.wait(5)
+    worker = abandoned_worker(tid)
+    gate.release.set()
+    worker.join(10)
+    assert not worker.is_alive()
+
+    assert pending_request(graph, tid) is not None, "the checkpoint does hold an interrupt"
+    assert store.list_approvals(status="pending") == []
+    with pytest.raises(NotAwaitingApproval):
+        runner.resume("r1", "holdstart-p1", decision("approve"))
+    assert store.get_decision("d1") is None
+    assert outbox.entries == []
+    row = store.get_patient_run("r1", "holdstart-p1")
+    assert row is not None
+    assert row.status == "error"
 
 
 # --- supersession ----------------------------------------------------------------------------
