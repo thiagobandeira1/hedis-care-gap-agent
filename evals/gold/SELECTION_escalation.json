@@ -1,0 +1,552 @@
+{
+  "as_of": "2025-12-31",
+  "base_size": 60,
+  "cap": 2500,
+  "counts": {
+    "E1": {
+      "in_base": 0,
+      "inside_cap": 0,
+      "panel": 1,
+      "selected": 0
+    },
+    "E3": {
+      "in_base": 0,
+      "inside_cap": 0,
+      "panel": 0,
+      "selected": 0
+    },
+    "E4": {
+      "in_base": 0,
+      "inside_cap": 4,
+      "panel": 10,
+      "selected": 4
+    },
+    "E5": {
+      "in_base": 0,
+      "inside_cap": 0,
+      "panel": 0,
+      "selected": 0
+    },
+    "E6": {
+      "in_base": 0,
+      "inside_cap": 0,
+      "panel": 0,
+      "selected": 0
+    },
+    "E7": {
+      "in_base": 1,
+      "inside_cap": 4,
+      "panel": 5,
+      "selected": 3
+    },
+    "hospice_in_my": {
+      "in_base": 0,
+      "inside_cap": 5,
+      "panel": 12,
+      "selected": 5
+    }
+  },
+  "excluded_in_base": [
+    "d671b0c6-112a-da67-eb69-116323b2b1cc"
+  ],
+  "excluded_over_cap": [
+    "011e8550-b07a-2551-ef2f-5f20c444087e",
+    "03eff367-7785-855a-e825-4833859d53b3",
+    "03f39a0b-652e-85b8-8307-39cb8557d9cc",
+    "041bfe17-302a-d7dd-3f31-adade5e9a4b1",
+    "19926368-ebd4-68e0-65f1-af523e6eb460",
+    "3532aa5f-c4f4-5b21-3833-04308a64ab0c",
+    "3813defe-9d73-2a06-3750-1b036db970f7",
+    "53380749-54e9-c78d-309c-d9d93fa28964",
+    "96c046f7-d890-20a2-5929-ebec2254ee95",
+    "9a5add03-d6a9-3df1-1f07-f81e30120bd0",
+    "b0b5f662-a5ae-6c21-ebd0-f3a049e3129d",
+    "e49988d2-a8c2-4e8f-a889-397f20f17378",
+    "ef19d120-4c6b-7f5b-6edd-f546be241623",
+    "fc68fc9c-aab7-a833-d702-fb70391eb399"
+  ],
+  "panel_size": 237,
+  "patients": [
+    {
+      "facts": {
+        "age": 74,
+        "birth_date": "1951-02-21",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [
+          "condition 26929004 onset 2025-09-17 abatement none",
+          "encounter EMER start 2025-03-09"
+        ],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [],
+        "event_count": 848,
+        "hospice_in_my_evidence": [],
+        "patient_id": "041763e0-8c8e-8303-eb95-33215f628131",
+        "sex": "female"
+      },
+      "patient_id": "041763e0-8c8e-8303-eb95-33215f628131",
+      "triggers": [
+        "E4"
+      ]
+    },
+    {
+      "facts": {
+        "age": 85,
+        "birth_date": "1940-10-02",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [],
+        "event_count": 681,
+        "hospice_in_my_evidence": [
+          "encounter type 305336008 start 2025-10-08",
+          "procedure 385763009 2025-10-08",
+          "procedure 385763009 2025-10-09",
+          "procedure 385763009 2025-10-10",
+          "procedure 385763009 2025-10-11",
+          "procedure 385763009 2025-10-12",
+          "procedure 385763009 2025-10-13",
+          "procedure 385763009 2025-10-14",
+          "procedure 385763009 2025-10-15",
+          "procedure 385763009 2025-10-16",
+          "procedure 385763009 2025-10-17",
+          "procedure 385763009 2025-10-18",
+          "procedure 385763009 2025-10-19",
+          "procedure 385763009 2025-10-20",
+          "procedure 385763009 2025-10-21",
+          "procedure 385763009 2025-10-22",
+          "procedure 385763009 2025-10-23",
+          "procedure 385763009 2025-10-24",
+          "procedure 385763009 2025-10-25",
+          "procedure 385763009 2025-10-26",
+          "procedure 385763009 2025-10-27",
+          "procedure 385763009 2025-10-28",
+          "procedure 385763009 2025-10-29",
+          "procedure 385763009 2025-10-30",
+          "procedure 385763009 2025-10-31",
+          "procedure 385763009 2025-11-01",
+          "procedure 385763009 2025-11-02",
+          "procedure 385763009 2025-11-03",
+          "procedure 385763009 2025-11-04",
+          "procedure 385763009 2025-11-05",
+          "procedure 385763009 2025-11-06",
+          "procedure 385763009 2025-11-07",
+          "procedure 385763009 2025-11-08",
+          "procedure 385763009 2025-11-09",
+          "procedure 385763009 2025-11-10",
+          "procedure 385763009 2025-11-11",
+          "procedure 385763009 2025-11-12",
+          "procedure 385763009 2025-11-13",
+          "procedure 385763009 2025-11-14",
+          "procedure 385763009 2025-11-15",
+          "procedure 385763009 2025-11-16",
+          "procedure 385763009 2025-11-17",
+          "procedure 385763009 2025-11-18",
+          "procedure 385763009 2025-11-19",
+          "procedure 385763009 2025-11-20",
+          "procedure 385763009 2025-11-21",
+          "procedure 385763009 2025-11-22",
+          "procedure 385763009 2025-11-23",
+          "procedure 385763009 2025-11-24",
+          "procedure 385763009 2025-11-25",
+          "procedure 385763009 2025-11-26",
+          "procedure 385763009 2025-11-27"
+        ],
+        "patient_id": "31e0596e-ba9a-30a7-a7a0-81b6ca117f56",
+        "sex": "male"
+      },
+      "patient_id": "31e0596e-ba9a-30a7-a7a0-81b6ca117f56",
+      "triggers": [
+        "hospice_in_my"
+      ]
+    },
+    {
+      "facts": {
+        "age": 79,
+        "birth_date": "1946-04-30",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [
+          "procedure 43075005 2023-09-18"
+        ],
+        "event_count": 666,
+        "hospice_in_my_evidence": [],
+        "patient_id": "4250b90f-a3d3-57f4-4f71-236c449994d8",
+        "sex": "male"
+      },
+      "patient_id": "4250b90f-a3d3-57f4-4f71-236c449994d8",
+      "triggers": [
+        "E7"
+      ]
+    },
+    {
+      "facts": {
+        "age": 79,
+        "birth_date": "1946-08-12",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [
+          "condition 26929004 onset 2024-01-15 abatement none",
+          "encounter EMER start 2025-08-04"
+        ],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [],
+        "event_count": 725,
+        "hospice_in_my_evidence": [],
+        "patient_id": "6e3d889d-386a-0f33-2156-05cb8938e3e1",
+        "sex": "male"
+      },
+      "patient_id": "6e3d889d-386a-0f33-2156-05cb8938e3e1",
+      "triggers": [
+        "E4"
+      ]
+    },
+    {
+      "facts": {
+        "age": 85,
+        "birth_date": "1940-09-25",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [],
+        "event_count": 520,
+        "hospice_in_my_evidence": [
+          "encounter type 305336008 start 2025-10-01",
+          "procedure 385763009 2025-10-01",
+          "procedure 385763009 2025-10-02",
+          "procedure 385763009 2025-10-03",
+          "procedure 385763009 2025-10-04",
+          "procedure 385763009 2025-10-05",
+          "procedure 385763009 2025-10-06",
+          "procedure 385763009 2025-10-07",
+          "procedure 385763009 2025-10-08",
+          "procedure 385763009 2025-10-09",
+          "procedure 385763009 2025-10-10",
+          "procedure 385763009 2025-10-11",
+          "procedure 385763009 2025-10-12",
+          "procedure 385763009 2025-10-13",
+          "procedure 385763009 2025-10-14",
+          "procedure 385763009 2025-10-15"
+        ],
+        "patient_id": "7b0025d7-1f5b-22e6-4202-b9e23a715428",
+        "sex": "female"
+      },
+      "patient_id": "7b0025d7-1f5b-22e6-4202-b9e23a715428",
+      "triggers": [
+        "hospice_in_my"
+      ]
+    },
+    {
+      "facts": {
+        "age": 75,
+        "birth_date": "1950-06-05",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [],
+        "event_count": 607,
+        "hospice_in_my_evidence": [
+          "encounter type 305336008 start 2025-06-09",
+          "procedure 385763009 2025-06-09",
+          "procedure 385763009 2025-06-10",
+          "procedure 385763009 2025-06-11",
+          "procedure 385763009 2025-06-12",
+          "procedure 385763009 2025-06-13",
+          "procedure 385763009 2025-06-14",
+          "procedure 385763009 2025-06-15",
+          "procedure 385763009 2025-06-16",
+          "procedure 385763009 2025-06-17",
+          "procedure 385763009 2025-06-18",
+          "procedure 385763009 2025-06-19",
+          "procedure 385763009 2025-06-20",
+          "procedure 385763009 2025-06-21",
+          "procedure 385763009 2025-06-22"
+        ],
+        "patient_id": "7d33cc51-a3cd-92a9-d8df-ca3c92f31709",
+        "sex": "female"
+      },
+      "patient_id": "7d33cc51-a3cd-92a9-d8df-ca3c92f31709",
+      "triggers": [
+        "hospice_in_my"
+      ]
+    },
+    {
+      "facts": {
+        "age": 90,
+        "birth_date": "1935-06-14",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [
+          "condition 26929004 onset 2023-01-13 abatement none",
+          "encounter EMER start 2025-06-27"
+        ],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [],
+        "event_count": 786,
+        "hospice_in_my_evidence": [],
+        "patient_id": "9f8d5b91-1c76-fd0d-da90-b0489098fca0",
+        "sex": "female"
+      },
+      "patient_id": "9f8d5b91-1c76-fd0d-da90-b0489098fca0",
+      "triggers": [
+        "E4"
+      ]
+    },
+    {
+      "facts": {
+        "age": 78,
+        "birth_date": "1947-01-25",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [
+          "procedure 43075005 2023-03-10"
+        ],
+        "event_count": 1047,
+        "hospice_in_my_evidence": [],
+        "patient_id": "a0548efc-9569-549b-a01d-ab8f983095b1",
+        "sex": "female"
+      },
+      "patient_id": "a0548efc-9569-549b-a01d-ab8f983095b1",
+      "triggers": [
+        "E7"
+      ]
+    },
+    {
+      "facts": {
+        "age": 85,
+        "birth_date": "1940-03-07",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [],
+        "event_count": 959,
+        "hospice_in_my_evidence": [
+          "encounter type 305336008 start 2025-03-13",
+          "procedure 385763009 2025-03-13",
+          "procedure 385763009 2025-03-14",
+          "procedure 385763009 2025-03-15",
+          "procedure 385763009 2025-03-16",
+          "procedure 385763009 2025-03-17",
+          "procedure 385763009 2025-03-18",
+          "procedure 385763009 2025-03-19",
+          "procedure 385763009 2025-03-20",
+          "procedure 385763009 2025-03-21",
+          "procedure 385763009 2025-03-22",
+          "procedure 385763009 2025-03-23",
+          "procedure 385763009 2025-03-24",
+          "procedure 385763009 2025-03-25",
+          "procedure 385763009 2025-03-26",
+          "procedure 385763009 2025-03-27",
+          "procedure 385763009 2025-03-28",
+          "procedure 385763009 2025-03-29",
+          "procedure 385763009 2025-03-30",
+          "procedure 385763009 2025-03-31",
+          "procedure 385763009 2025-04-01",
+          "procedure 385763009 2025-04-02",
+          "procedure 385763009 2025-04-03",
+          "procedure 385763009 2025-04-04",
+          "procedure 385763009 2025-04-05",
+          "procedure 385763009 2025-04-06",
+          "procedure 385763009 2025-04-07",
+          "procedure 385763009 2025-04-08",
+          "procedure 385763009 2025-04-09",
+          "procedure 385763009 2025-04-10",
+          "procedure 385763009 2025-04-11",
+          "procedure 385763009 2025-04-12",
+          "procedure 385763009 2025-04-13",
+          "procedure 385763009 2025-04-14",
+          "procedure 385763009 2025-04-15",
+          "procedure 385763009 2025-04-16"
+        ],
+        "patient_id": "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7",
+        "sex": "male"
+      },
+      "patient_id": "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7",
+      "triggers": [
+        "hospice_in_my"
+      ]
+    },
+    {
+      "facts": {
+        "age": 85,
+        "birth_date": "1940-11-14",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [],
+        "event_count": 529,
+        "hospice_in_my_evidence": [
+          "encounter type 305336008 start 2025-11-20",
+          "procedure 385763009 2025-11-20",
+          "procedure 385763009 2025-11-21",
+          "procedure 385763009 2025-11-22",
+          "procedure 385763009 2025-11-23",
+          "procedure 385763009 2025-11-24",
+          "procedure 385763009 2025-11-25",
+          "procedure 385763009 2025-11-26",
+          "procedure 385763009 2025-11-27",
+          "procedure 385763009 2025-11-28",
+          "procedure 385763009 2025-11-29",
+          "procedure 385763009 2025-11-30",
+          "procedure 385763009 2025-12-01",
+          "procedure 385763009 2025-12-02",
+          "procedure 385763009 2025-12-03",
+          "procedure 385763009 2025-12-04",
+          "procedure 385763009 2025-12-05",
+          "procedure 385763009 2025-12-06",
+          "procedure 385763009 2025-12-07",
+          "procedure 385763009 2025-12-08",
+          "procedure 385763009 2025-12-09",
+          "procedure 385763009 2025-12-10",
+          "procedure 385763009 2025-12-11",
+          "procedure 385763009 2025-12-12",
+          "procedure 385763009 2025-12-13",
+          "procedure 385763009 2025-12-14",
+          "procedure 385763009 2025-12-15",
+          "procedure 385763009 2025-12-16",
+          "procedure 385763009 2025-12-17",
+          "procedure 385763009 2025-12-18",
+          "procedure 385763009 2025-12-19",
+          "procedure 385763009 2025-12-20",
+          "procedure 385763009 2025-12-21",
+          "procedure 385763009 2025-12-22",
+          "procedure 385763009 2025-12-23",
+          "procedure 385763009 2025-12-24",
+          "procedure 385763009 2025-12-25",
+          "procedure 385763009 2025-12-26",
+          "procedure 385763009 2025-12-27",
+          "procedure 385763009 2025-12-28",
+          "procedure 385763009 2025-12-29",
+          "procedure 385763009 2025-12-30",
+          "procedure 385763009 2025-12-31"
+        ],
+        "patient_id": "be7a5cad-5316-ee4b-5470-4093f20ff5ad",
+        "sex": "female"
+      },
+      "patient_id": "be7a5cad-5316-ee4b-5470-4093f20ff5ad",
+      "triggers": [
+        "hospice_in_my"
+      ]
+    },
+    {
+      "facts": {
+        "age": 91,
+        "birth_date": "1934-12-27",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [
+          "condition 26929004 onset 2025-10-23 abatement none",
+          "encounter EMER start 2025-07-28",
+          "encounter IMP start 2025-04-14",
+          "encounter IMP start 2025-07-28"
+        ],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [],
+        "event_count": 776,
+        "hospice_in_my_evidence": [],
+        "patient_id": "d245882f-26cd-11c3-fa90-44da7048dfb0",
+        "sex": "male"
+      },
+      "patient_id": "d245882f-26cd-11c3-fa90-44da7048dfb0",
+      "triggers": [
+        "E4"
+      ]
+    },
+    {
+      "facts": {
+        "age": 77,
+        "birth_date": "1948-12-25",
+        "death_date": null,
+        "deceased": false,
+        "e1_evidence": [],
+        "e3_evidence": [],
+        "e4_evidence": [],
+        "e5_evidence": [],
+        "e6_evidence": [],
+        "e7_evidence": [
+          "procedure 43075005 2016-11-06"
+        ],
+        "event_count": 582,
+        "hospice_in_my_evidence": [],
+        "patient_id": "ec3e67c3-185f-54fb-2dd6-408c73157431",
+        "sex": "male"
+      },
+      "patient_id": "ec3e67c3-185f-54fb-2dd6-408c73157431",
+      "triggers": [
+        "E7"
+      ]
+    }
+  ],
+  "selected": 12,
+  "triggers": {
+    "E1": [],
+    "E3": [],
+    "E4": [
+      "041763e0-8c8e-8303-eb95-33215f628131",
+      "6e3d889d-386a-0f33-2156-05cb8938e3e1",
+      "9f8d5b91-1c76-fd0d-da90-b0489098fca0",
+      "d245882f-26cd-11c3-fa90-44da7048dfb0"
+    ],
+    "E5": [],
+    "E6": [],
+    "E7": [
+      "4250b90f-a3d3-57f4-4f71-236c449994d8",
+      "a0548efc-9569-549b-a01d-ab8f983095b1",
+      "ec3e67c3-185f-54fb-2dd6-408c73157431"
+    ],
+    "hospice_in_my": [
+      "31e0596e-ba9a-30a7-a7a0-81b6ca117f56",
+      "7b0025d7-1f5b-22e6-4202-b9e23a715428",
+      "7d33cc51-a3cd-92a9-d8df-ca3c92f31709",
+      "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7",
+      "be7a5cad-5316-ee4b-5470-4093f20ff5ad"
+    ]
+  },
+  "unrepresentable": [
+    "E3",
+    "E5",
+    "E6"
+  ]
+}

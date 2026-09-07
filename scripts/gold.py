@@ -9,6 +9,8 @@ Subcommands::
     uv run python scripts/gold.py goldens [--regen] [--snapshots DIR] [--out DIR]
     uv run python scripts/gold.py select --db data/p6-panel.duckdb --as-of 2025-12-31 \\
         [--n 60] [--seed 20260903] [--cap 2500] [--out evals/gold]
+    uv run python scripts/gold.py select-escalation --db data/p6-panel.duckdb \\
+        --as-of 2025-12-31 [--cap 2500] [--out evals/gold] [--exclude evals/gold/SELECTION.json]
 
 ``snapshot`` boots the real fhir-feature-service in-process — over a throwaway DuckDB that
 P6's own CLI fills from ``synthetic/samples`` (``FF_DB_PATH`` is set BEFORE ``fhir_features``
@@ -32,6 +34,15 @@ then draws ``--n`` patients with a seeded, reproducible stratified sample and wr
 patient). Patients whose event count exceeds ``--cap`` are excluded from the draw because a
 blind labeler cannot read them.
 
+``select-escalation`` is the second, non-random slice: every capped patient NOT in the base
+``SELECTION.json`` who carries at least one escalation trigger (E1, E3, E4, E5, E6, E7) or the
+hospice-in-MY exclusion, keyed on DESCRIPTIVE TRIGGER FACTS ONLY — raw record events matched
+against the value-set JSON files read as plain code lists. It never imports the engine or a
+rule module and never reads an engine output. It writes ``SELECTION_escalation.json`` (the
+triggers per patient with the raw evidence) and ``FEASIBILITY_escalation.md`` (carriers per
+trigger in the whole panel, inside the cap, already in the base slice, selected; the triggers
+with zero carriers stated plainly). There is no seed: the slice is a pure function of the facts.
+
 Synthetic (Synthea) data only. Outputs are deterministic: gzip members carry ``mtime=0``, JSON
 keys are sorted, and the draw is a pure function of (facts, seed), so a regen over unchanged
 inputs is byte-identical.
@@ -51,10 +62,10 @@ import subprocess
 import sys
 import tempfile
 from collections import Counter
-from collections.abc import Callable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -417,15 +428,19 @@ def _date_of(row: Mapping[str, Any], key: str) -> date | None:
     return date.fromisoformat(raw[:10])
 
 
-def facts_from_record(payload: Mapping[str, Any], as_of: date) -> PatientFacts:
-    """Descriptive facts from a raw ``/record?to=as_of`` body. No value set, no engine."""
-    my_start = date(as_of.year, 1, 1)
-    header = payload["patient"]
-    birth = _date_of(header, "birth_date")
+def _death_on_or_before(header: Mapping[str, Any], as_of: date) -> date | None:
+    """The death date when it is on/before ``as_of`` (a later death is invisible to a run at
+    ``as_of``), else ``None``."""
     death = _date_of(header, "death_date")
     if death is not None and death > as_of:
-        death = None
+        return None
+    return death
 
+
+def _events_on_or_before(
+    payload: Mapping[str, Any], as_of: date
+) -> dict[str, list[Mapping[str, Any]]]:
+    """Every event of every section dated on/before ``as_of`` (undated rows are dropped)."""
     events: dict[str, list[Mapping[str, Any]]] = {}
     for section in EVENT_SECTIONS:
         key = SECTION_DATE_FIELD[section]
@@ -435,6 +450,16 @@ def facts_from_record(payload: Mapping[str, Any], as_of: date) -> PatientFacts:
             if when is not None and when <= as_of:
                 kept.append(row)
         events[section] = kept
+    return events
+
+
+def facts_from_record(payload: Mapping[str, Any], as_of: date) -> PatientFacts:
+    """Descriptive facts from a raw ``/record?to=as_of`` body. No value set, no engine."""
+    my_start = date(as_of.year, 1, 1)
+    header = payload["patient"]
+    birth = _date_of(header, "birth_date")
+    death = _death_on_or_before(header, as_of)
+    events = _events_on_or_before(payload, as_of)
 
     displays = [
         str(row.get("code_display") or "")
@@ -956,6 +981,496 @@ def cmd_select(args: argparse.Namespace) -> int:
     return 0
 
 
+# --- select-escalation: trigger code lists ---------------------------------------------------
+
+VALUE_SET_DIR = REPO_ROOT / "src" / "caregap" / "measures" / "value_sets"
+"""Value-set JSON files read as plain DATA (code lists) by ``select-escalation``. No rule or
+engine module is imported: the slice is keyed on descriptive trigger facts only."""
+SELECTION_ESCALATION_NAME = "SELECTION_escalation.json"
+FEASIBILITY_ESCALATION_NAME = "FEASIBILITY_escalation.md"
+
+E1_LOOKBACK_DAYS = 90
+"""E1 window: hospice dated within the 90 days before Jan 1 of the MY (guide 0.4)."""
+E4_MIN_AGE = 66
+E3_STATUSES = frozenset({"stopped", "cancelled", "entered-in-error"})
+BP_SYSTOLIC_CODE = "8480-6"
+BP_DIASTOLIC_CODE = "8462-4"
+MMHG = "mm[Hg]"
+
+TRIGGER_NAMES: tuple[str, ...] = ("E1", "E3", "E4", "E5", "E6", "E7", "hospice_in_my")
+TRIGGER_DESCRIPTIONS: dict[str, str] = {
+    "E1": "hospice_snomed code (procedure / condition / encounter type) dated in the "
+    f"{E1_LOOKBACK_DAYS} days before Jan 1 of the MY",
+    "E3": "statin_rxnorm request authored inside [Jan 1 MY, as_of] with status "
+    + " / ".join(sorted(E3_STATUSES)),
+    "E4": "dementia_snomed condition active at as_of (onset <= as_of, abatement null or >= Jan 1 "
+    f"MY) + an IMP/EMER encounter starting inside [Jan 1 MY, as_of] + age >= {E4_MIN_AGE} at "
+    "Dec 31 of the MY",
+    "E5": f"an {BP_PANEL_CODE} observation inside [Jan 1 MY, as_of] whose child observations "
+    f"lack {BP_SYSTOLIC_CODE} or {BP_DIASTOLIC_CODE}, or carry a unit other than {MMHG}",
+    "E6": "hypertension_snomed or diabetes_snomed condition with abatement_date inside "
+    "[Jan 1 MY, as_of]",
+    "E7": "colon_ambiguous_snomed code in conditions or procedures dated <= as_of",
+    "hospice_in_my": "hospice_snomed code (procedure / condition / encounter type) dated inside "
+    "[Jan 1 MY, as_of] (an exclusion carrier, not an escalation)",
+}
+
+
+def _codes_of(entry: Mapping[str, Any]) -> frozenset[str]:
+    """Every code string of one value-set entry (``codes`` as strings or ``{code, ...}`` dicts),
+    including codes marked ``untested_by_data``."""
+    codes: set[str] = set()
+    for item in entry.get("codes", []):
+        code = item if isinstance(item, str) else item.get("code")
+        if isinstance(code, str) and code:
+            codes.add(code)
+    return frozenset(codes)
+
+
+@dataclass(frozen=True)
+class TriggerCodes:
+    """The code lists the escalation / exclusion triggers key on."""
+
+    hospice: frozenset[str]
+    dementia: frozenset[str]
+    colon_ambiguous: frozenset[str]
+    statin: frozenset[str]
+    hypertension: frozenset[str]
+    diabetes: frozenset[str]
+
+    @classmethod
+    def load(cls, value_set_dir: Path = VALUE_SET_DIR) -> TriggerCodes:
+        def standalone(name: str) -> frozenset[str]:
+            raw = json.loads((value_set_dir / f"{name}.json").read_text(encoding="utf-8"))
+            return _codes_of(raw)
+
+        vendored = json.loads((value_set_dir / "p6_vendored.json").read_text(encoding="utf-8"))
+        by_id = {str(entry["id"]): _codes_of(entry) for entry in vendored["sets"]}
+        return cls(
+            hospice=standalone("hospice_snomed"),
+            dementia=standalone("dementia_snomed"),
+            colon_ambiguous=standalone("colon_ambiguous_snomed"),
+            statin=by_id["statin_rxnorm"],
+            hypertension=by_id["hypertension_snomed"],
+            diabetes=by_id["diabetes_snomed"],
+        )
+
+
+# --- select-escalation: descriptive trigger facts ----------------------------------------------
+
+
+@dataclass(frozen=True)
+class TriggerFacts:
+    """Descriptive trigger facts of one panel patient at ``as_of`` — the ONLY input of the
+    escalation slice. Each ``*_evidence`` tuple lists the raw events (section, code, dates) that
+    make the trigger fire, sorted; an empty tuple means the trigger does not fire."""
+
+    patient_id: str
+    sex: str
+    birth_date: str | None
+    death_date: str | None
+    age: int | None
+    deceased: bool
+    event_count: int
+    e1_evidence: tuple[str, ...] = ()
+    e3_evidence: tuple[str, ...] = ()
+    e4_evidence: tuple[str, ...] = ()
+    e5_evidence: tuple[str, ...] = ()
+    e6_evidence: tuple[str, ...] = ()
+    e7_evidence: tuple[str, ...] = ()
+    hospice_in_my_evidence: tuple[str, ...] = ()
+
+    def evidence(self, trigger: str) -> tuple[str, ...]:
+        value: tuple[str, ...] = getattr(self, f"{trigger.lower()}_evidence")
+        return value
+
+    @property
+    def triggers(self) -> tuple[str, ...]:
+        return tuple(name for name in TRIGGER_NAMES if self.evidence(name))
+
+
+def _within(when: date | None, low: date, high: date) -> bool:
+    return when is not None and low <= when <= high
+
+
+def _hospice_events(
+    events: Mapping[str, Sequence[Mapping[str, Any]]], hospice: frozenset[str]
+) -> list[tuple[date, str]]:
+    """Hospice evidence in the three places Synthea records it: procedure code, condition code,
+    encounter type code — as (date, description)."""
+    found: list[tuple[date, str]] = []
+    for row in events["procedures"]:
+        when = _date_of(row, "performed_date")
+        if when is not None and row.get("code") in hospice:
+            found.append((when, f"procedure {row['code']} {when.isoformat()}"))
+    for row in events["conditions"]:
+        when = _date_of(row, "onset_date")
+        if when is not None and row.get("code") in hospice:
+            found.append((when, f"condition {row['code']} onset {when.isoformat()}"))
+    for row in events["encounters"]:
+        when = _date_of(row, "start_date")
+        if when is not None and row.get("type_code") in hospice:
+            found.append((when, f"encounter type {row['type_code']} start {when.isoformat()}"))
+    return found
+
+
+def _e5_panel_defects(
+    observations: Sequence[Mapping[str, Any]], my_start: date, as_of: date
+) -> list[str]:
+    """Every 85354-9 panel in the MY missing a systolic / diastolic child or carrying a child
+    unit other than mm[Hg] (an empty unit counts), described per panel."""
+    children: dict[str, list[Mapping[str, Any]]] = {}
+    for row in observations:
+        parent = row.get("parent_observation_id")
+        if isinstance(parent, str) and parent:
+            children.setdefault(parent, []).append(row)
+    defects: list[str] = []
+    for panel in observations:
+        when = _date_of(panel, "effective_date")
+        if panel.get("code") != BP_PANEL_CODE or not _within(when, my_start, as_of):
+            continue
+        kids = children.get(str(panel.get("observation_id") or ""), [])
+        problems: list[str] = []
+        for wanted in (BP_SYSTOLIC_CODE, BP_DIASTOLIC_CODE):
+            matching = [k for k in kids if k.get("code") == wanted]
+            if not matching:
+                problems.append(f"missing {wanted}")
+            problems.extend(
+                f"{wanted} unit {k.get('value_unit')!r}"
+                for k in matching
+                if k.get("value_unit") != MMHG
+            )
+        if problems and when is not None:
+            defects.append(
+                f"panel {panel.get('observation_id')} {when.isoformat()}: " + "; ".join(problems)
+            )
+    return defects
+
+
+def trigger_facts_from_record(
+    payload: Mapping[str, Any], as_of: date, codes: TriggerCodes
+) -> TriggerFacts:
+    """Descriptive trigger facts from a raw ``/record?to=as_of`` body and the code lists.
+    No engine, no rule module, no engine output."""
+    my_start = date(as_of.year, 1, 1)
+    e1_start = my_start - timedelta(days=E1_LOOKBACK_DAYS)
+    e1_end = my_start - timedelta(days=1)
+    header = payload["patient"]
+    birth = _date_of(header, "birth_date")
+    death = _death_on_or_before(header, as_of)
+    age = age_at_my_end(birth, as_of)
+    events = _events_on_or_before(payload, as_of)
+
+    hospice = _hospice_events(events, codes.hospice)
+    hospice_in_my = [text for when, text in hospice if _within(when, my_start, as_of)]
+    e1 = [text for when, text in hospice if _within(when, e1_start, e1_end)]
+
+    e3: list[str] = []
+    for row in events["medications"]:
+        when = _date_of(row, "authored_date")
+        status = str(row.get("status") or "").lower()
+        if (
+            row.get("code") in codes.statin
+            and _within(when, my_start, as_of)
+            and when is not None
+            and status in E3_STATUSES
+        ):
+            e3.append(f"medication {row['code']} authored {when.isoformat()} status {status}")
+
+    dementia: list[str] = []
+    for row in events["conditions"]:
+        onset = _date_of(row, "onset_date")
+        abatement = _date_of(row, "abatement_date")
+        active = abatement is None or abatement >= my_start
+        if row.get("code") in codes.dementia and onset is not None and onset <= as_of and active:
+            ended = abatement.isoformat() if abatement is not None else "none"
+            dementia.append(f"condition {row['code']} onset {onset.isoformat()} abatement {ended}")
+    acute: list[str] = []
+    for row in events["encounters"]:
+        when = _date_of(row, "start_date")
+        klass = str(row.get("encounter_class") or "").upper()
+        if klass in ACUTE_CLASSES and _within(when, my_start, as_of) and when is not None:
+            acute.append(f"encounter {klass} start {when.isoformat()}")
+    e4 = dementia + acute if dementia and acute and age is not None and age >= E4_MIN_AGE else []
+
+    e5 = _e5_panel_defects(events["observations"], my_start, as_of)
+
+    e6: list[str] = []
+    for row in events["conditions"]:
+        abatement = _date_of(row, "abatement_date")
+        code = row.get("code")
+        chronic = code in codes.hypertension or code in codes.diabetes
+        if chronic and abatement is not None and _within(abatement, my_start, as_of):
+            onset = _date_of(row, "onset_date")
+            started = onset.isoformat() if onset is not None else "unknown"
+            e6.append(f"condition {code} onset {started} abatement {abatement.isoformat()}")
+
+    e7: list[str] = []
+    for row in events["conditions"]:
+        onset = _date_of(row, "onset_date")
+        if row.get("code") in codes.colon_ambiguous and onset is not None:
+            e7.append(f"condition {row['code']} onset {onset.isoformat()}")
+    for row in events["procedures"]:
+        when = _date_of(row, "performed_date")
+        if row.get("code") in codes.colon_ambiguous and when is not None:
+            e7.append(f"procedure {row['code']} {when.isoformat()}")
+
+    return TriggerFacts(
+        patient_id=str(header["patient_id"]),
+        sex=str(header.get("sex") or "unknown"),
+        birth_date=birth.isoformat() if birth else None,
+        death_date=death.isoformat() if death else None,
+        age=age,
+        deceased=death is not None,
+        event_count=sum(len(rows) for rows in events.values()),
+        e1_evidence=tuple(sorted(e1)),
+        e3_evidence=tuple(sorted(e3)),
+        e4_evidence=tuple(sorted(e4)),
+        e5_evidence=tuple(sorted(e5)),
+        e6_evidence=tuple(sorted(e6)),
+        e7_evidence=tuple(sorted(e7)),
+        hospice_in_my_evidence=tuple(sorted(hospice_in_my)),
+    )
+
+
+# --- select-escalation: the slice ------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class TriggerCount:
+    panel: int
+    """Carriers in the whole panel."""
+    inside_cap: int
+    """Carriers whose event count is within the labeling-feasibility cap."""
+    in_base: int
+    """Carriers inside the cap that the base selection already holds (not re-selected)."""
+    selected: int
+
+
+@dataclass(frozen=True)
+class EscalationSelection:
+    as_of: str
+    cap: int
+    panel_size: int
+    base_size: int
+    excluded_over_cap: list[str]
+    """Carriers lost to the cap."""
+    excluded_in_base: list[str]
+    """Carriers inside the cap already in the base selection."""
+    counts: dict[str, TriggerCount]
+    unrepresentable: list[str]
+    """Triggers with zero carriers anywhere in the panel."""
+    patients: list[TriggerFacts]
+
+    @property
+    def patient_ids(self) -> list[str]:
+        return [p.patient_id for p in self.patients]
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "as_of": self.as_of,
+            "cap": self.cap,
+            "panel_size": self.panel_size,
+            "base_size": self.base_size,
+            "selected": len(self.patients),
+            "triggers": {
+                name: [p.patient_id for p in self.patients if name in p.triggers]
+                for name in TRIGGER_NAMES
+            },
+            "counts": {name: asdict(count) for name, count in self.counts.items()},
+            "unrepresentable": list(self.unrepresentable),
+            "excluded_over_cap": list(self.excluded_over_cap),
+            "excluded_in_base": list(self.excluded_in_base),
+            "patients": [
+                {"patient_id": p.patient_id, "triggers": list(p.triggers), "facts": asdict(p)}
+                for p in self.patients
+            ],
+        }
+
+
+def select_escalation(
+    facts: Mapping[str, TriggerFacts],
+    *,
+    as_of: date,
+    cap: int = DEFAULT_CAP,
+    exclude: Collection[str] = (),
+) -> EscalationSelection:
+    """A pure function of (facts, cap, exclude): every carrier of at least one trigger whose
+    event count is within ``cap`` and whose id is not in ``exclude`` (the base selection), in
+    sorted id order. No draw, no seed, no engine."""
+    ordered = [facts[pid] for pid in sorted(facts)]
+    excluded_ids = frozenset(exclude)
+    carriers = [f for f in ordered if f.triggers]
+    over_cap = [f.patient_id for f in carriers if f.event_count > cap]
+    inside_cap = [f for f in carriers if f.event_count <= cap]
+    in_base = [f.patient_id for f in inside_cap if f.patient_id in excluded_ids]
+    selected = [f for f in inside_cap if f.patient_id not in excluded_ids]
+
+    def count(name: str, group: Sequence[TriggerFacts]) -> int:
+        return sum(1 for f in group if name in f.triggers)
+
+    counts = {
+        name: TriggerCount(
+            panel=count(name, ordered),
+            inside_cap=count(name, inside_cap),
+            in_base=count(name, [f for f in inside_cap if f.patient_id in excluded_ids]),
+            selected=count(name, selected),
+        )
+        for name in TRIGGER_NAMES
+    }
+    return EscalationSelection(
+        as_of=as_of.isoformat(),
+        cap=cap,
+        panel_size=len(ordered),
+        base_size=len(excluded_ids),
+        excluded_over_cap=over_cap,
+        excluded_in_base=in_base,
+        counts=counts,
+        unrepresentable=[name for name in TRIGGER_NAMES if counts[name].panel == 0],
+        patients=selected,
+    )
+
+
+def render_feasibility_escalation(
+    facts: Mapping[str, TriggerFacts], selection: EscalationSelection
+) -> str:
+    """``FEASIBILITY_escalation.md``: per-trigger carrier counts (panel, inside the cap, already
+    in the base slice, selected), the triggers this panel cannot represent, and the evidence
+    behind every selected patient. Descriptive only — no engine, no rule module."""
+    lines: list[str] = [
+        "# Escalation / exclusion slice feasibility scan",
+        "",
+        f"Descriptive scan of the {selection.panel_size}-patient synthetic (Synthea) panel at "
+        f"as_of {selection.as_of} (measurement year {selection.as_of[:4]}) for the carriers of "
+        "the escalation triggers E1, E3, E4, E5, E6, E7 and of the hospice-in-MY exclusion. "
+        "Facts come from the raw P6 record at `?to=as_of` and the value-set JSON files read as "
+        "plain code lists; no engine verdict, rule module or engine output was consulted "
+        "(SPEC section 6: selection on descriptive facts only). There is no draw: every carrier "
+        f"within the labeling-feasibility cap of {selection.cap} events who is not among the "
+        f"{selection.base_size} patients of the base selection is selected, in sorted id order.",
+        "",
+        f"Selected: **{len(selection.patients)}** patients; {len(selection.excluded_in_base)} "
+        f"carrier(s) already in the base slice; {len(selection.excluded_over_cap)} carrier(s) "
+        "over the cap.",
+        "",
+        "## Trigger definitions (descriptive facts, not rules)",
+        "",
+    ]
+    lines.extend(f"- `{name}`: {TRIGGER_DESCRIPTIONS[name]}" for name in TRIGGER_NAMES)
+    lines += [
+        "",
+        "Note: E1 is recorded whenever a hospice event falls in the 90-day window; the guide "
+        "raises E1 as a label only when no hospice event lies inside the MY (a patient carrying "
+        "both is an exclusion carrier first).",
+        "",
+        "## Carriers per trigger",
+        "",
+        *_md_table(
+            ("trigger", "whole panel", "inside cap", "already in base", "selected"),
+            [
+                (name, c.panel, c.inside_cap, c.in_base, c.selected)
+                for name, c in selection.counts.items()
+            ],
+        ),
+        "",
+        "## Triggers with zero carriers",
+        "",
+    ]
+    if selection.unrepresentable:
+        lines.append(
+            "The following triggers have **no carrier anywhere in the panel** at this anchor, "
+            "so they cannot be represented in gold at as_of "
+            f"{selection.as_of}: " + ", ".join(f"`{n}`" for n in selection.unrepresentable) + "."
+        )
+        lines.extend(
+            f"- `{name}`: 0 carriers — {TRIGGER_DESCRIPTIONS[name]}"
+            for name in selection.unrepresentable
+        )
+    else:
+        lines.append("- none: every trigger has at least one carrier in the panel.")
+    lines += ["", "## Selected patients", ""]
+    sel_rows = [
+        [
+            p.patient_id,
+            p.age if p.age is not None else "",
+            p.sex,
+            "yes" if p.deceased else "",
+            p.event_count,
+            ", ".join(p.triggers),
+        ]
+        for p in selection.patients
+    ]
+    lines.extend(
+        _md_table(("patient_id", "age", "sex", "deceased", "events", "triggers"), sel_rows)
+    )
+    lines += ["", "## Evidence per selected patient", ""]
+    for p in selection.patients:
+        lines.append(f"### {p.patient_id}")
+        lines.append("")
+        for name in p.triggers:
+            lines.append(f"- `{name}`:")
+            lines.extend(f"  - {item}" for item in p.evidence(name))
+        lines.append("")
+    lines += ["## Carriers already in the base selection (not re-selected)", ""]
+    if selection.excluded_in_base:
+        base_rows = [
+            [pid, facts[pid].event_count, ", ".join(facts[pid].triggers)]
+            for pid in selection.excluded_in_base
+        ]
+        lines.extend(_md_table(("patient_id", "events", "triggers"), base_rows))
+    else:
+        lines.append("- none")
+    lines += ["", "## Carriers over the cap", ""]
+    if selection.excluded_over_cap:
+        over_rows = [
+            [pid, facts[pid].event_count, ", ".join(facts[pid].triggers)]
+            for pid in selection.excluded_over_cap
+        ]
+        lines.extend(_md_table(("patient_id", "events", "triggers"), over_rows))
+    else:
+        lines.append("- none")
+    return "\n".join(lines) + "\n"
+
+
+def cmd_select_escalation(args: argparse.Namespace) -> int:
+    as_of: date = args.as_of
+    out: Path = args.out
+    db: Path = args.db
+    exclude_path: Path = args.exclude
+    if not db.is_file():
+        print(f"error: {db} is not a file", file=sys.stderr)
+        return 2
+    if not exclude_path.is_file():
+        print(f"error: {exclude_path} is not a file", file=sys.stderr)
+        return 2
+    base_ids = selection_patient_ids(exclude_path)
+    codes = TriggerCodes.load()
+    facts: dict[str, TriggerFacts] = {}
+    with _embedded_client(db, DEFAULT_SAMPLES) as client:
+        ids = _all_patient_ids(client)
+        if not ids:
+            print("error: P6 has no patients", file=sys.stderr)
+            return 1
+        for pid in ids:
+            record = _get_json(client, f"/v1/patients/{pid}/record", {"to": as_of.isoformat()})
+            facts[pid] = trigger_facts_from_record(record, as_of, codes)
+    selection = select_escalation(facts, as_of=as_of, cap=args.cap, exclude=base_ids)
+    write_text_lf(out / SELECTION_ESCALATION_NAME, render_goldens_json(selection.to_json()))
+    write_text_lf(
+        out / FEASIBILITY_ESCALATION_NAME, render_feasibility_escalation(facts, selection)
+    )
+    print(
+        f"selected {len(selection.patients)} carrier(s) of {len(facts)} "
+        f"({len(selection.excluded_in_base)} already in base, "
+        f"{len(selection.excluded_over_cap)} over cap {args.cap}); "
+        + ", ".join(f"{name}={c.selected}" for name, c in selection.counts.items())
+    )
+    for name in selection.unrepresentable:
+        print(f"unrepresentable: {name} has no carrier in the panel", file=sys.stderr)
+    print(f"wrote {out / SELECTION_ESCALATION_NAME} and {out / FEASIBILITY_ESCALATION_NAME}")
+    return 0
+
+
 # --- entry ---------------------------------------------------------------------------------
 
 
@@ -987,6 +1502,22 @@ def build_parser() -> argparse.ArgumentParser:
     sel.add_argument("--cap", type=int, default=DEFAULT_CAP)
     sel.add_argument("--out", type=Path, default=DEFAULT_GOLD_DIR)
     sel.set_defaults(func=cmd_select)
+
+    esc = sub.add_parser(
+        "select-escalation",
+        help="every escalation / exclusion trigger carrier outside the base draw (no sampling)",
+    )
+    esc.add_argument("--db", type=Path, required=True, help="existing P6 DuckDB of the panel")
+    esc.add_argument("--as-of", type=date.fromisoformat, required=True)
+    esc.add_argument("--cap", type=int, default=DEFAULT_CAP)
+    esc.add_argument("--out", type=Path, default=DEFAULT_GOLD_DIR)
+    esc.add_argument(
+        "--exclude",
+        type=Path,
+        default=DEFAULT_GOLD_DIR / SELECTION_NAME,
+        help="base SELECTION.json whose patients are never re-selected",
+    )
+    esc.set_defaults(func=cmd_select_escalation)
     return parser
 
 

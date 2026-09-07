@@ -169,23 +169,24 @@ reject), and Outbox & audit. A persistent demo-grade banner is shown; the UI nev
 | micro_f1 | 1.000 |
 | micro_precision | 1.000 |
 | micro_recall | 1.000 |
+| review_flag_rate | 1.000 |
 
-_Stamps: config_hash=66da144d516d2df64719492bb3793848449f97361a96b0a639c20b9218f6ea5a · dataset_hash=241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef_
+_Stamps: config_hash=66da144d516d2df64719492bb3793848449f97361a96b0a639c20b9218f6ea5a · dataset_hash=af5a606cb7ed84d168fd88794ff4480283183a03be7f275093cad11d711befd7_
 <!-- EVAL:END -->
 
 <!-- EVAL-MEASURES:BEGIN -->
 | measure | n_test | tp | fp | fn | precision | recall | f1 |
 |---|---|---|---|---|---|---|---|
-| CBP | 43 | 2 | 0 | 0 | insufficient | insufficient | insufficient |
-| EED | 43 | 5 | 0 | 0 | 1.000 | 1.000 | 1.000 |
-| BCS | 43 | 12 | 0 | 0 | 1.000 | 1.000 | 1.000 |
-| COL | 43 | 7 | 0 | 0 | 1.000 | 1.000 | 1.000 |
-| SPC | 43 | 0 | 0 | 0 | insufficient | insufficient | insufficient |
-| SPD | 43 | 2 | 0 | 0 | insufficient | insufficient | insufficient |
+| CBP | 52 | 2 | 0 | 0 | insufficient | insufficient | insufficient |
+| EED | 52 | 5 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| BCS | 52 | 12 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| COL | 52 | 7 | 0 | 0 | 1.000 | 1.000 | 1.000 |
+| SPC | 52 | 0 | 0 | 0 | insufficient | insufficient | insufficient |
+| SPD | 52 | 2 | 0 | 0 | insufficient | insufficient | insufficient |
 
-_Source: engine-latest.json (Engine-only, test split) · outcomes_sha256=d5b788978c44 · gold_sha256=241ae473bf57_
+_Source: engine-latest.json (Engine-only, test split) · outcomes_sha256=16f0346eebd9 · gold_sha256=af5a606cb7ed_
 _Publication guard: insufficient test gold-open units for CBP, SPC, SPD (guard: n >= 5 per measure, BCS >= 3); the headline is provisional._
-_Strict variant (needs_review counts as no gap): micro_f1=1.000 · micro_precision=1.000 · micro_recall=1.000_
+_Strict variant (needs_review counts as no gap): micro_f1=1.000 · micro_precision=1.000 · micro_recall=1.000 · review_flag_rate=1.000_
 _Pipeline tier (Engine+validator): unpublishable — 52 model call(s) had no recording (fallback sentinels); engine-only numbers are shown._
 _Outreach faithfulness (LLM judge): not yet measured._
 <!-- EVAL-MEASURES:END -->

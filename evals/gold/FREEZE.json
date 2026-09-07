@@ -1,90 +1,127 @@
 {
   "as_of": "2025-12-31",
   "engine_contact_before_freeze": false,
-  "frozen_at": "2026-09-05T01:23:52+00:00",
-  "gap_cases_sha256": "241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef",
-  "git_sha": "3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f",
+  "frozen_at": "2026-09-07T23:17:18+00:00",
+  "gap_cases_sha256": "af5a606cb7ed84d168fd88794ff4480283183a03be7f275093cad11d711befd7",
+  "git_sha": "3443328a7696d64f504a3b13898ce0dafb3846a4",
   "gold_counts": {
     "dev/BCS": {
       "closed": 1,
-      "not_eligible": 12,
+      "not_eligible": 15,
       "open": 4
     },
     "dev/CBP": {
-      "closed": 6,
-      "not_eligible": 11
+      "closed": 7,
+      "escalate": 1,
+      "not_eligible": 12
     },
     "dev/COL": {
       "closed": 6,
-      "not_eligible": 8,
+      "not_eligible": 11,
       "open": 3
     },
     "dev/EED": {
       "closed": 2,
-      "not_eligible": 14,
+      "not_eligible": 17,
       "open": 1
     },
     "dev/SNS": {
-      "closed": 17
+      "closed": 18,
+      "escalate": 2
     },
     "dev/SPC": {
       "closed": 1,
-      "not_eligible": 15,
+      "not_eligible": 18,
       "open": 1
     },
     "dev/SPD": {
-      "not_eligible": 16,
+      "not_eligible": 19,
       "open": 1
     },
     "dev/TSC": {
-      "closed": 17
+      "closed": 18,
+      "escalate": 2
     },
     "test/BCS": {
       "closed": 1,
-      "not_eligible": 30,
+      "escalate": 1,
+      "not_eligible": 38,
       "open": 12
     },
     "test/CBP": {
       "closed": 17,
-      "excluded": 1,
-      "not_eligible": 23,
+      "escalate": 1,
+      "excluded": 2,
+      "not_eligible": 30,
       "open": 2
     },
     "test/COL": {
       "closed": 13,
-      "excluded": 1,
-      "not_eligible": 22,
+      "escalate": 1,
+      "excluded": 2,
+      "not_eligible": 29,
       "open": 7
     },
     "test/EED": {
       "closed": 6,
-      "not_eligible": 32,
+      "not_eligible": 41,
       "open": 5
     },
     "test/SNS": {
-      "closed": 42,
+      "closed": 44,
+      "escalate": 2,
+      "excluded": 5,
       "open": 1
     },
     "test/SPC": {
       "closed": 14,
-      "not_eligible": 29
+      "excluded": 1,
+      "not_eligible": 37
     },
     "test/SPD": {
-      "not_eligible": 41,
+      "not_eligible": 50,
       "open": 2
     },
     "test/TSC": {
-      "closed": 42,
+      "closed": 44,
+      "escalate": 2,
+      "excluded": 5,
       "open": 1
     }
   },
   "labeler": "llm-blind-claude-v1",
-  "n_patients": 60,
-  "n_rows": 480,
+  "n_patients": 72,
+  "n_rows": 576,
   "protocol": "docs/SPEC.md section 6; labels by a blind LLM labeler over value-set-agnostic worksheets",
+  "slice_n_patients": 12,
+  "slice_name": "escalation",
+  "slice_note": "slice 'escalation' selected on descriptive trigger facts (never engine verdicts) after the base slice had been scored; its patients were frozen before any engine contact with them",
+  "slice_patient_ids": [
+    "041763e0-8c8e-8303-eb95-33215f628131",
+    "31e0596e-ba9a-30a7-a7a0-81b6ca117f56",
+    "4250b90f-a3d3-57f4-4f71-236c449994d8",
+    "6e3d889d-386a-0f33-2156-05cb8938e3e1",
+    "7b0025d7-1f5b-22e6-4202-b9e23a715428",
+    "7d33cc51-a3cd-92a9-d8df-ca3c92f31709",
+    "9f8d5b91-1c76-fd0d-da90-b0489098fca0",
+    "a0548efc-9569-549b-a01d-ab8f983095b1",
+    "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7",
+    "be7a5cad-5316-ee4b-5470-4093f20ff5ad",
+    "d245882f-26cd-11c3-fa90-44da7048dfb0",
+    "ec3e67c3-185f-54fb-2dd6-408c73157431"
+  ],
+  "slices": [
+    {
+      "frozen_at": "2026-09-05T01:23:52+00:00",
+      "gap_cases_sha256": "241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef",
+      "n_patients": 60,
+      "n_rows": 480,
+      "name": "base"
+    }
+  ],
   "split_patients": {
-    "dev": 17,
-    "test": 43
+    "dev": 20,
+    "test": 52
   },
   "uncertain_rows": 0
 }

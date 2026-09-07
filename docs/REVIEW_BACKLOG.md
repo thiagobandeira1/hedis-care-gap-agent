@@ -216,3 +216,31 @@ aligned before the next freeze.
 - MY-bounded denominator/exclusion windows are as_of-correct only through mask_as_of; two engine callers skip the defensive re-mask and the P6 (`src/caregap/cli.py`)
 - Sex string normalisation differs between BCS and SPC (`src/caregap/measures/rules/bcs.py`)
 - Every escalation promotes a closed verdict to needs_review, including E1/E4/E6/E7 whose resolution cannot make it actionable (`src/caregap/measures/tri.py`)
+
+## Resolved 2026-09-05 (rule-fidelity pass + escalation slice)
+
+- C1 (gold exercises zero escalation units): resolved by the escalation slice — 12 carriers
+  (4 dementia+acute care, 3 ambiguous colon, 5 hospice-in-MY) blind-labeled, frozen as slice
+  `escalation` (FREEZE.json history), `review_flag_rate` now measured. E1/E3/E5/E6 remain
+  unrepresentable in this panel at 2025-12-31 (FEASIBILITY_escalation.md); covered by unit tests.
+- Abatement-edge semantics unified in `evidence.condition_active_in` (> window.start) and used by
+  CBP; boundary tests in every caller (C10/C13, backlog 1).
+- Pregnancy: one shared helper (pregnancy_snomed condition OR LOINC 82810-3 = 77386006) in CBP
+  (MY), SPC and SPD (MY or prior year); validator category table updated (C4/C14/C15).
+- EED: E6 code/text aligned (abatement triggers; HbA1c attached), prior-year negative answer
+  linked to the exam date (C3/C6/C16/C24).
+- Hospice episodes spanning into the MY count as hospice-in-MY (C8); engine: exclusions win over
+  the unknown-birth-date downgrade (C25); SPD ESRD/dialysis retagged demo_choice in code (C19).
+- `rules/statin.py` (public helpers shared by SPC/SPD) and `evidence.child_observations_of`
+  (CBP + screening) (C23, backlog 2/3); E2 removed from the escalation vocabulary (C22, 19).
+- Persona goldens and engine outcomes regenerated; ratchet gate passes.
+
+## Still open after that pass (small, text-level; one cheap agent)
+
+- Rule-JSON wording must match the code for: EED denominator abatement edge, CBP/SPC/SPD
+  pregnancy demo_choice text (82810-3 arm), CBP E5 text (only most-recent-date panels; defective
+  panel -> numerator unknown + E5), SPD ESRD/dialysis element retag in JSON, E4 text (two windows:
+  condition active in MY; medication in [prior MY start, as_of]), spc.json PCI/CABG rationale.
+  Edit at the source in `scripts/sync_rule_text.py`, regenerate JSON + docs/MEASURES.md.
+- Coverage-key parity test (C21): one vocabulary joinable to rule JSON element ids.
+- Verify docs/SPEC.md escalation table has no E2 reference; SPD row lists pregnancy.

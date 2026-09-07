@@ -47,8 +47,8 @@
       }
     }
   },
-  "dataset_hash": "241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef",
-  "date": "2026-09-05",
+  "dataset_hash": "af5a606cb7ed84d168fd88794ff4480283183a03be7f275093cad11d711befd7",
+  "date": "2026-09-07",
   "drafter_model": "replay",
   "engine_measures": [
     {
@@ -57,7 +57,7 @@
       "fp": 0,
       "measure": "CBP",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 2,
       "precision": 1.0,
       "recall": 1.0,
@@ -70,7 +70,7 @@
       "fp": 0,
       "measure": "EED",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 5,
       "precision": 1.0,
       "recall": 1.0,
@@ -83,7 +83,7 @@
       "fp": 0,
       "measure": "BCS",
       "min_test_open": 3,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 12,
       "precision": 1.0,
       "recall": 1.0,
@@ -96,7 +96,7 @@
       "fp": 0,
       "measure": "COL",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 7,
       "precision": 1.0,
       "recall": 1.0,
@@ -109,7 +109,7 @@
       "fp": 0,
       "measure": "SPC",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 0,
       "precision": null,
       "recall": null,
@@ -122,7 +122,7 @@
       "fp": 0,
       "measure": "SPD",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 2,
       "precision": 1.0,
       "recall": 1.0,
@@ -130,42 +130,42 @@
       "tp": 2
     }
   ],
-  "engine_outcomes_sha256": "d5b788978c44c1e849ad5afe51027fac57583df22ecb20f8810d68039855418a",
+  "engine_outcomes_sha256": "16f0346eebd9525e5bda00e82716ff658e138a8a04f428d8d458ef6498421496",
   "error_patients": [],
   "fallback_count": 52,
   "freeze": {
-    "gap_cases_sha256": "241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef",
-    "pinned_sha256": "241ae473bf579ef465aee8b1642ec566d4a32565ee733f3690d22ae1890b53ef",
+    "gap_cases_sha256": "af5a606cb7ed84d168fd88794ff4480283183a03be7f275093cad11d711befd7",
+    "pinned_sha256": "af5a606cb7ed84d168fd88794ff4480283183a03be7f275093cad11d711befd7",
     "status": "frozen"
   },
-  "git_sha": "3ddf78ab0de8f5db5181eb46488c41fcf7e9af4f",
+  "git_sha": "3443328a7696d64f504a3b13898ce0dafb3846a4",
   "gold_counts": {
     "all": {
-      "closed": 67,
-      "escalate": 0,
-      "excluded": 2,
-      "not_eligible": 253,
+      "closed": 68,
+      "escalate": 4,
+      "excluded": 5,
+      "not_eligible": 317,
       "open": 38,
-      "total": 360
+      "total": 432
     },
     "dev": {
-      "closed": 16,
-      "escalate": 0,
+      "closed": 17,
+      "escalate": 1,
       "excluded": 0,
-      "not_eligible": 76,
+      "not_eligible": 92,
       "open": 10,
-      "total": 102
+      "total": 120
     },
     "test": {
       "closed": 51,
-      "escalate": 0,
-      "excluded": 2,
-      "not_eligible": 177,
+      "escalate": 3,
+      "excluded": 5,
+      "not_eligible": 225,
       "open": 28,
-      "total": 258
+      "total": 312
     }
   },
-  "item_count": 360,
+  "item_count": 432,
   "measures": [
     {
       "f1": 1.0,
@@ -173,7 +173,7 @@
       "fp": 0,
       "measure": "CBP",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 2,
       "precision": 1.0,
       "recall": 1.0,
@@ -186,7 +186,7 @@
       "fp": 0,
       "measure": "EED",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 5,
       "precision": 1.0,
       "recall": 1.0,
@@ -199,7 +199,7 @@
       "fp": 0,
       "measure": "BCS",
       "min_test_open": 3,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 12,
       "precision": 1.0,
       "recall": 1.0,
@@ -212,7 +212,7 @@
       "fp": 0,
       "measure": "COL",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 7,
       "precision": 1.0,
       "recall": 1.0,
@@ -225,7 +225,7 @@
       "fp": 0,
       "measure": "SPC",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 0,
       "precision": null,
       "recall": null,
@@ -238,7 +238,7 @@
       "fp": 0,
       "measure": "SPD",
       "min_test_open": 5,
-      "n_test": 43,
+      "n_test": 52,
       "n_test_open": 2,
       "precision": 1.0,
       "recall": 1.0,
@@ -250,34 +250,109 @@
     "engine_only_overall": {
       "micro_f1": 1.0,
       "micro_precision": 1.0,
-      "micro_recall": 1.0
+      "micro_recall": 1.0,
+      "review_flag_rate": 1.0
     },
     "overall": {
       "micro_f1": 1.0,
       "micro_precision": 1.0,
-      "micro_recall": 1.0
+      "micro_recall": 1.0,
+      "review_flag_rate": 1.0
     },
-    "overall_dev": {},
+    "overall_dev": {
+      "review_flag_rate": 1.0
+    },
     "per_category": {
-      "BCS": {},
-      "CBP": {},
-      "COL": {},
+      "BCS": {
+        "review_flag_rate": 1.0
+      },
+      "CBP": {
+        "review_flag_rate": 1.0
+      },
+      "COL": {
+        "review_flag_rate": 1.0
+      },
       "EED": {},
       "SPC": {},
       "SPD": {}
     },
     "per_split": {
-      "dev": {},
-      "test": {}
+      "dev": {
+        "review_flag_rate": 1.0
+      },
+      "test": {
+        "review_flag_rate": 1.0
+      }
     },
     "strict_overall": {
       "micro_f1": 1.0,
       "micro_precision": 1.0,
-      "micro_recall": 1.0
+      "micro_recall": 1.0,
+      "review_flag_rate": 1.0
     }
   },
   "note": "metrics.overall is the test split; tuning uses dev only",
   "per_item": [
+    {
+      "category": "BCS",
+      "counts": null,
+      "item_id": "041763e0-8c8e-8303-eb95-33215f628131:BCS",
+      "metrics": {
+        "review_flag_rate": 1.0
+      },
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": null,
+      "item_id": "041763e0-8c8e-8303-eb95-33215f628131:CBP",
+      "metrics": {
+        "review_flag_rate": 1.0
+      },
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": null,
+      "item_id": "041763e0-8c8e-8303-eb95-33215f628131:COL",
+      "metrics": {
+        "review_flag_rate": 1.0
+      },
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "041763e0-8c8e-8303-eb95-33215f628131:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "041763e0-8c8e-8303-eb95-33215f628131:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "041763e0-8c8e-8303-eb95-33215f628131:SPD",
+      "metrics": {},
+      "split": "test"
+    },
     {
       "category": "BCS",
       "counts": {
@@ -681,6 +756,72 @@
         "fp": 0,
         "tp": 0
       },
+      "item_id": "31e0596e-ba9a-30a7-a7a0-81b6ca117f56:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "31e0596e-ba9a-30a7-a7a0-81b6ca117f56:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "31e0596e-ba9a-30a7-a7a0-81b6ca117f56:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "31e0596e-ba9a-30a7-a7a0-81b6ca117f56:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "31e0596e-ba9a-30a7-a7a0-81b6ca117f56:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "31e0596e-ba9a-30a7-a7a0-81b6ca117f56:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
       "item_id": "327361f1-1a29-5535-21b5-228ba0a450b1:BCS",
       "metrics": {},
       "split": "test"
@@ -1067,6 +1208,72 @@
         "tp": 0
       },
       "item_id": "41641e8b-fd13-2490-324d-ca84850a3b9c:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4250b90f-a3d3-57f4-4f71-236c449994d8:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4250b90f-a3d3-57f4-4f71-236c449994d8:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4250b90f-a3d3-57f4-4f71-236c449994d8:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4250b90f-a3d3-57f4-4f71-236c449994d8:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4250b90f-a3d3-57f4-4f71-236c449994d8:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "4250b90f-a3d3-57f4-4f71-236c449994d8:SPD",
       "metrics": {},
       "split": "test"
     },
@@ -1933,6 +2140,70 @@
       "counts": {
         "fn": 0,
         "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6e3d889d-386a-0f33-2156-05cb8938e3e1:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": null,
+      "item_id": "6e3d889d-386a-0f33-2156-05cb8938e3e1:CBP",
+      "metrics": {
+        "review_flag_rate": 1.0
+      },
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6e3d889d-386a-0f33-2156-05cb8938e3e1:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6e3d889d-386a-0f33-2156-05cb8938e3e1:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6e3d889d-386a-0f33-2156-05cb8938e3e1:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "6e3d889d-386a-0f33-2156-05cb8938e3e1:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
         "tp": 1
       },
       "item_id": "72550061-64d4-edf7-2303-0f36da08f1ba:BCS",
@@ -2123,6 +2394,138 @@
         "tp": 0
       },
       "item_id": "78d1568b-4890-d6ef-3fed-c521975e4b81:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7b0025d7-1f5b-22e6-4202-b9e23a715428:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7b0025d7-1f5b-22e6-4202-b9e23a715428:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7b0025d7-1f5b-22e6-4202-b9e23a715428:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7b0025d7-1f5b-22e6-4202-b9e23a715428:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7b0025d7-1f5b-22e6-4202-b9e23a715428:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7b0025d7-1f5b-22e6-4202-b9e23a715428:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7d33cc51-a3cd-92a9-d8df-ca3c92f31709:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7d33cc51-a3cd-92a9-d8df-ca3c92f31709:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7d33cc51-a3cd-92a9-d8df-ca3c92f31709:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7d33cc51-a3cd-92a9-d8df-ca3c92f31709:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7d33cc51-a3cd-92a9-d8df-ca3c92f31709:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "7d33cc51-a3cd-92a9-d8df-ca3c92f31709:SPD",
       "metrics": {},
       "split": "test"
     },
@@ -2595,6 +2998,138 @@
         "fp": 0,
         "tp": 0
       },
+      "item_id": "9f8d5b91-1c76-fd0d-da90-b0489098fca0:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "9f8d5b91-1c76-fd0d-da90-b0489098fca0:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "9f8d5b91-1c76-fd0d-da90-b0489098fca0:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "9f8d5b91-1c76-fd0d-da90-b0489098fca0:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "9f8d5b91-1c76-fd0d-da90-b0489098fca0:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "9f8d5b91-1c76-fd0d-da90-b0489098fca0:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a0548efc-9569-549b-a01d-ab8f983095b1:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a0548efc-9569-549b-a01d-ab8f983095b1:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a0548efc-9569-549b-a01d-ab8f983095b1:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a0548efc-9569-549b-a01d-ab8f983095b1:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a0548efc-9569-549b-a01d-ab8f983095b1:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "a0548efc-9569-549b-a01d-ab8f983095b1:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
       "item_id": "a1fa053a-0ec1-711c-f34c-c76d84214660:BCS",
       "metrics": {},
       "split": "dev"
@@ -3057,6 +3592,138 @@
         "fp": 0,
         "tp": 0
       },
+      "item_id": "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "b7e8cab2-ad4d-446b-51d1-db3ca854c0c7:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "be7a5cad-5316-ee4b-5470-4093f20ff5ad:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "be7a5cad-5316-ee4b-5470-4093f20ff5ad:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "be7a5cad-5316-ee4b-5470-4093f20ff5ad:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "be7a5cad-5316-ee4b-5470-4093f20ff5ad:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "be7a5cad-5316-ee4b-5470-4093f20ff5ad:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "be7a5cad-5316-ee4b-5470-4093f20ff5ad:SPD",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
       "item_id": "bf2939a8-f7de-a22a-70ee-47791c9fbb83:BCS",
       "metrics": {},
       "split": "test"
@@ -3445,6 +4112,72 @@
       "item_id": "cca167ac-254f-2751-1ce2-d0e54375265b:SPD",
       "metrics": {},
       "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d245882f-26cd-11c3-fa90-44da7048dfb0:BCS",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d245882f-26cd-11c3-fa90-44da7048dfb0:CBP",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d245882f-26cd-11c3-fa90-44da7048dfb0:COL",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d245882f-26cd-11c3-fa90-44da7048dfb0:EED",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d245882f-26cd-11c3-fa90-44da7048dfb0:SPC",
+      "metrics": {},
+      "split": "test"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "d245882f-26cd-11c3-fa90-44da7048dfb0:SPD",
+      "metrics": {},
+      "split": "test"
     },
     {
       "category": "BCS",
@@ -4113,6 +4846,72 @@
         "fp": 0,
         "tp": 0
       },
+      "item_id": "ec3e67c3-185f-54fb-2dd6-408c73157431:BCS",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "CBP",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ec3e67c3-185f-54fb-2dd6-408c73157431:CBP",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "COL",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ec3e67c3-185f-54fb-2dd6-408c73157431:COL",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "EED",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ec3e67c3-185f-54fb-2dd6-408c73157431:EED",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPC",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ec3e67c3-185f-54fb-2dd6-408c73157431:SPC",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "SPD",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
+      "item_id": "ec3e67c3-185f-54fb-2dd6-408c73157431:SPD",
+      "metrics": {},
+      "split": "dev"
+    },
+    {
+      "category": "BCS",
+      "counts": {
+        "fn": 0,
+        "fp": 0,
+        "tp": 0
+      },
       "item_id": "f3c2ee41-c0f8-c199-494d-0be9f21fc994:BCS",
       "metrics": {},
       "split": "dev"
@@ -4260,19 +5059,23 @@
   "recorded_this_run": false,
   "screening_counts": {
     "SNS": {
-      "closed": 59,
-      "gap_open": 1
+      "closed": 62,
+      "excluded": 5,
+      "gap_open": 1,
+      "needs_review": 4
     },
     "TSC": {
-      "closed": 59,
-      "gap_open": 1
+      "closed": 62,
+      "excluded": 5,
+      "gap_open": 1,
+      "needs_review": 4
     }
   },
   "sha_drift_count": 0,
   "snapshot": {
     "feature_version": "v1",
-    "generated_from_sha": "c373039e09e1c53bae491f11db0789645212c23f",
-    "patient_count": "60",
+    "generated_from_sha": "3af09fcf2d282a1991caf89c61b2721939877a4f",
+    "patient_count": "72",
     "service_version": "0.1.0",
     "valuesets_version": "2026.08"
   },
