@@ -9,6 +9,7 @@ the CLI resolves at call time so a monkeypatched attribute is what it calls).
 """
 
 import json
+import re
 import subprocess
 import sys
 from collections.abc import Callable
@@ -44,10 +45,18 @@ COMMANDS = ("bootstrap", "panel", "run", "serve", "ui", "eval", "report")
 CLINIC_NAME = "Demo Primary Care"
 CLINIC_PHONE = "555-0100"
 
-runner = CliRunner()
+# Deterministic, colour-free output: GitHub runners export FORCE_COLOR, and rich then splits
+# option names across escape codes (CI failed on `"--tier" in result.output`).
+runner = CliRunner(env={"NO_COLOR": "1", "FORCE_COLOR": None, "TERM": "dumb", "COLUMNS": "200"})
+_ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
 
 # --- helpers ------------------------------------------------------------------------------
+
+
+def plain(result: Result) -> str:
+    """``result.output`` with any ANSI escape sequences removed."""
+    return _ANSI.sub("", result.output)
 
 
 def invoke(*args: str) -> Result:
@@ -492,7 +501,7 @@ def test_eval_delegates_to_evalrun_with_the_pinned_kwargs(
 def test_eval_requires_a_tier() -> None:
     result = invoke("eval")
     assert result.exit_code == 2
-    assert "--tier" in result.output
+    assert "--tier" in plain(result)
 
 
 def test_eval_rejects_an_unknown_tier() -> None:
