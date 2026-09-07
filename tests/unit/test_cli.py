@@ -417,6 +417,29 @@ def test_ui_launches_streamlit_as_a_subprocess(monkeypatch: pytest.MonkeyPatch) 
     argv = calls[0]
     assert argv[:4] == [sys.executable, "-m", "streamlit", "run"]
     assert Path(argv[4]) == REPO_ROOT / "src" / "caregap" / "ui" / "app.py"
+    # V1: the console has no authentication, so it binds loopback only by default.
+    options = dict(zip(argv[5::2], argv[6::2], strict=True))
+    assert options == {
+        "--server.address": "127.0.0.1",
+        "--server.headless": "true",
+        "--browser.gatherUsageStats": "false",
+    }
+    assert "warning" not in result.output
+
+
+def test_ui_host_is_an_explicit_opt_in_with_a_warning(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[list[str]] = []
+
+    def fake_run(argv: list[str], **kwargs: Any) -> subprocess.CompletedProcess[bytes]:
+        calls.append(argv)
+        return subprocess.CompletedProcess(argv, 0)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    result = invoke("ui", "--host", "0.0.0.0")
+    assert result.exit_code == 0
+    assert calls[0][calls[0].index("--server.address") + 1] == "0.0.0.0"
+    assert "warning: binding the approval console to 0.0.0.0" in result.output
+    assert "no authentication" in result.output
 
 
 # --- eval / report ------------------------------------------------------------------------

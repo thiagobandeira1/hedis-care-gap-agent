@@ -4,6 +4,7 @@ Per-role injection keeps CI keyless (fakes), evals reproducible (replay), and pr
 explicit (anthropic, key from ``.env`` only).
 """
 
+import json
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,12 +16,22 @@ from caregap.config import ConfigError, Settings
 from caregap.fakes import RecordingChatModel, ReplayChatModel, scripted_model
 
 #: Deterministic replay fallbacks per role (fail closed, never fabricate a decision).
-VALIDATOR_FALLBACK = (
-    '{"measure_id": "CBP", "decision": "needs_human", "exclusion_category": null, '
+VALIDATOR_FALLBACK_TEMPLATE = (
+    '{{"measure_id": {measure_id}, "decision": "needs_human", "exclusion_category": null, '
     '"evidence_ids": [], "rule_citation": "recording_missing", "confidence": "low", '
-    '"rationale": "No recording available for this case; routed to human review."}'
+    '"rationale": "No recording available for this case; routed to human review."}}'
 )
 DRAFTER_FALLBACK = "{}"  # parse failure -> TemplateDrafter takes over (draft_error set)
+
+
+def validator_fallback(case_key: str | None) -> str:
+    """The validator's fail-closed sentinel for the measure named in the case key
+    (``validator:<patient>:<measure>:<as_of>:<revision>``). A key naming no measure renders
+    ``measure_id: null``, which the schema rejects: the call then fails closed as
+    ``validator_failed`` instead of addressing some other measure."""
+    parts = (case_key or "").split(":")
+    measure = parts[2] if len(parts) >= 3 and parts[0] == "validator" and parts[2] else None
+    return VALIDATOR_FALLBACK_TEMPLATE.format(measure_id=json.dumps(measure))
 
 
 @dataclass(frozen=True)
@@ -94,7 +105,7 @@ def replay_bundle(
         validator=ReplayChatModel(
             recordings_path=recordings_dir / "validator.jsonl",
             mode=mode,
-            fallback_text=VALIDATOR_FALLBACK,
+            fallback_factory=validator_fallback,
         ),
         drafter=ReplayChatModel(
             recordings_path=recordings_dir / "drafter.jsonl",

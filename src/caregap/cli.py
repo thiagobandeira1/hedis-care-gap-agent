@@ -43,6 +43,10 @@ EXIT_OK = 0
 EXIT_FAILED = 1
 EXIT_USAGE = 2
 
+#: ``caregap ui`` binds here unless ``--host`` opts in: the console has no authentication.
+LOOPBACK_HOST = "127.0.0.1"
+LOOPBACK_HOSTS = frozenset({LOOPBACK_HOST, "localhost", "::1"})
+
 #: Engine vocabulary in table order, with the short column labels the panel prints.
 VERDICT_COLUMNS: tuple[tuple[str, str], ...] = (
     ("gap_open", "open"),
@@ -329,10 +333,38 @@ def serve(
 
 
 @app.command()
-def ui() -> None:
+def ui(
+    host: Annotated[
+        str | None,
+        typer.Option(
+            "--host",
+            help="Bind host (default: 127.0.0.1; the console has no authentication, so a "
+            "non-loopback host is an explicit opt-in).",
+        ),
+    ] = None,
+) -> None:
     """Launch the Streamlit front end (a subprocess; it only talks to the API)."""
     app_path = Path(caregap.__file__).resolve().parent / "ui" / "app.py"
-    argv = [sys.executable, "-m", "streamlit", "run", str(app_path)]
+    address = host if host is not None else LOOPBACK_HOST
+    if address not in LOOPBACK_HOSTS:
+        typer.echo(
+            f"warning: binding the approval console to {address}: it has no authentication; "
+            "anyone who can reach that address can approve outreach",
+            err=True,
+        )
+    argv = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(app_path),
+        "--server.address",
+        address,
+        "--server.headless",
+        "true",
+        "--browser.gatherUsageStats",
+        "false",
+    ]
     completed = subprocess.run(argv, check=False)  # noqa: S603 - fixed argv, no shell
     raise typer.Exit(code=completed.returncode)
 

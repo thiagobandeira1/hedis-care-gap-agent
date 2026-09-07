@@ -71,7 +71,16 @@ def _window(start: date, end: date) -> str:
 
 def verify_verdict(verdict: ValidationVerdict, packet: EvidencePacket) -> ValidationVerdict:
     """Pure code. Returns a copy with ``verified`` and ``verification_note`` set; any
-    unverifiable decision becomes ``needs_human`` with ``verified=False``."""
+    unverifiable decision becomes ``needs_human`` with ``verified=False``.
+
+    The packet's ``measure_id`` is authoritative: the copy always carries the measure the
+    packet was built for, so a model (or replay sentinel) naming another measure can only
+    ever affect this candidate — the mismatch itself is recorded in ``verification_note``."""
+    checked = _verify(verdict, packet)
+    return checked.model_copy(update={"measure_id": packet.measure_id})
+
+
+def _verify(verdict: ValidationVerdict, packet: EvidencePacket) -> ValidationVerdict:
     by_id = {row.event_id: row for row in packet.evidence}
     problems: list[str] = []
     notes: list[str] = []

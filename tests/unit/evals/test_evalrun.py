@@ -57,9 +57,12 @@ def settings(tmp_path: Path) -> Settings:
     return snapshot_settings(tmp_path, "eval")
 
 
-def with_gold(root: Path) -> EvalPaths:
+def with_gold(root: Path, *, frozen: bool = True) -> EvalPaths:
+    """The committed-persona gold set, frozen by default (every tier refuses unfrozen gold)."""
     paths = EvalPaths(root)
     write_gold(paths.gold_cases, (gold_row(c) for c in committed_gold()))
+    if frozen:
+        freeze(paths)
     return paths
 
 
@@ -162,7 +165,7 @@ def test_engine_tier_regen_bytediff_gate_and_baseline(
         "SNS": {"closed": 4, "not_eligible": 1},
         "TSC": {"closed": 4, "not_eligible": 1},
     }
-    assert payload["freeze"]["status"] == "not_frozen"
+    assert payload["freeze"]["status"] == "frozen"
     assert payload["snapshot"]["patient_count"] == "5"
     assert payload["dataset_hash"] == freeze_hash(paths.gold_cases)
     assert payload["error_patients"] == []
@@ -203,14 +206,92 @@ def test_engine_tier_regen_bytediff_gate_and_baseline(
     assert "drifted" in err and "~ " in err and "--regen" in err
 
 
+def test_engine_tier_enforces_the_freeze_missing_mismatch_and_ok(
+    evals_dir: Path, settings: Settings, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """V2: the headline tier scores frozen gold only — missing FREEZE.json exits 2, an edited
+    gold set exits 1 (before any engine contact), and the artifact stamps the freeze status."""
+    paths = with_snapshots(with_gold(evals_dir, frozen=False))
+    assert run("engine", evals_dir, settings, regen=True) == EXIT_MISSING
+    assert "not frozen" in capsys.readouterr().err
+    assert not paths.artifact("engine").exists() and not paths.engine_outcomes.exists()
+
+    freeze(paths)
+    assert run("engine", evals_dir, settings, regen=True) == EXIT_OK
+    capsys.readouterr()
+    assert artifact(paths, "engine")["freeze"]["status"] == "frozen"
+
+    rows = [gold_row(c) for c in committed_gold()]
+    rows[0]["rationale"] = "edited after the freeze"
+    write_gold(paths.gold_cases, rows)
+    before = paths.artifact("engine").read_bytes()
+    assert run("engine", evals_dir, settings) == EXIT_FAIL
+    assert "changed after freeze" in capsys.readouterr().err
+    assert paths.artifact("engine").read_bytes() == before, "no artifact from edited gold"
+
+
+def test_report_refuses_an_artifact_not_scored_on_frozen_gold(
+    tmp_path: Path, evals_dir: Path, settings: Settings, capsys: pytest.CaptureFixture[str]
+) -> None:
+    paths = with_snapshots(with_gold(evals_dir))
+    assert run("engine", evals_dir, settings, regen=True) == EXIT_OK
+    capsys.readouterr()
+    readme = tmp_path / "README.md"
+    readme.write_text(README_STUB, encoding="utf-8")
+    payload = artifact(paths, "engine")
+    payload["freeze"]["status"] = "mismatch"
+    paths.artifact("engine").write_text(json.dumps(payload), encoding="utf-8")
+    assert sync_readme_cmd(readme=readme, artifacts_dir=paths.artifacts) == EXIT_FAIL
+    assert "freeze status 'mismatch'" in capsys.readouterr().err
+    assert readme.read_text(encoding="utf-8") == README_STUB, "nothing published"
+    assert sync_readme_cmd(check=True, readme=readme, artifacts_dir=paths.artifacts) == EXIT_FAIL
+
+
+def test_eval_tiers_never_open_the_live_ledger(
+    tmp_path: Path, evals_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """V3: the configured ledger / checkpoint files stay absent, the tier runs on an in-memory
+    store under a namespaced ``eval-<tier>-<gold sha>`` run id, and ``mark_superseded`` never
+    fires against the live path."""
+    from caregap.graph import runstore as runstore_module
+    from caregap.runtime import PanelRunStore
+
+    live = tmp_path / "live" / "caregap.sqlite"
+    live_ckpt = tmp_path / "live" / "checkpoints.sqlite"
+    settings = snapshot_settings(tmp_path, "live", runstore_path=live, checkpoint_path=live_ckpt)
+    paths = with_snapshots(with_gold(evals_dir))
+    opened: list[str] = []
+    superseded: list[tuple[str, str]] = []
+    original_init = PanelRunStore.__init__
+    original_supersede = runstore_module.RunStore.mark_superseded
+
+    def spy_init(self: PanelRunStore, path: Any = runstore_module.MEMORY, **kw: Any) -> None:
+        opened.append(str(path))
+        original_init(self, path, **kw)
+
+    def spy_supersede(self: runstore_module.RunStore, patient_id: str, newer_run_id: str) -> int:
+        superseded.append((self.path, newer_run_id))
+        return original_supersede(self, patient_id, newer_run_id)
+
+    monkeypatch.setattr(PanelRunStore, "__init__", spy_init)
+    monkeypatch.setattr(runstore_module.RunStore, "mark_superseded", spy_supersede)
+    assert run("engine", evals_dir, settings, regen=True) == EXIT_OK
+    assert not live.exists() and not live_ckpt.exists()
+    assert opened == [runstore_module.MEMORY]
+    assert all(path == runstore_module.MEMORY for path, _ in superseded)
+    expected_run_id = f"eval-engine-{freeze_hash(paths.gold_cases)[:8]}"
+    assert all(run_id == expected_run_id for _, run_id in superseded)
+    assert superseded, "finalize supersedes on the eval's own in-memory ledger only"
+
+
 # --- pipeline tier ----------------------------------------------------------------------------
 
 
 def test_pipeline_tier_refuses_unfrozen_gold_then_replays_with_fallbacks(
     evals_dir: Path, settings: Settings, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    paths = with_snapshots(with_gold(evals_dir))
-    assert run("pipeline", evals_dir, settings) == EXIT_FAIL
+    paths = with_snapshots(with_gold(evals_dir, frozen=False))
+    assert run("pipeline", evals_dir, settings) == EXIT_MISSING
     assert "not frozen" in capsys.readouterr().err
 
     freeze(paths)
@@ -281,8 +362,8 @@ def judge_record(patient_id: str, response: str) -> JudgeRecord:
 def test_outreach_tier_reparses_recordings_and_flags_untrusted_judges(
     evals_dir: Path, settings: Settings, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    paths = with_snapshots(with_gold(evals_dir))
-    assert run("outreach", evals_dir, settings) == EXIT_FAIL
+    paths = with_snapshots(with_gold(evals_dir, frozen=False))
+    assert run("outreach", evals_dir, settings) == EXIT_MISSING
     assert "not frozen" in capsys.readouterr().err
     freeze(paths)
     assert run("outreach", evals_dir, settings) == EXIT_MISSING

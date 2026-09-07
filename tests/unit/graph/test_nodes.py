@@ -430,6 +430,29 @@ def test_validate_gaps_verified_exclude_removes_the_candidate() -> None:
     assert (outcome.status, outcome.actionable) == ("no_action", False)
 
 
+def test_validate_gaps_wrong_measure_id_cannot_touch_another_measure() -> None:
+    """V4: the packet's measure is authoritative — a validator answering for EED while the
+    packet is CBP yields a CBP needs_review verdict; EED keeps its engine verdict."""
+    script = verdict_json("exclude", category="esrd", evidence_ids=["c2"], measure_id="EED")
+    deps = deps_for(FakeP6(esrd_unknown_birth_record()), validator=[script])
+    state = loaded(deps, opts())
+    engine = {e.measure_id: e.verdict for e in state["evaluations"]}
+    assert engine["CBP"] == "needs_review" and "EED" in engine
+    state = apply(state, nodes.validate_gaps(deps)(state))
+    (verdict,) = state["verdicts"]
+    assert (verdict.measure_id, verdict.decision, verdict.verified) == (
+        "CBP",
+        "needs_human",
+        False,
+    )
+    assert verdict.verification_note is not None
+    assert "measure_id EED does not match packet CBP" in verdict.verification_note
+    state = apply(state, nodes.finalize(deps)(state))
+    outcome = state["outcome"]
+    assert outcome.final_statuses == {**engine, "CBP": "needs_review"}
+    assert outcome.final_statuses["EED"] == engine["EED"]
+
+
 def test_validate_gaps_unverifiable_exclude_becomes_a_review_item() -> None:
     script = verdict_json("exclude", category="frailty", evidence_ids=["c2"])
     deps = deps_for(FakeP6(esrd_unknown_birth_record()), validator=[script])

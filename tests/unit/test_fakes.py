@@ -103,6 +103,36 @@ def test_replay_fallback_returns_sentinel_and_counts(tmp_path: Path) -> None:
     assert model.sha_drift_count == 0
 
 
+def test_replay_fallback_factory_renders_the_case_measure(tmp_path: Path) -> None:
+    """V5: the validator sentinel names the measure in the case key, never a hard-coded CBP."""
+    from caregap.agents.schemas import ValidationVerdict
+    from caregap.llm import replay_bundle, validator_fallback
+
+    bundle = replay_bundle(tmp_path / "recorded")
+    text = bundle.validator.invoke(prompt(case_key="validator:p1:EED:2025-12-31:0")).content
+    assert isinstance(text, str)
+    verdict = ValidationVerdict.model_validate_json(text)
+    assert (verdict.measure_id, verdict.decision, verdict.confidence) == (
+        "EED",
+        "needs_human",
+        "low",
+    )
+    assert "CBP" not in text
+    assert bundle.fallback_count() == 1
+    # No usable case key: the sentinel fails closed (schema rejects it) instead of naming CBP.
+    assert json.loads(validator_fallback(None))["measure_id"] is None
+    assert json.loads(validator_fallback("drafter:p1:2025-12-31:0"))["measure_id"] is None
+    assert '"measure_id": "CBP"' in validator_fallback("validator:p1:CBP:2025-12-31:0")
+    # ``fallback_factory`` wins over ``fallback_text``; the plain sentinel still works alone.
+    model = ReplayChatModel(
+        recordings_path=tmp_path / "missing.jsonl",
+        fallback_text="{}",
+        fallback_factory=lambda key: f'{{"key": {json.dumps(key)}}}',
+    )
+    assert model.invoke(prompt(case_key="k")).content == '{"key": "k"}'
+    assert model.invoke(prompt(case_key=None)).content == '{"key": null}'
+
+
 def test_replay_default_mode_is_fallback_with_empty_object_sentinel(tmp_path: Path) -> None:
     model = ReplayChatModel(recordings_path=tmp_path / "missing.jsonl")
     assert model.mode == "fallback"

@@ -6,7 +6,7 @@ counts it, so published numbers can never quietly include fabricated model outpu
 """
 
 import json
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from pathlib import Path
 from typing import Any, Literal
 
@@ -45,6 +45,9 @@ class ReplayChatModel(BaseChatModel):
     recordings_path: Path
     mode: Literal["strict", "fallback"] = "fallback"
     fallback_text: str = "{}"
+    #: Renders the fallback from the case key (``None`` when the prompt carries none); wins
+    #: over ``fallback_text`` so a sentinel can name the case's own measure.
+    fallback_factory: Callable[[str | None], str] | None = None
     fallback_count: int = 0
     sha_drift_count: int = 0
     _index: dict[str, dict[str, Any]] = PrivateAttr(default_factory=dict)
@@ -73,7 +76,11 @@ class ReplayChatModel(BaseChatModel):
             if self.mode == "strict":
                 raise KeyError(f"no recording for case_key {case_key!r}")
             self.fallback_count += 1
-            text = self.fallback_text
+            text = (
+                self.fallback_factory(case_key)
+                if self.fallback_factory is not None
+                else self.fallback_text
+            )
         else:
             if prompt_sha and row.get("prompt_sha") and row["prompt_sha"] != prompt_sha:
                 if self.mode == "strict":

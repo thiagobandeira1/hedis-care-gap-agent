@@ -86,6 +86,7 @@ from caregap.evals.rubrics import (
 from caregap.evals.scoring import Scorecard, score
 from caregap.fakes import ReplayChatModel
 from caregap.graph.build import checkpoint_serializer
+from caregap.graph.runstore import MEMORY as RUNSTORE_MEMORY
 from caregap.graph.state import thread_id
 from caregap.llm import ModelBundle, anthropic_bundle, replay_bundle
 from caregap.measures.ids import ALL_MEASURES, CORE_MEASURES, SCREENING_MEASURES
@@ -111,10 +112,6 @@ EVAL_PLACEHOLDER = (
 )
 MEASURES_PLACEHOLDER = f"_Per-measure counts: {NOT_MEASURED}._"
 UNTRUSTED_BELOW = 0.80
-
-ENGINE_RUN_ID = "eval-engine"
-PIPELINE_RUN_ID = "eval-pipeline"
-OUTREACH_RUN_ID = "eval-outreach"
 
 Artifact = dict[str, object]
 
@@ -199,6 +196,9 @@ def _memory_checkpointer() -> MemorySaver:
 def _eval_settings(
     settings: Settings | None, paths: EvalPaths, *, models: Literal["fake", "replay", "anthropic"]
 ) -> Settings:
+    """Eval runs never touch the live ledger / checkpoints (``data/*.sqlite``): the ledger is
+    in-memory and every tier injects ``_memory_checkpointer()``, so an eval can neither
+    supersede a real pending approval nor leave rows behind for the API and UI."""
     base = settings if settings is not None else Settings()
     return base.model_copy(
         update={
@@ -206,8 +206,16 @@ def _eval_settings(
             "snapshot_dir": paths.snapshots,
             "models": models,
             "recordings_dir": paths.recorded,
+            "runstore_path": Path(RUNSTORE_MEMORY),
+            "checkpoint_path": Path(RUNSTORE_MEMORY),
         }
     )
+
+
+def _eval_run_id(tier: Tier, paths: EvalPaths) -> str:
+    """``eval-<tier>-<gold sha[:8]>``: namespaced so an eval run can never collide with a
+    real ``run_*`` id even if the two stores were ever shared."""
+    return f"eval-{tier}-{freeze_hash(paths.gold_cases)[:8]}"
 
 
 def _load_gold(paths: EvalPaths) -> list[GoldCase]:
@@ -278,13 +286,25 @@ def _freeze_block(paths: EvalPaths) -> dict[str, object]:
 
 
 def _require_frozen(paths: EvalPaths, tier: str) -> None:
+    """Every tier scores frozen gold only: exit 2 when ``FREEZE.json`` is missing (something
+    required is absent), exit 1 when the gold bytes no longer match the pinned hash."""
     refusal = freeze_status(paths.gold_cases, paths.freeze)
     if refusal is not None:
+        code = EXIT_MISSING if read_frozen_hash(paths.freeze) is None else EXIT_FAIL
         raise EvalExit(
-            EXIT_FAIL,
+            code,
             f"{refusal}; the {tier} tier scores only frozen gold (SPEC section 6: freeze + "
             "hash before engine contact)",
         )
+
+
+def _unfrozen(artifact: Mapping[str, object] | None) -> str | None:
+    """The artifact's freeze status when it is anything but ``frozen`` (``None`` otherwise)."""
+    if artifact is None:
+        return None
+    freeze = artifact.get("freeze")
+    status = freeze.get("status") if isinstance(freeze, Mapping) else None
+    return None if status == "frozen" else str(status)
 
 
 def _stamp(
@@ -355,12 +375,13 @@ def _sha_drift(bundle: ModelBundle) -> int:
 def _run_engine_tier(
     paths: EvalPaths, settings: Settings | None, gold: Sequence[GoldCase], *, regen: bool
 ) -> Artifact:
+    _require_frozen(paths, "engine")
     snapshot = _snapshot_stamp(paths)
     runtime = _build_runtime(
         _eval_settings(settings, paths, models="fake"), checkpointer=_memory_checkpointer()
     )
     try:
-        rows = run_tier("engine", gold, runtime=runtime, run_id=ENGINE_RUN_ID)
+        rows = run_tier("engine", gold, runtime=runtime, run_id=_eval_run_id("engine", paths))
     finally:
         runtime.close()
     fresh = render_outcomes(rows)
@@ -430,7 +451,7 @@ def _run_pipeline_tier(
     bundle = _pipeline_bundle(paths, eval_settings, record=record)
     runtime = _build_runtime(eval_settings, models=bundle, checkpointer=_memory_checkpointer())
     try:
-        rows = run_tier("pipeline", gold, runtime=runtime, run_id=PIPELINE_RUN_ID)
+        rows = run_tier("pipeline", gold, runtime=runtime, run_id=_eval_run_id("pipeline", paths))
     finally:
         runtime.close()
     fallback_count = bundle.fallback_count()
@@ -540,7 +561,7 @@ def _run_outreach_tier(
             eval_settings, models=replay_bundle(paths.recorded), checkpointer=_memory_checkpointer()
         )
         try:
-            cases = _outreach_cases(gold, runtime, run_id=OUTREACH_RUN_ID)
+            cases = _outreach_cases(gold, runtime, run_id=_eval_run_id("outreach", paths))
         finally:
             runtime.close()
         records = judge_cases(cases, judge_model, judge_model_id=eval_settings.judge_model)
@@ -812,6 +833,16 @@ def sync_readme_cmd(
     pipeline = _read_artifact(artifacts / "pipeline-latest.json")
     outreach = _read_artifact(artifacts / "outreach-latest.json")
     primary = pipeline if pipeline is not None and pipeline.get("publishable") else engine
+    for name, payload in (("engine", engine), ("pipeline", pipeline), ("outreach", outreach)):
+        status = _unfrozen(payload)
+        if status is not None:
+            print(
+                f"caregap report: {artifacts / f'{name}-latest.json'} was scored on gold with "
+                f"freeze status {status!r}; only artifacts scored on frozen gold are published "
+                f"(freeze the gold set, then re-run `caregap eval --tier {name}`)",
+                file=sys.stderr,
+            )
+            return EXIT_FAIL
     try:
         if primary is None:
             return _sync_placeholders(readme, artifacts, check=check)
