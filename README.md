@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/thiagobandeira1/hedis-care-gap-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/thiagobandeira1/hedis-care-gap-agent/actions/workflows/ci.yml) ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)
 
+![Demo](docs/demo.gif)
+
+The 90-second storyboard above is captured by `docs/make_gif.py` from the live console with `CAREGAP_MODELS=fake`; every verdict shown is the committed persona golden under fake models, on synthetic Synthea personas only.
+
 LangGraph care-gap closure over synthetic (Synthea) patients. A deterministic, HEDIS-aligned
 measure engine decides denominator, numerator, coded exclusions, escalation flags, verdict and
 priority for eight measures; an LLM validator acts only on escalated candidates and only in ways

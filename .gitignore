@@ -66,3 +66,6 @@ Thumbs.db
 !evals/**/*.json.gz
 # Blind worksheets are regenerated from the committed snapshots: python scripts/worksheet.py --snapshots evals/gold/snapshots --out evals/gold/worksheets
 evals/gold/worksheets/
+
+# ---- Demo GIF working frames (docs/demo.gif itself is committed; regenerate with docs/make_gif.py) ----
+docs/demo/
