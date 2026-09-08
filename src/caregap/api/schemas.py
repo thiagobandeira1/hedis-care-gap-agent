@@ -4,7 +4,7 @@ are the envelopes around them. No patient name, address or demographic beyond
 birth date / sex / deceased ever appears (P6 strips the rest at the boundary)."""
 
 from datetime import date
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -104,9 +104,13 @@ class PatientGapsResponse(_Body):
 # --- runs -----------------------------------------------------------------------------------
 
 
+#: One path segment, bounded: patient ids reach P6 URLs and snapshot paths verbatim (V17).
+PatientId = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")]
+
+
 class RunRequest(_Body):
     as_of: date
-    patient_ids: list[str] = Field(min_length=1)
+    patient_ids: list[PatientId] = Field(min_length=1)
     options: RunOptions = RunOptions()
 
 

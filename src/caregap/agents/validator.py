@@ -85,9 +85,12 @@ def _verify(verdict: ValidationVerdict, packet: EvidencePacket) -> ValidationVer
     problems: list[str] = []
     notes: list[str] = []
 
+    # V8: model-authored strings (ids, categories, citations) never enter the note verbatim —
+    # the note reaches the drafter packet and the provider note. The raw fields stay on the
+    # stored verdict; only the count / the packet's own vocabulary is echoed.
     unresolved = [event_id for event_id in verdict.evidence_ids if event_id not in by_id]
     if unresolved:
-        problems.append("unresolved evidence ids: " + ", ".join(unresolved))
+        problems.append(f"{len(unresolved)} unresolved evidence id(s)")
     if verdict.measure_id != packet.measure_id:
         problems.append(
             f"measure_id {verdict.measure_id} does not match packet {packet.measure_id}"
@@ -121,19 +124,19 @@ def _verify(verdict: ValidationVerdict, packet: EvidencePacket) -> ValidationVer
             (c for c in packet.categories if c.category == verdict.exclusion_category), None
         )
         if spec is None:
-            problems.append(
-                f"exclusion_category {verdict.exclusion_category!r} is not a packet category"
-            )
+            problems.append("exclusion_category is not a packet category")
         else:
             hits = [
                 row
                 for row in cited
                 if spec.value_set_id in row.tags
+                and (not spec.sections or row.section in spec.sections)
                 and _in_window(row, spec.window_start, spec.window_end)
             ]
             if not hits:
+                sections = ", ".join(sorted(spec.sections)) or "any section"
                 problems.append(
-                    f"no cited event tagged {spec.value_set_id} dated inside "
+                    f"no cited event tagged {spec.value_set_id} in {sections} dated inside "
                     f"{_window(spec.window_start, spec.window_end)} for {spec.category}"
                 )
     elif verdict.decision == "numerator_met":
@@ -159,9 +162,9 @@ def _verify(verdict: ValidationVerdict, packet: EvidencePacket) -> ValidationVer
     citation = verdict.rule_citation.strip()
     prefix = packet.measure_id.lower()
     if not citation.lower().startswith(prefix):
-        notes.append(f"rule_citation {citation!r} does not start with {prefix!r}")
+        notes.append(f"rule_citation does not start with {prefix!r}")
     elif citation not in {element.id for element in packet.rule_elements}:
-        notes.append(f"rule_citation {citation!r} is not a listed rule element id")
+        notes.append("rule_citation is not a listed rule element id")
 
     if problems:
         return verdict.model_copy(

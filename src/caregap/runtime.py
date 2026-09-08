@@ -12,9 +12,10 @@ Injection points (``models`` / ``checkpointer`` / ``p6``) exist for tests, the C
 eval tiers; an injected object is used as-is and never closed here.
 """
 
+import os
 import sqlite3
 import threading
-from collections.abc import Sequence
+from collections.abc import MutableMapping, Sequence
 from contextlib import ExitStack
 from dataclasses import dataclass, field
 from datetime import date
@@ -97,6 +98,22 @@ class Runtime:
         self._stack.close()
 
 
+#: Opt-in switch for LangSmith / LangChain tracing. Without it, graph state (the full patient
+#: record, drafts) is never shipped to a cloud tracing endpoint, whatever else the env says.
+ALLOW_TRACING_ENV = "CAREGAP_ALLOW_TRACING"
+TRACING_ENV_VARS: tuple[str, ...] = ("LANGSMITH_TRACING", "LANGCHAIN_TRACING_V2")
+
+
+def disable_tracing_unless_opted_in(environ: MutableMapping[str, str] = os.environ) -> bool:
+    """Force LangSmith/LangChain tracing off unless ``CAREGAP_ALLOW_TRACING=1``.
+    Returns True when tracing was forced off (SPEC section 1: cloud only in explicit runs)."""
+    if environ.get(ALLOW_TRACING_ENV) == "1":
+        return False
+    for name in TRACING_ENV_VARS:
+        environ[name] = "false"
+    return True
+
+
 def build_runtime(
     settings: Settings,
     *,
@@ -106,6 +123,7 @@ def build_runtime(
 ) -> Runtime:
     stack = ExitStack()
     try:
+        disable_tracing_unless_opted_in()
         client = p6 if p6 is not None else _open_p6(settings, stack)
         # P6's embedded app configures structlog globally; P1's allow-list wins by going last.
         configure_logging()

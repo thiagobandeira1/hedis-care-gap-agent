@@ -6,6 +6,7 @@ Layout: ``<dir>/MANIFEST.json`` plus ``<dir>/<patient_id>/record_<as_of>.json.gz
 
 import gzip
 import json
+import re
 from collections.abc import Sequence
 from datetime import date
 from pathlib import Path
@@ -27,6 +28,9 @@ from caregap.p6.models import (
     PatientSummary,
     ServiceInfo,
 )
+
+#: A patient id is ONE path segment: no separators, no ``..``, no empty string (V17).
+_SAFE_PATIENT_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
 
 
 class SnapshotManifest(BaseModel):
@@ -95,7 +99,7 @@ class SnapshotP6Client:
             ) from exc
 
     def get_features(self, patient_id: str, *, as_of: date) -> FeatureRow:
-        path = self._dir / patient_id / f"features_{as_of.isoformat()}.json"
+        path = self._patient_dir(patient_id) / f"features_{as_of.isoformat()}.json"
         if not path.exists():
             raise PatientNotFound(f"{patient_id}@{as_of}")
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -109,8 +113,15 @@ class SnapshotP6Client:
 
     # -- helpers -------------------------------------------------------------------------
 
+    def _patient_dir(self, patient_id: str) -> Path:
+        """The patient's directory, or ``PatientNotFound`` for any id that is not a single
+        safe path segment (``..``, separators, empty) — never a path outside the snapshot."""
+        if not _SAFE_PATIENT_ID.fullmatch(patient_id):
+            raise PatientNotFound(patient_id)
+        return self._dir / patient_id
+
     def _read_record_payload(self, patient_id: str, as_of: date) -> dict[str, Any]:
-        path = self._dir / patient_id / f"record_{as_of.isoformat()}.json.gz"
+        path = self._patient_dir(patient_id) / f"record_{as_of.isoformat()}.json.gz"
         if not path.exists():
             raise PatientNotFound(f"{patient_id}@{as_of}")
         with gzip.open(path, "rt", encoding="utf-8") as fh:
@@ -120,7 +131,7 @@ class SnapshotP6Client:
         return payload
 
     def _latest_as_of(self, patient_id: str) -> date:
-        files = sorted((self._dir / patient_id).glob("record_*.json.gz"))
+        files = sorted(self._patient_dir(patient_id).glob("record_*.json.gz"))
         if not files:
             raise PatientNotFound(patient_id)
         return date.fromisoformat(files[-1].name[len("record_") : -len(".json.gz")])

@@ -70,6 +70,13 @@ def test_post_run_validation(api: Api) -> None:
     assert_problem(
         api.client.post("/v1/runs", json={"patient_ids": [KAYCE]}), 422, "request-invalid"
     )
+    # V17: ids reach P6 URLs / snapshot paths verbatim, so they are one bounded path segment.
+    for bad in ("../../healthz", "a/b", "x" * 200, "", " kayce"):
+        assert_problem(
+            api.client.post("/v1/runs", json={**base, "patient_ids": [bad]}),
+            422,
+            "request-invalid",
+        )
     body = assert_problem(
         api.client.post("/v1/runs", json={**base, "patient_ids": [KAYCE, TONY, KAYCE]}),
         422,

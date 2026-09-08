@@ -9,6 +9,7 @@ import time
 from collections.abc import Sequence
 from datetime import date
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 from pydantic import ValidationError
@@ -71,7 +72,7 @@ class HttpP6Client:
         self, patient_id: str, *, to: date, sections: Sequence[str] = ENGINE_SECTIONS
     ) -> PatientRecord:
         payload = self._get(
-            f"/v1/patients/{patient_id}/record",
+            f"/v1/patients/{quote(patient_id, safe='')}/record",
             {"to": to.isoformat(), "sections": ",".join(sections)},
         )
         if not isinstance(payload, dict):
@@ -84,7 +85,9 @@ class HttpP6Client:
             ) from exc
 
     def get_features(self, patient_id: str, *, as_of: date) -> FeatureRow:
-        payload = self._get(f"/v1/patients/{patient_id}/features", {"as_of": as_of.isoformat()})
+        payload = self._get(
+            f"/v1/patients/{quote(patient_id, safe='')}/features", {"as_of": as_of.isoformat()}
+        )
         if not isinstance(payload, dict) or not isinstance(payload.get("features"), dict):
             raise P6ContractError("features payload lacks a features object")
         return _validate(FeatureRow, payload["features"])

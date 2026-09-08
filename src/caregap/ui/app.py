@@ -7,6 +7,7 @@ card's decision is posted as-is, and the API's 404/409/422 answers are shown ver
 
 from datetime import date
 from typing import Literal
+from urllib.parse import urlsplit
 
 import streamlit as st
 
@@ -61,14 +62,46 @@ def _as_date(value: object, fallback: date) -> date:
 # --- sidebar --------------------------------------------------------------------------------
 
 
+LOOPBACK_API_HOSTS: frozenset[str] = frozenset({"127.0.0.1", "localhost", "::1"})
+
+
+def validate_base_url(text: str, *, api_host: str | None = None) -> str | None:
+    """The base URL the console may talk to, or ``None``: ``http``/``https`` only, host in the
+    loopback set (plus the configured API host), no userinfo, no path/query/fragment — the
+    sidebar field is not a general-purpose HTTP client (V20)."""
+    candidate = text.strip()
+    if not candidate:
+        return None
+    try:
+        parts = urlsplit(candidate)
+        host = parts.hostname
+    except ValueError:
+        return None
+    if parts.scheme not in {"http", "https"} or not host:
+        return None
+    if parts.username is not None or parts.password is not None:
+        return None
+    if parts.path not in {"", "/"} or parts.query or parts.fragment:
+        return None
+    allowed = {*LOOPBACK_API_HOSTS, *(() if api_host is None else (api_host,))}
+    if host not in allowed:
+        return None
+    return candidate.rstrip("/")
+
+
 def sidebar() -> tuple[str, date, str]:
+    fallback = default_base_url()
     with st.sidebar:
         st.title("caregap")
         st.caption("HEDIS care-gap reviewer console")
-        base_url = st.text_input("API base URL", value=default_base_url(), key="base_url") or ""
+        typed = st.text_input("API base URL", value=fallback, key="base_url") or ""
+        base_url = validate_base_url(typed, api_host=Settings().api_host)
+        if base_url is None:
+            st.error("API base URL must be http(s)://<loopback or configured API host>[:port].")
+            base_url = fallback
         as_of = _as_date(st.date_input("as_of", value=DEMO_AS_OF, key="as_of"), DEMO_AS_OF)
         page = st.radio("Page", PAGES, key="page") or PAGE_PANEL
-    return base_url.strip() or default_base_url(), as_of, page
+    return base_url, as_of, page
 
 
 # --- panel ----------------------------------------------------------------------------------

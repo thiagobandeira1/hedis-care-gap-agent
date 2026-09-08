@@ -35,7 +35,7 @@ from caregap.config import ConfigError, Settings, get_settings
 from caregap.graph.build import GraphDeps
 from caregap.graph.runner import PatientRunner
 from caregap.graph.state import ApprovalRequest, RunOptions, RunOutcome
-from caregap.logging_setup import configure_logging
+from caregap.logging_setup import configure_logging, uvicorn_log_config
 from caregap.measures.context import MeasurementContext
 from caregap.p6.client import P6Client, P6Error
 
@@ -320,7 +320,10 @@ def serve(
         int | None, typer.Option("--port", help="Bind port (default: CAREGAP_API_PORT).")
     ] = None,
 ) -> None:
-    """Serve the FastAPI app with uvicorn (app factory: caregap.api.app:create_app)."""
+    """Serve the FastAPI app with uvicorn (app factory: caregap.api.app:create_app).
+
+    No access log (request URLs carry patient ids) and a message-only uvicorn formatter that
+    drops tracebacks, so nothing bypasses the structlog allow-list (V12)."""
     import uvicorn
 
     settings = _settings()
@@ -329,6 +332,8 @@ def serve(
         factory=True,
         host=host if host is not None else settings.api_host,
         port=port if port is not None else settings.api_port,
+        access_log=False,
+        log_config=uvicorn_log_config(),
     )
 
 

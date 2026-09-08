@@ -1,6 +1,6 @@
 """Structured-output schemas for the agents. Frozen; validated by code after every call."""
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -22,9 +22,11 @@ class ValidationVerdict(BaseModel):
 
     measure_id: MeasureId
     decision: ValidationDecision
-    exclusion_category: str | None = None
-    evidence_ids: list[str] = Field(default_factory=list)
-    rule_citation: str = ""
+    exclusion_category: str | None = Field(default=None, max_length=64)
+    evidence_ids: list[Annotated[str, Field(max_length=64)]] = Field(
+        default_factory=list, max_length=64
+    )
+    rule_citation: str = Field(default="", max_length=128)
     confidence: Confidence = "low"
     rationale: str = Field(default="", max_length=600)
     verified: bool = False

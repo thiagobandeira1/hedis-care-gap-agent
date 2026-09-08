@@ -464,7 +464,11 @@ def test_validate_gaps_unverifiable_exclude_becomes_a_review_item() -> None:
     (item,) = state["review_items"]
     assert (item.measure_id, item.scope) == ("CBP", "measure")
     assert item.reason.startswith("validator_needs_human: ")
-    assert "frailty" in item.reason
+    # V8: the model-authored category never reaches the review reason (it feeds the drafter
+    # packet and the provider note); the stored verdict keeps it.
+    assert "frailty" not in item.reason
+    assert "exclusion_category is not a packet category" in item.reason
+    assert verdict.exclusion_category == "frailty"
     assert state["open_gaps"] == []
     assert edges.after_validate(state) == "await_approval"
 
