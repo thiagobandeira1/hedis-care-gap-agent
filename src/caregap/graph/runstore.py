@@ -469,15 +469,17 @@ class RunStore:
         return records
 
     def mark_superseded(self, patient_id: str, newer_run_id: str) -> int:
-        """Stamp ``superseded_by`` on every OTHER run's still-pending request for this patient
-        (SPEC section 3: supersession when a newer run finalizes the patient). Returns the
-        number of requests marked."""
+        """Stamp ``superseded_by`` on every OLDER run's still-pending request for this patient
+        (SPEC section 3: supersession when a newer run finalizes the patient). Runs created
+        after ``newer_run_id`` keep their pending requests. Returns the number marked."""
         with self._lock, self._conn:
             cur = self._conn.execute(
                 "UPDATE patient_runs SET superseded_by = ?, updated_at = ? "
                 "WHERE patient_id = ? AND run_id != ? AND pending_json IS NOT NULL "
-                "AND outcome_json IS NULL AND superseded_by IS NULL",
-                (newer_run_id, self._stamp(), patient_id, newer_run_id),
+                "AND outcome_json IS NULL AND superseded_by IS NULL "
+                "AND run_id IN (SELECT run_id FROM runs WHERE created_at < "
+                "(SELECT created_at FROM runs WHERE run_id = ?))",
+                (newer_run_id, self._stamp(), patient_id, newer_run_id, newer_run_id),
             )
             return cur.rowcount
 

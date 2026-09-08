@@ -1019,3 +1019,73 @@ def test_run_panel_over_committed_personas(committed_p6: SnapshotP6Client) -> No
     assert run.status == "completed"
     pending = h.store.list_approvals(status="pending")
     assert sorted(a.patient_id for a in pending) == sorted([TONY, MEREDITH])
+
+
+def test_global_hold_cannot_be_bypassed_by_revise_or_approve(
+    synthetic_p6: SnapshotP6Client,
+) -> None:
+    """V14: while the global item is unresolved, approve/edit and any measure re-open are 422;
+    resolving it in the same decision drops it from the review list."""
+    h = harness(synthetic_p6, validator=[NEEDS_HUMAN_CBP] * 4, drafter=[plan_json(["CBP"])])
+    request = h.runner.start("r1", GLOBAL_HOLD, AS_OF, RunOptions())
+    assert isinstance(request, ApprovalRequest)
+    measure_items = [i.measure_id for i in request.review_items if i.measure_id is not None]
+    with pytest.raises(DecisionValidationError):
+        h.runner.resume("r1", GLOBAL_HOLD, decision("approve"))
+    if measure_items:
+        with pytest.raises(DecisionValidationError):
+            h.runner.resume(
+                "r1",
+                GLOBAL_HOLD,
+                decision(
+                    "revise",
+                    feedback="draft anyway",
+                    review_resolutions=[
+                        ReviewResolution(measure_id=measure_items[0], status="open", reason="go")
+                    ],
+                ),
+            )
+    assert h.outbox.entries == []
+    outcome = h.runner.resume(
+        "r1",
+        GLOBAL_HOLD,
+        decision(
+            "reject",
+            review_resolutions=[
+                ReviewResolution(measure_id=None, status="not_eligible", reason="in hospice")
+            ],
+        ),
+    )
+    assert isinstance(outcome, RunOutcome)
+    assert outcome.actionable is False
+    assert all(i.scope != "global" for i in h.state("r1", GLOBAL_HOLD)["review_items"])
+    assert h.outbox.entries == []
+
+
+def test_finalize_folds_resolutions_sent_with_revise(synthetic_p6: SnapshotP6Client) -> None:
+    """V15: a measure re-opened with a revise ends ``gap_open`` even though the final approve
+    carries no resolutions."""
+    h = harness(synthetic_p6, validator=[GARBAGE] * 4, drafter=[plan_json(["CBP"])])
+    request = h.runner.start("r1", ESCALATED, AS_OF, RunOptions())
+    assert isinstance(request, ApprovalRequest)
+    revised = h.runner.resume(
+        "r1",
+        ESCALATED,
+        decision(
+            "revise",
+            "d1",
+            feedback="BP was never rechecked; draft outreach.",
+            review_resolutions=[
+                ReviewResolution(measure_id="CBP", status="open", reason="confirmed open")
+            ],
+        ),
+    )
+    assert isinstance(revised, ApprovalRequest)
+    assert [g.measure_id for g in revised.open_gaps] == ["CBP"]
+    assert revised.review_items == []
+    outcome = h.runner.resume("r1", ESCALATED, decision("approve", "d2"))
+    assert isinstance(outcome, RunOutcome)
+    assert outcome.engine_verdicts["CBP"] == "needs_review"
+    assert outcome.final_statuses["CBP"] == "gap_open"
+    assert outcome.actionable is True
+    assert {e.approval_ref for e in h.outbox.entries} == {"d2"}

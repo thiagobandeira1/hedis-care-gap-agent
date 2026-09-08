@@ -467,6 +467,16 @@ def record_decision(deps: "GraphDeps") -> NodeFn:
         decision = state["decision"]
         open_gaps = list(state.get("open_gaps", []))
         update: dict[str, Any] = {}
+        # Items the reviewer settled with a non-open status leave the review list (a
+        # ``None`` measure resolves every global item), so a redraft or ``finalize`` never
+        # sees a hold that has already been answered.
+        settled = {r.measure_id for r in decision.review_resolutions if r.status != "open"}
+        if settled:
+            update["review_items"] = [
+                item
+                for item in state.get("review_items", [])
+                if not (item.measure_id in settled or (None in settled and item.scope == "global"))
+            ]
         if decision.action == "edit" and decision.edited_plan is not None:
             update["plan"] = finalize_plan(decision.edited_plan, open_gaps)
         elif decision.action == "revise":
@@ -490,7 +500,7 @@ def record_decision(deps: "GraphDeps") -> NodeFn:
                 update["open_gaps"] = _open_gaps_from(opened)
                 update["review_items"] = [
                     item
-                    for item in state.get("review_items", [])
+                    for item in update.get("review_items", state.get("review_items", []))
                     if item.measure_id is None or item.measure_id not in reopened
                 ]
         update["trace"] = [_trace("record_decision", started)]
@@ -520,14 +530,24 @@ def finalize(deps: "GraphDeps") -> NodeFn:
             if evaluation is not None:
                 resolution = resolve_candidate(evaluation, verdict)
                 final_statuses[verdict.measure_id] = RESOLUTION_TO_STATUS[resolution]
-        if decision is not None:
-            for resolution_item in decision.review_resolutions:
+        # Fold EVERY decision on this thread in order (a resolution sent with a ``revise``
+        # counts; the last word per measure wins), then align with the gap set the reviewer
+        # re-opened so a redrafted measure never stays ``needs_review``.
+        folded = list(state.get("decisions", []))
+        if decision is not None and decision not in folded:
+            folded.append(decision)
+        for past in folded:
+            for resolution_item in past.review_resolutions:
                 # A global resolution answers the global review item only; it never
                 # rewrites a measure's status.
                 if resolution_item.measure_id is not None:
                     final_statuses[resolution_item.measure_id] = RESOLUTION_TO_STATUS[
                         resolution_item.status
                     ]
+        for gap in state.get("open_gaps", []):
+            if gap.source == "reviewer":
+                final_statuses[gap.measure_id] = RESOLUTION_TO_STATUS["open"]
+        global_hold = any(i.scope == "global" for i in state.get("review_items", []))
 
         status: RunStatus
         if load_error is not None:
@@ -546,6 +566,7 @@ def finalize(deps: "GraphDeps") -> NodeFn:
             and decision.action in {"approve", "edit"}
             and options.approval_mode == "interrupt"
             and plan is not None
+            and not global_hold
         )
         if actionable and attempt_abandoned(config):
             # The runner timed this attempt out and recorded ``error``: nothing may be sent
