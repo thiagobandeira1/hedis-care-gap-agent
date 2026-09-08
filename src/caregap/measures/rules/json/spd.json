@@ -265,7 +265,7 @@
     {
       "id": "spd/coverage/e4_advanced_illness_hint",
       "kind": "coverage",
-      "text": "E4 (global): a dementia diagnosis active in the MY (abatement null or after Jan 1 of the MY) OR a dementia medication authored in the MY or the prior year, plus an inpatient/ED encounter in the MY at age 66+, raises a review flag; never computed as an exclusion.",
+      "text": "E4 (global): a dementia diagnosis active in [Jan 1 of the MY, as_of] (onset <= as_of, abatement null or > Jan 1 of the MY) OR a dementia medication authored in [Jan 1 of MY-1, as_of] (two windows: the diagnosis must be active in the MY; the medication may date from the prior year), plus an inpatient/ED encounter in [Jan 1 of the MY, as_of], at age 66+ on Dec 31 of the MY, raises a review flag; never computed as an exclusion.",
       "source": "demo_choice",
       "citation": "caregap-spec sec.2",
       "quote": null,

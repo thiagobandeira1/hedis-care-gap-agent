@@ -22,9 +22,10 @@ quoted
 demo_choice
   * "diabetes" is identified exactly as EED (C11) does it: a ``diabetes_snomed`` condition
     active in [Jan 1 of MY-1, Dec 31 of MY] (onset on/before the window end, abatement null or
-    on/after the window start). The public "two diabetes medication fills" denominator path is
-    NOT represented (P6 carries no pharmacy claims). A ``prediabetes_trap_snomed`` code never
-    counts, even if it were to leak into ``diabetes_snomed``.
+    strictly after the window start - :func:`evidence.condition_active_in`). The public "two
+    diabetes medication fills" denominator path is NOT represented (P6 carries no pharmacy
+    claims). A ``prediabetes_trap_snomed`` code never counts, even if it were to leak into
+    ``diabetes_snomed``.
   * NOT in the SPC denominator (product choice - no double outreach): an ``ascvd_snomed``
     condition with ``onset_date <= my_end`` AND SPC-eligible age/sex makes the SPD denominator
     ``no`` with the reason ``routed_to_spc``; the SPC rule owns that patient.
