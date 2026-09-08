@@ -48,7 +48,7 @@
     }
   },
   "dataset_hash": "af5a606cb7ed84d168fd88794ff4480283183a03be7f275093cad11d711befd7",
-  "date": "2026-09-07",
+  "date": "2026-09-08",
   "drafter_model": "fake",
   "engine_outcomes_sha256": "16f0346eebd9525e5bda00e82716ff658e138a8a04f428d8d458ef6498421496",
   "error_patients": [],
@@ -58,7 +58,7 @@
     "pinned_sha256": "af5a606cb7ed84d168fd88794ff4480283183a03be7f275093cad11d711befd7",
     "status": "frozen"
   },
-  "git_sha": "57d21519eda57b085d9cbbe78000050c07e2a730",
+  "git_sha": "ff4fa5f899266db8ffa7c31a547e65aebfc0e7a4",
   "gold_counts": {
     "all": {
       "closed": 68,

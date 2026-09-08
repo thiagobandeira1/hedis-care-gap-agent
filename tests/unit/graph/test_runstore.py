@@ -386,7 +386,8 @@ def test_list_approvals_derives_status_and_supersession(store: RunStore) -> None
     for run_id in ("r1", "r2", "r3"):
         store.create_run(run_id, EVAL_AS_OF, RunOptions(), ["p1", "p2"])
     # r1/p1: pending, then superseded by r2. r1/p2: resolved (outcome). r2/p1: pending.
-    # r2/p2: never emitted a request -> not an approval. r3/p1: pending in a third run.
+    # r2/p2: never emitted a request -> not an approval. r3/p1: pending in a NEWER run,
+    # which r2 finalizing must leave alone (supersession is ordered by runs.created_at).
     store.upsert_patient_run("r1", "p1", "awaiting_approval", None, make_request("r1", "p1"))
     store.upsert_patient_run("r1", "p2", "completed", make_outcome(), make_request("r1", "p2"))
     store.upsert_patient_run("r2", "p1", "awaiting_approval", None, make_request("r2", "p1"))
@@ -396,7 +397,7 @@ def test_list_approvals_derives_status_and_supersession(store: RunStore) -> None
     pending_before = {(a.run_id, a.patient_id) for a in store.list_approvals("pending")}
     assert pending_before == {("r1", "p1"), ("r2", "p1"), ("r3", "p1")}
 
-    assert store.mark_superseded("p1", "r2") == 2
+    assert store.mark_superseded("p1", "r2") == 1
     assert store.mark_superseded("p1", "r2") == 0, "already-superseded rows are left alone"
 
     everything = store.list_approvals()
@@ -405,11 +406,17 @@ def test_list_approvals_derives_status_and_supersession(store: RunStore) -> None
         ("r1", "p1", "superseded", "r2"),
         ("r1", "p2", "resolved", None),
         ("r2", "p1", "pending", None),
-        ("r3", "p1", "superseded", "r2"),
+        ("r3", "p1", "pending", None),
     ]
     assert everything[0].request == make_request("r1", "p1")
-    assert [a.run_id for a in store.list_approvals("pending")] == ["r2"]
-    assert [a.run_id for a in store.list_approvals("superseded")] == ["r1", "r3"]
+    assert [a.run_id for a in store.list_approvals("pending")] == ["r2", "r3"]
+    assert [a.run_id for a in store.list_approvals("superseded")] == ["r1"]
+    # V16 regression: the newer run finalizing supersedes the older pending requests only.
+    assert store.mark_superseded("p1", "r3") == 1
+    assert [(a.run_id, a.superseded_by) for a in store.list_approvals("superseded")] == [
+        ("r1", "r2"),
+        ("r2", "r3"),
+    ]
     assert [a.run_id for a in store.list_approvals("resolved")] == ["r1"]
 
     stale = store.get_patient_run("r1", "p1")

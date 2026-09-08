@@ -62,6 +62,20 @@ def validate_decision(
             errors.append("revise requires an open gap or a review resolution to 'open'")
     seen: set[str | None] = set()
     has_global = any(i.scope == "global" for i in request.review_items)
+    # A global ("hold all") item blocks everything until the same decision resolves it with
+    # a non-open status: no approve/edit, and no measure re-opened for a redraft around it.
+    global_resolved = any(
+        r.measure_id is None and r.status != "open" for r in decision.review_resolutions
+    )
+    if has_global and not global_resolved:
+        if decision.action in {"approve", "edit"}:
+            errors.append(f"{decision.action} requires resolving the global review item first")
+        if any(
+            r.measure_id is not None and r.status == "open" for r in decision.review_resolutions
+        ):
+            errors.append(
+                "a measure cannot be re-opened while the global review item is unresolved"
+            )
     for resolution in decision.review_resolutions:
         label = resolution.measure_id or "global"
         if resolution.measure_id in seen:
