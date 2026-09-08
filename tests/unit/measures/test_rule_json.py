@@ -26,6 +26,7 @@ from caregap.measures.ids import (
 )
 from caregap.measures.rule_text import (
     COVERAGE_ELEMENTS,
+    UNKEYED_EXCLUSION_ELEMENTS,
     RuleElement,
     RuleText,
     all_rule_texts,
@@ -305,6 +306,33 @@ def test_every_rule_coverage_key_maps_to_a_rule_json_element() -> None:
             assert element_id in element_ids, f"{rule.measure_id}/{key} -> {element_id}"
             assert coverage_element_id(rule.measure_id, key) == element_id
     assert set(COVERAGE_ELEMENTS) == set(ALL_MEASURES)
+
+
+def test_coverage_verdicts_and_exclusion_elements_join_both_ways() -> None:
+    """The JSON exclusion verdict equals the rule's ``COVERAGE`` verdict wherever one key
+    cites one element (many-to-one targets such as SPD's 'Pregnancy, Lactation, and
+    Fertility' aggregate several keys and carry their own verdict), and every exclusion
+    element is cited by some key or listed in ``UNKEYED_EXCLUSION_ELEMENTS`` with a reason."""
+    for rule in all_rules():
+        text = load_rule_text(rule.measure_id)
+        module = importlib.import_module(type(rule).__module__)
+        table = rule.spec.coverage if hasattr(rule, "spec") else module.COVERAGE
+        mapping = COVERAGE_ELEMENTS[rule.measure_id]
+        targets = list(mapping.values())
+        for key, element_id in mapping.items():
+            element = text.element(element_id)
+            if element.kind == "exclusion" and targets.count(element_id) == 1:
+                assert element.coverage == table[key], f"{rule.measure_id}/{key}: verdict"
+        for element in text.elements_of("exclusion"):
+            if element.id in targets:
+                assert element.id not in UNKEYED_EXCLUSION_ELEMENTS, element.id
+            else:
+                assert element.id in UNKEYED_EXCLUSION_ELEMENTS, (
+                    f"{element.id}: not cited by any {rule.measure_id} COVERAGE key"
+                )
+    all_ids = {e.id for text in all_rule_texts().values() for e in text.elements}
+    for element_id, reason in UNKEYED_EXCLUSION_ELEMENTS.items():
+        assert element_id in all_ids and reason.strip(), element_id
 
 
 def test_pregnancy_elements_are_consistent_across_the_three_statin_and_bp_measures() -> None:

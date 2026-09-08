@@ -405,9 +405,11 @@ def _global_escalations(m: str) -> list[RuleElement]:
         demo(
             f"{m}/coverage/e4_advanced_illness_hint",
             "coverage",
-            "E4 (global): a dementia diagnosis active in the MY (abatement null or after Jan "
-            "1 of the MY) OR a dementia medication authored in the MY or the prior year, plus "
-            "an inpatient/ED encounter in the MY at age 66+, raises a review flag; never "
+            "E4 (global): a dementia diagnosis active in [Jan 1 of the MY, as_of] (onset <= "
+            "as_of, abatement null or > Jan 1 of the MY) OR a dementia medication authored in "
+            "[Jan 1 of MY-1, as_of] (two windows: the diagnosis must be active in the MY; the "
+            "medication may date from the prior year), plus an inpatient/ED encounter in [Jan "
+            "1 of the MY, as_of], at age 66+ on Dec 31 of the MY, raises a review flag; never "
             "computed as an exclusion.",
             rationale=(
                 "The public frailty-and-advanced-illness exclusion needs two frailty "
@@ -1182,9 +1184,10 @@ def build_spc(corpus: Corpus) -> RuleText:
             rationale=(
                 "The public event / diagnosis look-back (an MI, CABG or PCI event in the "
                 "prior year, or an IVD diagnosis in both years) is deliberately NOT "
-                "implemented: the snapshots do carry MI conditions and CABG / PCI procedures, "
-                "but Synthea records one condition row per diagnosis with no visit-level "
-                "claims, so 'ever diagnosed by MY end' is the demo's ASCVD signal."
+                "implemented. This is a demo simplification, not a data gap: the snapshots DO "
+                "carry MI conditions and CABG / PCI procedure events, so the look-back is "
+                "representable; the demo keeps the single condition test ('ever diagnosed by "
+                "MY end') as its ASCVD signal and ignores abatement."
             ),
         ),
         tn.quoted(

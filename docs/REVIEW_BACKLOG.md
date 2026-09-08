@@ -235,15 +235,22 @@ aligned before the next freeze.
   (CBP + screening) (C23, backlog 2/3); E2 removed from the escalation vocabulary (C22, 19).
 - Persona goldens and engine outcomes regenerated; ratchet gate passes.
 
-## Still open after that pass (small, text-level; one cheap agent)
+## Still open after that pass (small, text-level; one cheap agent) — RESOLVED 2026-09-07
 
-- Rule-JSON wording must match the code for: EED denominator abatement edge, CBP/SPC/SPD
-  pregnancy demo_choice text (82810-3 arm), CBP E5 text (only most-recent-date panels; defective
-  panel -> numerator unknown + E5), SPD ESRD/dialysis element retag in JSON, E4 text (two windows:
-  condition active in MY; medication in [prior MY start, as_of]), spc.json PCI/CABG rationale.
-  Edit at the source in `scripts/sync_rule_text.py`, regenerate JSON + docs/MEASURES.md.
-- Coverage-key parity test (C21): one vocabulary joinable to rule JSON element ids.
-- Verify docs/SPEC.md escalation table has no E2 reference; SPD row lists pregnancy.
+- RESOLVED: rule-JSON wording matches the code for: EED denominator abatement edge (`> Jan 1
+  of MY-1`, `evidence.condition_active_in`), CBP/SPC/SPD pregnancy demo_choice text (condition
+  arm + LOINC 82810-3 / SNOMED 77386006 observation arm; spd.json tags both `demo_choice`),
+  CBP E5 text (only most-recent-date panels; defective panel -> numerator unknown + E5), SPD
+  ESRD/dialysis element (`demo_choice`, MY-or-prior-year rationale), E4 text (two windows:
+  dementia active in [Jan 1 of MY, as_of]; medication authored in [Jan 1 of MY-1, as_of]),
+  spc.json PCI/CABG rationale (procedure events ARE in the snapshots; the look-back is a demo
+  simplification, not a claims gap). Edited in `scripts/sync_rule_text.py`; JSON +
+  docs/MEASURES.md regenerated.
+- RESOLVED: coverage-key parity (C21): `rule_text.COVERAGE_ELEMENTS` joins every rule
+  `COVERAGE` key to a JSON element id; `UNKEYED_EXCLUSION_ELEMENTS` names the reverse gaps;
+  `tests/unit/measures/test_rule_json.py` checks both directions and verdict equality.
+- RESOLVED: docs/SPEC.md section 2 table carries no E2 (only the note that E2 was never
+  defined); the SPD row lists pregnancy (MY or prior year, demo).
 
 ## Re-verification 2026-09-05 (52 previously unverified findings; one verifier per cluster)
 
@@ -256,8 +263,8 @@ aligned before the next freeze.
 | V3 | high — RESOLVED (fixed 2026-09-05) | Eval tiers write their runs into the live API/UI ledger (data/caregap.sqlite) and can supersede real pending approvals | `src/caregap/evalrun.py:199` | In `_eval_settings` add `'runstore_path': RunStore.MEMORY` (or `paths.root / 'ledger.sqlite'` under out_dir) and `'checkpoint_path': paths.root / 'checkpoints.sqlite'`; add a test asserting `run_eval` never opens `settin |
 | V4 | high — RESOLVED (fixed 2026-09-05) | finalize re-keys validator verdicts by the model-supplied measure_id and rewrites other measures' final status | `src/caregap/graph/nodes.py:519` | Make the packet's measure id authoritative: in verify_verdict return model_copy(update={'measure_id': packet.measure_id}) after recording the mismatch in verification_note (the mismatch already forces needs_human), and i |
 | V5 | high — RESOLVED (fixed 2026-09-05) | VALIDATOR_FALLBACK hard-codes measure_id "CBP": every replay fallback on a non-CBP case corrupts CBP's final status | `src/caregap/llm.py:18` | (1) In verify_verdict, stamp the packet's measure_id on the returned verdict (model_copy(update={'measure_id': packet.measure_id}) after recording the mismatch in verification_note) so no model/sentinel label can address |
-| V6 | medium | Backlog #17 confirmed: the gold panel has zero escalations/needs_review, so the pipeline tier never calls the validator and the Engine+validator colum | `evals/gold/engine-outcomes.jsonl:1` | Finish and freeze the supplementary escalation slice under the same blind protocol (freeze_gold.py --append-slice) and publish the change count; in `_run_pipeline_tier` stamp `validator_calls` (sum of validator decisions |
-| V7 | medium | Escalation / validator paths are unmeasured on real records: 0 gold `escalate`, 0 `needs_review`, 0 validator calls — the Engine+validator column is t | `scripts/gold.py:524` | Keep the new window-aware trigger facts (hospice event in [my_start-90d, my_start), dementia + IMP/EMER in MY at 66+, E7 ambiguous colon code) as the carrier definition, complete the blind labeling of the supplementary s |
+| V6 | medium — RESOLVED (covered by the frozen escalation slice, commit 315e21a) | Backlog #17 confirmed: the gold panel has zero escalations/needs_review, so the pipeline tier never calls the validator and the Engine+validator colum | `evals/gold/engine-outcomes.jsonl:1` | Finish and freeze the supplementary escalation slice under the same blind protocol (freeze_gold.py --append-slice) and publish the change count; in `_run_pipeline_tier` stamp `validator_calls` (sum of validator decisions |
+| V7 | medium — RESOLVED (covered by the frozen escalation slice, commit 315e21a) | Escalation / validator paths are unmeasured on real records: 0 gold `escalate`, 0 `needs_review`, 0 validator calls — the Engine+validator column is t | `scripts/gold.py:524` | Keep the new window-aware trigger facts (hospice event in [my_start-90d, my_start), dementia + IMP/EMER in MY at 66+, E7 ambiguous colon code) as the carrier definition, complete the blind labeling of the supplementary s |
 | V8 | medium — RESOLVED (fixed 2026-09-05) | Model-authored validator strings (unbounded) reach the drafter prompt outside the data fence and the provider note | `src/caregap/agents/drafter.py:232` | Report exclusion_category/rule_citation/evidence-id problems with fixed wording (e.g. 'exclusion_category not in packet') instead of interpolating the model strings; keep raw model fields only on the stored verdict; rend |
 | V9 | medium | lint_plan's forbidden-phrase list does not block undisclosed diagnoses, most dose instructions, or spelled-out readings | `src/caregap/agents/drafter.py:46` | Add a disclosure check driven by chronic_flags (block diabet*/hypertens*/heart/ascvd words unless disclosed; always block hospice, dialysis, kidney, pregnan*, transplant, stroke), replace the dose substrings with regexes |
 | V10 | medium — RESOLVED (fixed 2026-09-05) | verify_verdict's exclude check is section-agnostic, so the validator can exclude on evidence the rule deliberately ignores (CBP dialysis condition) | `src/caregap/agents/validator.py:122` | Add a `sections: frozenset[Section]` field to CategorySpec mirroring each rule (dialysis: procedures; esrd/kidney_transplant per cbp.py; hospice: procedures/conditions/encounters; pregnancy_status_positive: observations) |

@@ -313,6 +313,26 @@ COVERAGE_ELEMENTS: dict[MeasureId, dict[str, str]] = {
 }
 
 
+#: Exclusion elements that no rule ``COVERAGE`` key cites, each with the reason the join skips
+#: it. The parity test requires every other exclusion element to be a ``COVERAGE_ELEMENTS``
+#: target, so a new JSON exclusion row must be keyed by its rule or listed here.
+UNKEYED_EXCLUSION_ELEMENTS: dict[str, str] = {
+    "cbp/exclusion/pregnancy_status_observation": (
+        "observation arm of the 'pregnancy_during_measurement_period' key (evidence.pregnancy_hits)"
+    ),
+    "spc/exclusion/pregnancy_status_observation": (
+        "observation arm of the 'pregnancy' key (evidence.pregnancy_hits)"
+    ),
+    "spd/exclusion/pregnancy_status_observation": (
+        "observation arm of the 'pregnancy' key (evidence.pregnancy_hits)"
+    ),
+    "spd/exclusion/prediabetes": "denominator trap, never an exclusion category",
+    "bcs/exclusion/isnp_or_long_term_institution_66_plus": (
+        "not_representable row carried by the JSON coverage table only; bcs.COVERAGE omits it"
+    ),
+}
+
+
 def coverage_element_id(measure_id: MeasureId, coverage_key: str) -> str:
     """The rule JSON element a rule module's ``COVERAGE`` key cites (KeyError when unmapped)."""
     return COVERAGE_ELEMENTS[measure_id][coverage_key]
