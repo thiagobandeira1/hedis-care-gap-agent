@@ -1,7 +1,9 @@
 """``create_app`` — the FastAPI factory (``uvicorn caregap.api.app:create_app --factory``).
 
 The lifespan builds the ``Runtime`` from ``settings`` (or adopts an injected one, which its
-owner closes) and publishes it as ``app.state.runtime``. Every route is a sync ``def``: the
+owner closes) and publishes it as ``app.state.runtime``; on shutdown it cancels and joins
+every panel thread it launched (``Runtime.stop_runs``) so the ledger never keeps a half-run
+``running`` past the process. Every route is a sync ``def``: the
 embedded P6 topology drives a Starlette ``TestClient`` in-process, which must never be
 called from the event loop thread. All errors are RFC 9457 problem details.
 """
@@ -50,6 +52,7 @@ def create_app(settings: Settings | None = None, *, runtime: Runtime | None = No
             yield
         finally:
             app.state.runtime = None
+            active.stop_runs(dict(getattr(app.state, "run_threads", {})))
             if owned:
                 active.close()
 

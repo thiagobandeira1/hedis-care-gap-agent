@@ -23,8 +23,15 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from caregap.graph.state import ApprovalDecision, ApprovalRequest, RunOptions, RunOutcome
 
-ApprovalStatus = Literal["pending", "superseded", "resolved"]
+ApprovalStatus = Literal["pending", "superseded", "resolved", "interrupted"]
 Clock = Callable[[], datetime]
+
+STATUS_INTERRUPTED = "interrupted"
+"""A run (and its ``running`` patient rows) left behind by a process that died mid-loop;
+stamped by :meth:`RunStore.reconcile_stale`, never resumed automatically."""
+#: Run statuses a live loop owns; anything still carrying one when a NEW process opens the
+#: ledger belongs to a dead process.
+_LIVE_RUN_STATUSES = ("queued", "running")
 
 MEMORY = ":memory:"
 """Pass as ``path`` for a private in-memory store (tests, CLI, evals)."""
@@ -193,11 +200,15 @@ def _load_result(text: str) -> RunOutcome | ApprovalRequest:
     raise RunStoreError(f"unknown decision result kind {kind!r}")
 
 
-def _approval_status(outcome_json: str | None, superseded_by: str | None) -> ApprovalStatus:
+def _approval_status(
+    outcome_json: str | None, superseded_by: str | None, row_status: str = ""
+) -> ApprovalStatus:
     if outcome_json is not None:
         return "resolved"
     if superseded_by is not None:
         return "superseded"
+    if row_status == STATUS_INTERRUPTED:
+        return "interrupted"
     return "pending"
 
 
@@ -296,6 +307,35 @@ class RunStore:
             )
             if cur.rowcount != 1:
                 raise UnknownRunError(f"run {run_id!r} does not exist; call create_run first")
+
+    def reconcile_stale(self, *, before: str | None = None) -> list[str]:
+        """Mark every ``queued`` / ``running`` run last updated before ``before`` (default: now,
+        i.e. the moment this process opened the ledger) as ``interrupted``, and its patient rows
+        still ``running`` likewise. A process that dies mid-loop can never write its terminal
+        status; a fresh process repairs the ledger on open instead of reporting ``running``
+        forever. Rows ``awaiting_approval`` are untouched (their checkpoint is resumable).
+        Returns the run ids marked, sorted. Assumes one live writer process per ledger file."""
+        cutoff = self._stamp() if before is None else before
+        placeholders = ",".join("?" * len(_LIVE_RUN_STATUSES))
+        with self._lock, self._conn:
+            rows = self._conn.execute(
+                f"SELECT run_id FROM runs WHERE status IN ({placeholders}) "  # noqa: S608
+                "AND updated_at < ? ORDER BY run_id",
+                (*_LIVE_RUN_STATUSES, cutoff),
+            ).fetchall()
+            run_ids = [row["run_id"] for row in rows]
+            now = self._stamp()
+            for run_id in run_ids:
+                self._conn.execute(
+                    "UPDATE runs SET status = ?, updated_at = ? WHERE run_id = ?",
+                    (STATUS_INTERRUPTED, now, run_id),
+                )
+                self._conn.execute(
+                    "UPDATE patient_runs SET status = ?, updated_at = ? "
+                    "WHERE run_id = ? AND status = 'running'",
+                    (STATUS_INTERRUPTED, now, run_id),
+                )
+        return run_ids
 
     # -- patient runs ------------------------------------------------------------------------
 
@@ -446,15 +486,16 @@ class RunStore:
     def list_approvals(self, status: ApprovalStatus | None = None) -> list[ApprovalRecord]:
         """Every patient run that ever emitted a request, with a derived status: ``resolved``
         when an outcome exists, else ``superseded`` when a newer run took the patient, else
+        ``interrupted`` when :meth:`reconcile_stale` caught the row mid-resume, else
         ``pending``. Ordered by ``(run_id, patient_id)``."""
         with self._lock:
             rows = self._conn.execute(
-                "SELECT run_id, patient_id, outcome_json, pending_json, superseded_by "
+                "SELECT run_id, patient_id, status, outcome_json, pending_json, superseded_by "
                 "FROM patient_runs WHERE pending_json IS NOT NULL ORDER BY run_id, patient_id"
             ).fetchall()
         records: list[ApprovalRecord] = []
         for row in rows:
-            derived = _approval_status(row["outcome_json"], row["superseded_by"])
+            derived = _approval_status(row["outcome_json"], row["superseded_by"], row["status"])
             if status is not None and derived != status:
                 continue
             records.append(

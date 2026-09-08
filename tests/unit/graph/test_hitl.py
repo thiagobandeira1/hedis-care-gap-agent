@@ -307,3 +307,18 @@ def test_pending_request_survives_a_repeated_lookup() -> None:
     assert first == second
     assert first is not None
     assert isinstance(first.plan, CareActionPlan)
+
+
+def test_edit_relint_allows_only_conditions_the_open_gaps_disclose() -> None:
+    """V9: CBP is open (hypertension disclosed), nothing establishes diabetes."""
+    base = TEMPLATE_PLAN.patient_message
+    assert "your blood pressure" in base
+    hypertension = TEMPLATE_PLAN.model_copy(
+        update={"patient_message": base.replace("your blood pressure", "your high blood pressure")}
+    )
+    assert errors(decision("edit", edited_plan=hypertension)) == []
+    diabetes = TEMPLATE_PLAN.model_copy(
+        update={"patient_message": base.replace("your blood pressure", "your diabetes")}
+    )
+    found = errors(decision("edit", edited_plan=diabetes))
+    assert found and all(e.startswith("edited_plan: FORBIDDEN") for e in found)

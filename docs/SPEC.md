@@ -200,7 +200,9 @@ FastAPI (`127.0.0.1:8010`, RFC 9457, sync routes): `/healthz`, `/v1/measures`, `
 `/v1/patients/{id}/gaps`, `POST /v1/runs` (202, background sequential loop), `/v1/runs/{id}`,
 `POST .../cancel`, `/v1/runs/{id}/patients/{pid}`, `POST .../decision` (validate → resume;
 404/409/422 semantics; duplicate decision_id → stored result), `/v1/approvals`, `/v1/outbox`.
-`RunStore` sqlite (runs, patient_runs, decisions UNIQUE, outbox UNIQUE(thread, action)).
+`RunStore` sqlite (runs, patient_runs, decisions UNIQUE, outbox UNIQUE(thread, action)); on
+open, runs (and their `running` patient rows) left `queued`/`running` by a dead process are
+marked `interrupted` (visible in `/v1/runs/{id}` and `/v1/approvals`; never auto-resumed).
 Streamlit (`caregap ui`): Panel (as_of, run, stepper), Patient (verdict chips, evidence,
 coverage, validator cards, **approval card** with approve / edit & approve / request revision
 / reject), Outbox & audit; persistent demo-grade banner; the UI never computes.

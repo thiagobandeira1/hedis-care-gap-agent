@@ -2,6 +2,7 @@
 scripted model (good / lint-fail-then-good / garbage -> template fallback)."""
 
 import json
+from collections.abc import Collection
 from datetime import date
 from typing import Any
 
@@ -19,6 +20,7 @@ from caregap.agents.drafter import (
     age_band,
     allowed_numbers_for,
     build_drafter_context,
+    disclosed_conditions_for,
     draft_plan,
     drafter_case_key,
     finalize_plan,
@@ -155,6 +157,7 @@ def lint(
     open_gaps: list[OpenGap] | None = None,
     review: set[str] | None = None,
     allowed: set[str] | None = None,
+    disclosed: Collection[str] = (),
 ) -> list[str]:
     return [
         v.code
@@ -165,6 +168,7 @@ def lint(
             allowed_numbers=set() if allowed is None else allowed,
             clinic_name=CLINIC,
             clinic_phone=PHONE,
+            disclosed_conditions=disclosed,
         )
     ]
 
@@ -840,3 +844,37 @@ def test_draft_plan_is_deterministic_for_the_same_scripted_output() -> None:
     first, _, _ = run_draft(fake(plan_json(GOOD_PLAN)))
     second, _, _ = run_draft(fake(plan_json(GOOD_PLAN)))
     assert first == second
+
+
+def test_lint_condition_words_need_disclosure_and_sensitive_diagnoses_are_always_blocked() -> None:
+    """V9: a condition word passes only when the packet disclosed that chronic flag; hospice,
+    dialysis, kidney, pregnancy, transplant and stroke never pass, whatever was disclosed."""
+    diabetes = with_message(GOOD_MESSAGE.replace("yearly eye exam", "eye exam for your diabetes"))
+    assert "FORBIDDEN" in lint(diabetes)
+    assert "FORBIDDEN" in lint(diabetes, disclosed={"hypertension"})
+    assert "FORBIDDEN" not in lint(diabetes, disclosed={"hypertension", "diabetes"})
+    pressure = with_message(GOOD_MESSAGE.replace("your blood pressure", "your high blood pressure"))
+    assert "FORBIDDEN" in lint(pressure)
+    assert "FORBIDDEN" not in lint(pressure, disclosed={"Hypertension"})
+    for word in ("hospice", "dialysis", "kidney", "pregnancy", "transplant", "stroke"):
+        plan = with_message(GOOD_MESSAGE.replace("a few things", f"a few {word} things"))
+        assert "FORBIDDEN" in lint(plan, disclosed={"hypertension", "diabetes", "ascvd"}), word
+    details = [
+        v.detail
+        for v in lint_plan(
+            diabetes,
+            open_gaps=OPEN_GAPS,
+            review_measure_ids=set(),
+            allowed_numbers=set(),
+            clinic_name=CLINIC,
+            clinic_phone=PHONE,
+            disclosed_conditions=["hypertension"],
+        )
+        if v.code == "FORBIDDEN"
+    ]
+    assert details == ["forbidden phrases: ['diabet']"]
+    # The draft path discloses the context's chronic flags (hypertension only by default).
+    plan, error, _ = run_draft(fake(plan_json(diabetes), plan_json(diabetes)))
+    assert error == "drafter_lint_failed:FORBIDDEN"
+    assert plan.patient_message != diabetes.patient_message
+    assert disclosed_conditions_for(OPEN_GAPS) == {"hypertension", "diabetes"}

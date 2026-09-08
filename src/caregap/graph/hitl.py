@@ -7,7 +7,12 @@ from typing import Any
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Interrupt
 
-from caregap.agents.drafter import DrafterContext, allowed_numbers_for, lint_plan
+from caregap.agents.drafter import (
+    DrafterContext,
+    allowed_numbers_for,
+    disclosed_conditions_for,
+    lint_plan,
+)
 from caregap.graph.state import ApprovalDecision, ApprovalRequest
 
 
@@ -48,6 +53,7 @@ def validate_decision(
                 allowed_numbers=allowed_numbers_for(request.open_gaps, lint_context),
                 clinic_name=clinic_name,
                 clinic_phone=clinic_phone,
+                disclosed_conditions=disclosed_conditions_for(request.open_gaps),
             )
             errors.extend(f"edited_plan: {v.code}: {v.detail}" for v in violations)
     if decision.action == "revise":

@@ -527,3 +527,41 @@ def test_concurrent_appends_from_four_threads(store: RunStore) -> None:
     assert sum(inserted) == 4 * per_thread + len(shared)
     assert len(store.list_outbox()) == 4 * per_thread + len(shared)
     assert store.get_patient_run("r1", "p1") is not None
+
+
+def test_reconcile_stale_marks_dead_process_runs_interrupted(store: RunStore) -> None:
+    """V18: runs still queued/running before the cutoff (a process that died) and their
+    running patient rows become ``interrupted``; awaiting_approval rows keep their request."""
+    options = make_options()
+    store.create_run("r1", EVAL_AS_OF, options, ["p1", "p2", "p3"])
+    store.update_run_status("r1", "running", cursor=1)
+    store.upsert_patient_run("r1", "p1", "completed", make_outcome(), make_request())
+    store.upsert_patient_run("r1", "p2", "running", None, make_request(patient_id="p2"))
+    store.upsert_patient_run("r1", "p3", "awaiting_approval", None, make_request(patient_id="p3"))
+    store.create_run("r2", EVAL_AS_OF, options, ["p1"], status="queued")
+    store.create_run("r3", EVAL_AS_OF, options, ["p1"], status="completed")
+
+    assert store.reconcile_stale() == ["r1", "r2"]
+
+    statuses = {run_id: store.get_run(run_id) for run_id in ("r1", "r2", "r3")}
+    assert {k: v.status for k, v in statuses.items() if v} == {
+        "r1": "interrupted",
+        "r2": "interrupted",
+        "r3": "completed",
+    }
+    assert statuses["r1"] is not None and statuses["r1"].cursor == 1
+    assert {r.patient_id: r.status for r in store.list_patient_runs("r1")} == {
+        "p1": "completed",
+        "p2": "interrupted",
+        "p3": "awaiting_approval",
+    }
+    assert {a.patient_id: a.status for a in store.list_approvals()} == {
+        "p1": "resolved",
+        "p2": "interrupted",
+        "p3": "pending",
+    }
+    assert [a.patient_id for a in store.list_approvals("interrupted")] == ["p2"]
+    # Idempotent, and a run updated at or after the cutoff is left alone.
+    assert store.reconcile_stale() == []
+    store.create_run("r4", EVAL_AS_OF, options, ["p1"], status="running")
+    assert store.reconcile_stale(before=at(0)) == []
