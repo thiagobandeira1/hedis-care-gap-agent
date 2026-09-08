@@ -12,9 +12,11 @@ from typing import Any
 import httpx
 import pytest
 import respx
+from fastapi.testclient import TestClient
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.checkpoint.sqlite import SqliteSaver
 
+from caregap.api.app import create_app
 from caregap.config import ConfigError
 from caregap.graph.build import NODE_NAMES, checkpoint_serializer
 from caregap.graph.hitl import pending_request
@@ -31,7 +33,16 @@ from caregap.p6.http import HttpP6Client
 from caregap.p6.snapshot import SnapshotP6Client
 from caregap.runtime import PanelRunStore, Runtime, build_runtime
 from caregap.structured import StructuredCaller
-from tests.unit.api.conftest import AS_OF, KAYCE, SNAPSHOT_DIR, TONY, TONY_PLAN, make_settings
+from tests.unit.api.conftest import (
+    AS_OF,
+    KAYCE,
+    SHERYL,
+    SNAPSHOT_DIR,
+    TONY,
+    TONY_PLAN,
+    GatedP6,
+    make_settings,
+)
 
 P6_HEALTH = {"service_version": "0.1.0", "schema_version": 3, "feature_version": "v1"}
 
@@ -275,3 +286,57 @@ def test_build_runtime_forces_langsmith_tracing_off_unless_opted_in(
     env = {"CAREGAP_ALLOW_TRACING": "1", "LANGSMITH_TRACING": "true"}
     assert disable_tracing_unless_opted_in(env) is False
     assert env["LANGSMITH_TRACING"] == "true"
+
+
+def test_app_shutdown_cancels_and_joins_the_run_thread(tmp_path: Path) -> None:
+    """V11: leaving the lifespan sets the cancel flag and joins the panel loop while the
+    ledger is still open, so the run ends ``cancelled`` instead of ``running`` forever."""
+    gate = threading.Event()
+    settings = make_settings(tmp_path, "join")
+    runtime = build_runtime(
+        settings,
+        models=fake_bundle([], [TONY_PLAN]),
+        checkpointer=MemorySaver(serde=checkpoint_serializer()),
+        p6=GatedP6(gate),
+    )
+    try:
+        app = create_app(settings, runtime=runtime)
+        with TestClient(app) as client:
+            response = client.post(
+                "/v1/runs", json={"as_of": AS_OF.isoformat(), "patient_ids": [KAYCE, SHERYL]}
+            )
+            assert response.status_code == 202, response.text
+            run_id = response.json()["run_id"]
+            thread = app.state.run_threads[run_id]
+            assert thread.is_alive()
+            threading.Timer(0.2, gate.set).start()  # the loop is inside patient 1 until then
+        assert not thread.is_alive()
+        assert runtime.cancel_flags[run_id].is_set()
+        run = runtime.run_store.get_run(run_id)
+        assert run is not None and run.status == "cancelled" and run.cursor == 1
+        rows = runtime.run_store.list_patient_runs(run_id)
+        assert [r.patient_id for r in rows] == [KAYCE]
+        assert all(r.status != "running" for r in rows)
+    finally:
+        runtime.close()
+
+
+def test_build_runtime_marks_runs_of_a_dead_process_interrupted(
+    tmp_path: Path, runtimes: list[Runtime]
+) -> None:
+    """V18: a ledger left ``running`` by a process that never wrote its terminal status is
+    repaired on open; the API then reports ``interrupted`` and cancel does not say cancelling."""
+    settings = make_settings(tmp_path, "stale")
+    earlier = datetime.now(UTC) - timedelta(seconds=5)
+    with RunStore(settings.runstore_path, clock=lambda: earlier) as seed:
+        seed.create_run("run_dead", AS_OF, RunOptions(), [TONY], status="running")
+        seed.upsert_patient_run("run_dead", TONY, "running", None, None)
+    runtime = build_runtime(settings, models=fake_bundle([], [TONY_PLAN]))
+    runtimes.append(runtime)
+    run = runtime.run_store.get_run("run_dead")
+    assert run is not None and run.status == "interrupted"
+    row = runtime.run_store.get_patient_run("run_dead", TONY)
+    assert row is not None and row.status == "interrupted"
+    with TestClient(create_app(settings, runtime=runtime)) as client:
+        assert client.get("/v1/runs/run_dead").json()["run"]["status"] == "interrupted"
+        assert client.post("/v1/runs/run_dead/cancel").json()["status"] == "interrupted"

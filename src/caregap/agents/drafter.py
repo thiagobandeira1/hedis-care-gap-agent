@@ -10,7 +10,7 @@ fenced ``data`` block and the packet says so. No names, no addresses (P6 strips 
 """
 
 import re
-from collections.abc import Iterable, Sequence
+from collections.abc import Collection, Iterable, Sequence
 from collections.abc import Set as AbstractSet
 from datetime import date
 from typing import Final
@@ -42,7 +42,8 @@ SALUTATION: Final = "Hello,"
 OPT_OUT_LINE: Final = "Reply STOP to opt out of these messages."
 
 #: Case-insensitive SUBSTRINGS that never belong in patient outreach (dose instructions,
-#: undisclosed or sensitive diagnoses). Substring on purpose: stricter beats cleverer here.
+#: sensitive diagnoses the packet never discloses). Substring on purpose: stricter beats
+#: cleverer here.
 FORBIDDEN_PHRASES: Final[tuple[str, ...]] = (
     " mg",
     "take ",
@@ -60,7 +61,20 @@ FORBIDDEN_PHRASES: Final[tuple[str, ...]] = (
     "substance",
     "alcohol",
     "overdose",
+    "hospice",
+    "dialysis",
+    "kidney",
+    "pregnan",
+    "transplant",
+    "stroke",
 )
+#: Condition words allowed ONLY when the packet disclosed the matching chronic flag
+#: (``DrafterContext.chronic_flags`` / ``CHRONIC_FLAG_BY_MEASURE``): ``flag -> substrings``.
+DISCLOSURE_PHRASES: Final[dict[str, tuple[str, ...]]] = {
+    "diabetes": ("diabet",),
+    "hypertension": ("hypertens", "high blood pressure"),
+    "ascvd": ("ascvd", "heart disease", "heart attack", "cardiovascular", "atherosclero"),
+}
 #: The only contexts in which the word "cancer" may appear in the patient message.
 CANCER_PHRASES: Final[tuple[str, ...]] = (
     "colorectal cancer screening",
@@ -316,6 +330,16 @@ def _average_sentence_words(message: str) -> float:
     return sum(len(s.split()) for s in sentences) / len(sentences)
 
 
+def disclosed_conditions_for(open_gaps: Iterable[OpenGap]) -> set[str]:
+    """The chronic flags an open gap set implies (an open condition-based gap means the engine
+    established that denominator); the re-lint of an edited plan derives disclosure from it."""
+    return {
+        CHRONIC_FLAG_BY_MEASURE[g.measure_id]
+        for g in open_gaps
+        if g.measure_id in CHRONIC_FLAG_BY_MEASURE
+    }
+
+
 def lint_plan(
     plan: CareActionPlan,
     *,
@@ -324,8 +348,12 @@ def lint_plan(
     allowed_numbers: AbstractSet[str],
     clinic_name: str,
     clinic_phone: str,
+    disclosed_conditions: Collection[str] = (),
 ) -> list[LintViolation]:
-    """Every violation the plan carries, in a fixed check order (deterministic)."""
+    """Every violation the plan carries, in a fixed check order (deterministic).
+
+    ``disclosed_conditions`` are the lower-cased chronic flags the packet disclosed; the
+    ``DISCLOSURE_PHRASES`` of every other flag are forbidden in the patient message."""
     violations: list[LintViolation] = []
     open_ids = {g.measure_id for g in open_gaps}
     planned = [g.measure_id for g in plan.gaps]
@@ -382,7 +410,14 @@ def lint_plan(
         )
 
     lowered = message.lower()
-    forbidden = [phrase for phrase in FORBIDDEN_PHRASES if phrase in lowered]
+    disclosed = {flag.lower() for flag in disclosed_conditions}
+    undisclosed = tuple(
+        phrase
+        for flag, phrases in DISCLOSURE_PHRASES.items()
+        if flag not in disclosed
+        for phrase in phrases
+    )
+    forbidden = [phrase for phrase in (*FORBIDDEN_PHRASES, *undisclosed) if phrase in lowered]
     if forbidden:
         violations.append(LintViolation(code="FORBIDDEN", detail=f"forbidden phrases: {forbidden}"))
 
@@ -535,6 +570,7 @@ def draft_plan(
             allowed_numbers=allowed_numbers,
             clinic_name=context.clinic_name,
             clinic_phone=context.clinic_phone,
+            disclosed_conditions=context.chronic_flags,
         )
 
     def call(case_key: str, notes: Sequence[str]) -> CareActionPlan:

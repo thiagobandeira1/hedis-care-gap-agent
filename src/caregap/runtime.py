@@ -15,7 +15,8 @@ eval tiers; an injected object is used as-is and never closed here.
 import os
 import sqlite3
 import threading
-from collections.abc import MutableMapping, Sequence
+import time
+from collections.abc import Mapping, MutableMapping, Sequence
 from contextlib import ExitStack
 from dataclasses import dataclass, field
 from datetime import date
@@ -29,9 +30,9 @@ from caregap.config import Settings
 from caregap.graph.build import GraphDeps, build_graph, checkpoint_serializer
 from caregap.graph.outbox import RunStoreOutbox
 from caregap.graph.runner import Graph, PatientRunner
-from caregap.graph.runstore import RunStore
+from caregap.graph.runstore import STATUS_INTERRUPTED, RunStore
 from caregap.llm import ModelBundle, bundle_for
-from caregap.logging_setup import configure_logging
+from caregap.logging_setup import configure_logging, get_logger
 from caregap.measures.engine import default_engine
 from caregap.measures.value_sets import load_value_sets
 from caregap.p6.client import P6Client
@@ -39,6 +40,8 @@ from caregap.p6.embedded import build_embedded_client
 from caregap.p6.http import HttpP6Client
 from caregap.p6.snapshot import SnapshotP6Client
 from caregap.structured import StructuredCaller
+
+log = get_logger(__name__)
 
 #: Timeout for the http P6 topology (P6 itself answers a record in well under a second).
 HTTP_TIMEOUT_S = 30.0
@@ -90,6 +93,26 @@ class Runtime:
     """``run_id -> cancel Event`` for every panel run this process launched."""
     _stack: ExitStack = field(default_factory=ExitStack, repr=False)
 
+    def stop_runs(
+        self, threads: Mapping[str, threading.Thread], *, timeout_s: float | None = None
+    ) -> list[str]:
+        """Set every cancel flag, then join the given ``run_id -> thread`` loops within ONE
+        shared bound (default ``settings.patient_timeout_s``) so a loop can write its
+        ``cancelled`` / ``error`` rows on a live ledger before :meth:`close`. Returns the run
+        ids still alive at the bound (logged; the next process marks them ``interrupted``)."""
+        for flag in self.cancel_flags.values():
+            flag.set()
+        bound = self.settings.patient_timeout_s if timeout_s is None else timeout_s
+        deadline = time.monotonic() + bound
+        alive: list[str] = []
+        for run_id, thread in threads.items():
+            thread.join(max(0.0, deadline - time.monotonic()))
+            if thread.is_alive():
+                alive.append(run_id)
+        for run_id in alive:
+            log.warning("run_thread_still_alive", run_id=run_id)
+        return alive
+
     def close(self) -> None:
         """Ask every launched panel loop to stop, then release what ``build_runtime`` opened
         (ledger, checkpointer connection, P6 client) in reverse order. Idempotent."""
@@ -130,6 +153,9 @@ def build_runtime(
         bundle = models if models is not None else bundle_for(settings)
         saver = checkpointer if checkpointer is not None else _open_sqlite_saver(settings, stack)
         run_store = stack.enter_context(PanelRunStore(settings.runstore_path))
+        # Nothing in THIS process has written yet: any run still live belongs to a dead one.
+        for run_id in run_store.reconcile_stale():
+            log.warning("run_interrupted", run_id=run_id, status=STATUS_INTERRUPTED)
         deps = GraphDeps(
             p6=client,
             models=bundle,
