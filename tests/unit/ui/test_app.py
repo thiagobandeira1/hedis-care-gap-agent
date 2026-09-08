@@ -348,3 +348,36 @@ def test_unreachable_api_shows_error_and_no_data(app: AppTest) -> None:
     assert any("API unreachable" in error.value for error in app.error)
     assert any("caregap serve" in info.value for info in app.info)
     assert len(app.dataframe) == 0
+
+
+# --- sidebar base URL (V20) ----------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "http://127.0.0.1:8010",
+        "http://localhost:8010/",
+        "https://[::1]:8443",
+        "http://10.0.0.5:8010",  # the configured API host
+    ],
+)
+def test_validate_base_url_accepts_loopback_and_the_configured_host(text: str) -> None:
+    assert app_module.validate_base_url(text, api_host="10.0.0.5") == text.rstrip("/")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "",
+        "http://evil.example",
+        "http://169.254.169.254/latest/meta-data",
+        "ftp://127.0.0.1",
+        "http://user:pw@127.0.0.1:8010",
+        "http://127.0.0.1:8010/v1/panel?as_of=2026-06-30",
+        "http://127.0.0.1#frag",
+        "127.0.0.1:8010",
+    ],
+)
+def test_validate_base_url_rejects_other_origins_userinfo_and_paths(text: str) -> None:
+    assert app_module.validate_base_url(text, api_host="10.0.0.5") is None

@@ -252,3 +252,26 @@ def test_latest_patient_runs_follows_status_updates(tmp_path: Path) -> None:
         assert store.latest_patient_runs(["p1"]) == {"p1": ("r1", "running")}
         store.upsert_patient_run("r1", "p1", "completed", None, None)
         assert store.latest_patient_runs(["p1"]) == {"p1": ("r1", "completed")}
+
+
+# --- tracing (V19) ----------------------------------------------------------------------------
+
+
+def test_build_runtime_forces_langsmith_tracing_off_unless_opted_in(
+    tmp_path: Path, runtimes: list[Runtime], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Env vars alone must never ship graph state (the patient record) to a cloud tracer."""
+    from caregap.runtime import disable_tracing_unless_opted_in
+
+    monkeypatch.delenv("CAREGAP_ALLOW_TRACING", raising=False)
+    monkeypatch.setenv("LANGSMITH_TRACING", "true")
+    monkeypatch.setenv("LANGCHAIN_TRACING_V2", "true")
+    runtimes.append(build_runtime(make_settings(tmp_path, "tracing")))
+    import os
+
+    assert os.environ["LANGSMITH_TRACING"] == "false"
+    assert os.environ["LANGCHAIN_TRACING_V2"] == "false"
+
+    env = {"CAREGAP_ALLOW_TRACING": "1", "LANGSMITH_TRACING": "true"}
+    assert disable_tracing_unless_opted_in(env) is False
+    assert env["LANGSMITH_TRACING"] == "true"

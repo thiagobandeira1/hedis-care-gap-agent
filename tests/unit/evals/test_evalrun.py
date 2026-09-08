@@ -324,6 +324,20 @@ def test_pipeline_tier_refuses_unfrozen_gold_then_replays_with_fallbacks(
         "SPD",
     ]
 
+    # V13: an unpublishable artifact can neither set the ratchet nor pass the gate.
+    assert run("engine", evals_dir, settings, update_baseline=True) == EXIT_OK
+    baseline_before = json.loads(paths.baseline.read_text(encoding="utf-8"))
+    assert run("pipeline", evals_dir, settings, update_baseline=True) == EXIT_FAIL
+    assert "unpublishable artifact" in capsys.readouterr().err
+    assert json.loads(paths.baseline.read_text(encoding="utf-8")) == baseline_before
+    assert set(baseline_before["metrics"]) == {
+        "engine.micro_f1",
+        "engine.micro_precision",
+        "engine.micro_recall",
+    }
+    assert run("pipeline", evals_dir, settings, gate=True) == EXIT_FAIL
+    assert "nothing publishable to gate" in capsys.readouterr().err
+
     # Gold edited after the freeze: refused before any engine contact.
     rows = [gold_row(c) for c in committed_gold()]
     rows[0]["rationale"] = "edited after the freeze"

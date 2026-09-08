@@ -179,3 +179,14 @@ def test_corrupt_snapshot_files_are_contract_errors(
     features_path.write_text(json.dumps({"features": {"as_of": "2025-12-31"}}), encoding="utf-8")
     with pytest.raises(P6ContractError, match="features failed validation"):
         client.get_features("p1", as_of=EVAL_AS_OF)
+
+
+@pytest.mark.parametrize("bad", ["../p1", "..", "p1/../../etc", "p1\\x", "", ".hidden"])
+def test_unsafe_patient_ids_never_leave_the_snapshot_root(
+    client: SnapshotP6Client, bad: str
+) -> None:
+    """V17: an id is one safe path segment; anything else is PatientNotFound before any join."""
+    with pytest.raises(PatientNotFound):
+        client.get_record(bad, to=EVAL_AS_OF)
+    with pytest.raises(PatientNotFound):
+        client.get_features(bad, as_of=EVAL_AS_OF)

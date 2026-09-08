@@ -12,7 +12,12 @@ from caregap.measures.value_sets import ValueSet, ValueSetCode, ValueSets, Value
 from tests import factories
 from tests.factories import BIRTH_1960, DEMO_AS_OF, EVAL_AS_OF
 
-FORBIDDEN_ENV: tuple[str, ...] = ("CAREGAP_ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY")
+FORBIDDEN_ENV: tuple[str, ...] = (
+    "CAREGAP_ANTHROPIC_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "LANGSMITH_API_KEY",
+    "LANGCHAIN_API_KEY",
+)
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:

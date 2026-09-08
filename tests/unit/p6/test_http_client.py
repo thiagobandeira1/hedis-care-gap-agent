@@ -302,3 +302,24 @@ def test_get_record_masks_death_after_to(router: respx.MockRouter, p6: HttpP6Cli
     assert record.patient.death_date is None
     assert record.as_of == EVAL_AS_OF
     assert not hasattr(record.patient, "race")
+
+
+def test_patient_id_is_percent_encoded_in_p6_paths(router: respx.MockRouter) -> None:
+    """V17: an id can never steer the request onto another P6 route or add query params."""
+    seen: list[str] = []
+
+    def capture(request: httpx.Request) -> httpx.Response:
+        seen.append(str(request.url))
+        return httpx.Response(404, json={"code": "patient_not_found"})
+
+    router.get(url__regex=r".*").mock(side_effect=capture)
+    with httpx.Client(base_url=BASE) as http:
+        client = HttpP6Client(http, sleep=lambda _: None)
+        with pytest.raises(PatientNotFound):
+            client.get_record("../../healthz?", to=EVAL_AS_OF)
+        with pytest.raises(PatientNotFound):
+            client.get_features("abc?sections=x&to=1999-01-01#", as_of=EVAL_AS_OF)
+    assert seen[0].startswith(f"{BASE}/v1/patients/..%2F..%2Fhealthz%3F/record?")
+    assert seen[1].startswith(
+        f"{BASE}/v1/patients/abc%3Fsections%3Dx%26to%3D1999-01-01%23/features?"
+    )

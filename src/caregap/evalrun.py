@@ -658,6 +658,15 @@ def run_eval(
         artifact_path = paths.artifact(tier)
         write_artifact(artifact_path, artifact)
         _print_summary(tier, artifact, artifact_path)
+        if artifact.get("publishable") is False and (gate or update_baseline):
+            # V13: fallback-sentinel numbers were never measured; they can neither set nor
+            # pass the ratchet. The engine-only column is gated by the engine tier itself.
+            raise EvalExit(
+                EXIT_FAIL,
+                f"unpublishable artifact ({artifact.get('unpublishable_reason')}) cannot "
+                f"{'set' if update_baseline else 'pass'} the ratchet; nothing publishable "
+                "to gate",
+            )
         if gate:
             try:
                 passed, message = gates.check_gates(artifact, paths.baseline)

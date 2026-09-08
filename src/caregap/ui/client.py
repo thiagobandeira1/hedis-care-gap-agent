@@ -215,7 +215,9 @@ def problem_from_response(response: httpx.Response) -> ApiError:
         if isinstance(raw_status, int):
             status = raw_status
     elif response.text.strip():
-        detail = response.text.strip()[:500]
+        # Never echo a non-problem body (an arbitrary origin's HTML/text would render in the
+        # console): report only that one was received and how large it was.
+        detail = f"HTTP {status}: non-problem response body ({len(response.text)} chars)"
     return ApiError(status, title, detail, errors=errors, problem_type=problem_type)
 
 

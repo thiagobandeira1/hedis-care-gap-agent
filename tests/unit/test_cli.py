@@ -399,16 +399,48 @@ def test_serve_runs_uvicorn_with_the_app_factory(monkeypatch: pytest.MonkeyPatch
 
     assert_ok(invoke("serve"))
     assert_ok(invoke("serve", "--host", "127.0.0.2", "--port", "9010"))
-    assert calls == [
-        (
-            ("caregap.api.app:create_app",),
-            {"factory": True, "host": "127.0.0.9", "port": 8123},
-        ),
-        (
-            ("caregap.api.app:create_app",),
-            {"factory": True, "host": "127.0.0.2", "port": 9010},
-        ),
+    assert [(args, kwargs["host"], kwargs["port"]) for args, kwargs in calls] == [
+        (("caregap.api.app:create_app",), "127.0.0.9", 8123),
+        (("caregap.api.app:create_app",), "127.0.0.2", 9010),
     ]
+    assert all(kwargs["factory"] is True for _, kwargs in calls)
+
+
+def test_serve_disables_the_access_log_and_drops_tracebacks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """V12: no uvicorn access lines (URLs carry patient ids) and a message-only formatter on
+    the error logger so 'Exception in ASGI application' never prints exception text."""
+    import logging
+    import logging.config
+
+    from caregap.logging_setup import MessageOnlyFormatter
+
+    calls: list[dict[str, Any]] = []
+    monkeypatch.setattr(uvicorn, "run", lambda *a, **kw: calls.append(kw))
+    assert_ok(invoke("serve"))
+    (kwargs,) = calls
+    assert kwargs["access_log"] is False
+    config = kwargs["log_config"]
+    assert config["loggers"]["uvicorn.access"]["handlers"] == []
+    logging.config.dictConfig(config)  # must be a valid dictConfig
+    handler = logging.getLogger("uvicorn").handlers[0]
+    assert isinstance(handler.formatter, MessageOnlyFormatter)
+    try:
+        raise ValueError("input_value=SENTINEL-PHI")
+    except ValueError:
+        record = logging.LogRecord(
+            "uvicorn.error",
+            logging.ERROR,
+            __file__,
+            1,
+            "Exception in ASGI application",
+            None,
+            sys.exc_info(),
+        )
+    text = handler.formatter.format(record)
+    assert "SENTINEL-PHI" not in text and "Traceback" not in text
+    assert text == "ERROR uvicorn.error: Exception in ASGI application"
 
 
 def test_ui_launches_streamlit_as_a_subprocess(monkeypatch: pytest.MonkeyPatch) -> None:

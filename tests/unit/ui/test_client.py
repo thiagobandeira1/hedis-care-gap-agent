@@ -278,7 +278,16 @@ def test_non_problem_error_body(router: respx.MockRouter, api: ApiClient) -> Non
         api.healthz()
     assert excinfo.value.status == 500
     assert excinfo.value.title == "Internal Server Error"
-    assert "boom" in excinfo.value.detail
+    assert "boom" not in excinfo.value.detail, "non-problem bodies are never echoed (V20)"
+    assert excinfo.value.detail == "HTTP 500: non-problem response body (17 chars)"
+
+
+def test_text_plain_403_body_is_not_echoed(router: respx.MockRouter, api: ApiClient) -> None:
+    router.get("/healthz").respond(403, text="secret " * 50, headers={"content-type": "text/plain"})
+    with pytest.raises(ApiError) as excinfo:
+        api.healthz()
+    assert excinfo.value.status == 403
+    assert "secret" not in excinfo.value.detail
 
 
 def test_transport_error(router: respx.MockRouter, api: ApiClient) -> None:

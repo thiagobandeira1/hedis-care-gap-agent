@@ -177,6 +177,18 @@ class CategorySpec:
     source: CategorySource
     window: Callable[[MeasurementContext], Window]
     """The date window a cited event must fall in (the rule's window on the event date)."""
+    sections: frozenset[Section] = frozenset()
+    """The record sections the RULE reads for this category (V10): a cited event in another
+    section (a dialysis code recorded as a condition where the rule reads procedures) is
+    evidence the engine deliberately ignores and can never verify an exclude. Empty = any."""
+
+
+_CONDITIONS: frozenset[Section] = frozenset({"conditions"})
+_PROCEDURES: frozenset[Section] = frozenset({"procedures"})
+_CONDITIONS_OR_PROCEDURES: frozenset[Section] = frozenset({"conditions", "procedures"})
+_OBSERVATIONS: frozenset[Section] = frozenset({"observations"})
+_HOSPICE_SECTIONS: frozenset[Section] = frozenset({"procedures", "conditions", "encounters"})
+_PATIENT: frozenset[Section] = frozenset({"patient"})
 
 
 def _measurement_period(ctx: MeasurementContext) -> Window:
@@ -201,53 +213,75 @@ def _my_or_prior_year(ctx: MeasurementContext) -> Window:
 
 GLOBAL_CATEGORIES: tuple[CategorySpec, ...] = (
     CategorySpec(
-        "died_during_measurement_period", PATIENT_DEATH_SET, "quoted", _measurement_period
+        "died_during_measurement_period",
+        PATIENT_DEATH_SET,
+        "quoted",
+        _measurement_period,
+        _PATIENT,
     ),
-    CategorySpec("hospice_during_measurement_period", HOSPICE_SET, "quoted", _my_to_as_of),
+    CategorySpec(
+        "hospice_during_measurement_period", HOSPICE_SET, "quoted", _my_to_as_of, _HOSPICE_SECTIONS
+    ),
 )
 
 _SPC_STATIN_EXCLUSIONS: tuple[CategorySpec, ...] = (
-    CategorySpec("esrd", ESRD_SET, "quoted", _my_or_prior_year),
-    CategorySpec("dialysis", DIALYSIS_SET, "quoted", _my_or_prior_year),
+    CategorySpec("esrd", ESRD_SET, "quoted", _my_or_prior_year, _CONDITIONS),
+    CategorySpec("dialysis", DIALYSIS_SET, "quoted", _my_or_prior_year, _PROCEDURES),
 )
 # SPD's quoted D12 text says "during the measurement period"; the MY-or-prior-year window
 # mirrors SPC and is therefore a demo_choice (rules/spd.py).
 _SPD_STATIN_EXCLUSIONS: tuple[CategorySpec, ...] = (
-    CategorySpec("esrd", ESRD_SET, "demo_choice", _my_or_prior_year),
-    CategorySpec("dialysis", DIALYSIS_SET, "demo_choice", _my_or_prior_year),
+    CategorySpec("esrd", ESRD_SET, "demo_choice", _my_or_prior_year, _CONDITIONS),
+    CategorySpec("dialysis", DIALYSIS_SET, "demo_choice", _my_or_prior_year, _PROCEDURES),
 )
 
 MEASURE_CATEGORIES: dict[MeasureId, tuple[CategorySpec, ...]] = {
     "CBP": (
-        CategorySpec("esrd", cbp.ESRD_SET, "quoted", _any_time),
-        CategorySpec("dialysis", cbp.DIALYSIS_SET, "demo_choice", _any_time),
-        CategorySpec("kidney_transplant", cbp.KIDNEY_TRANSPLANT_SET, "demo_choice", _any_time),
-        CategorySpec("pregnancy", cbp.PREGNANCY_SET, "quoted", _my_full),
+        CategorySpec("esrd", cbp.ESRD_SET, "quoted", _any_time, _CONDITIONS),
+        CategorySpec("dialysis", cbp.DIALYSIS_SET, "demo_choice", _any_time, _PROCEDURES),
         CategorySpec(
-            "pregnancy_status_positive", PREGNANCY_STATUS_POSITIVE_SET, "demo_choice", _my_full
+            "kidney_transplant",
+            cbp.KIDNEY_TRANSPLANT_SET,
+            "demo_choice",
+            _any_time,
+            _CONDITIONS_OR_PROCEDURES,
+        ),
+        CategorySpec("pregnancy", cbp.PREGNANCY_SET, "quoted", _my_full, _CONDITIONS),
+        CategorySpec(
+            "pregnancy_status_positive",
+            PREGNANCY_STATUS_POSITIVE_SET,
+            "demo_choice",
+            _my_full,
+            _OBSERVATIONS,
         ),
     ),
     "EED": (),
     "BCS": (),
-    "COL": (CategorySpec("colorectal_cancer", col.COLORECTAL_CANCER_SET, "quoted", _any_time),),
+    "COL": (
+        CategorySpec(
+            "colorectal_cancer", col.COLORECTAL_CANCER_SET, "quoted", _any_time, _CONDITIONS
+        ),
+    ),
     "SPC": (
         *_SPC_STATIN_EXCLUSIONS,
-        CategorySpec("pregnancy", PREGNANCY_SET, "quoted", _my_or_prior_year),
+        CategorySpec("pregnancy", PREGNANCY_SET, "quoted", _my_or_prior_year, _CONDITIONS),
         CategorySpec(
             "pregnancy_status_positive",
             PREGNANCY_STATUS_POSITIVE_SET,
             "demo_choice",
             _my_or_prior_year,
+            _OBSERVATIONS,
         ),
     ),
     "SPD": (
         *_SPD_STATIN_EXCLUSIONS,
-        CategorySpec("pregnancy", PREGNANCY_SET, "demo_choice", _my_or_prior_year),
+        CategorySpec("pregnancy", PREGNANCY_SET, "demo_choice", _my_or_prior_year, _CONDITIONS),
         CategorySpec(
             "pregnancy_status_positive",
             PREGNANCY_STATUS_POSITIVE_SET,
             "demo_choice",
             _my_or_prior_year,
+            _OBSERVATIONS,
         ),
     ),
     "TSC": (),
@@ -285,6 +319,8 @@ class PacketCategory(BaseModel):
     window_end: date
     window_label: str
     source: CategorySource
+    sections: list[Section] = Field(default_factory=list)
+    """Sections the rule reads for this category (sorted; empty = any) — see CategorySpec."""
 
 
 class EvidencePacket(BaseModel):
@@ -526,6 +562,7 @@ def packet_categories(measure_id: MeasureId, ctx: MeasurementContext) -> list[Pa
                 window_end=window.end,
                 window_label=window.label,
                 source=spec.source,
+                sections=sorted(spec.sections),
             )
         )
     return out
